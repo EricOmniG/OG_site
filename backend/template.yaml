@@ -1,0 +1,324 @@
+# ============================================================
+#  OMNIGENIUS — AWS SAM Deployment Config
+#  template.yaml
+#
+#  Deploys:
+#    - FastAPI app as a single Lambda function (via Mangum)
+#    - HTTP API Gateway (v2) in front of Lambda
+#    - Custom domain via ACM + API Gateway domain mapping
+#    - IAM role with least-privilege S3 + SSM permissions
+#
+#  Deploy:
+#    sam build
+#    sam deploy --guided           (first time — saves samconfig.toml)
+#    sam deploy                    (subsequent — uses samconfig.toml)
+#
+#  Useful commands:
+#    sam logs -n OmniGeniusFunction --tail
+#    sam delete --stack-name omnigenius-api
+# ============================================================
+
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+
+Description: Omnigenius API — FastAPI on Lambda + HTTP API Gateway
+
+# ── Parameters ───────────────────────────────────────────────
+Parameters:
+  Stage:
+    Type: String
+    Default: production
+    AllowedValues: [development, staging, production]
+    Description: Deployment stage
+
+  DomainName:
+    Type: String
+    Default: api.omnigenius.co
+    Description: Custom API domain name
+
+  CertificateArn:
+    Type: String
+    Description: ACM certificate ARN for the custom domain (must be in us-east-1)
+
+  SubnetIds:
+    Type: CommaDelimitedList
+    Description: VPC subnet IDs for Lambda (leave blank for public Lambda)
+    Default: ""
+
+  SecurityGroupIds:
+    Type: CommaDelimitedList
+    Description: VPC security group IDs for Lambda
+    Default: ""
+
+# ── Globals ──────────────────────────────────────────────────
+Globals:
+  Function:
+    Timeout: 60              # seconds — matches ORCA_TIMEOUT_SECONDS
+    MemorySize: 512          # MB — increase if model calls are heavy
+    Runtime: python3.12
+    Architectures: [arm64]   # Graviton2 — ~20% cheaper, faster cold starts
+    Environment:
+      Variables:
+        APP_ENV: !Ref Stage
+        LOG_LEVEL: INFO
+        # Secrets pulled from SSM Parameter Store at runtime
+        # (never hardcode secrets in template.yaml)
+        APP_SECRET_KEY:           !Sub "{{resolve:ssm:/omnigenius/${Stage}/APP_SECRET_KEY}}"
+        SUPABASE_URL:             !Sub "{{resolve:ssm:/omnigenius/${Stage}/SUPABASE_URL}}"
+        SUPABASE_ANON_KEY:        !Sub "{{resolve:ssm:/omnigenius/${Stage}/SUPABASE_ANON_KEY}}"
+        SUPABASE_SERVICE_ROLE_KEY:!Sub "{{resolve:ssm:/omnigenius/${Stage}/SUPABASE_SERVICE_ROLE_KEY}}"
+        SUPABASE_JWT_SECRET:      !Sub "{{resolve:ssm:/omnigenius/${Stage}/SUPABASE_JWT_SECRET}}"
+        DATABASE_URL:             !Sub "{{resolve:ssm:/omnigenius/${Stage}/DATABASE_URL}}"
+        CLERK_SECRET_KEY:         !Sub "{{resolve:ssm:/omnigenius/${Stage}/CLERK_SECRET_KEY}}"
+        CLERK_WEBHOOK_SECRET:     !Sub "{{resolve:ssm:/omnigenius/${Stage}/CLERK_WEBHOOK_SECRET}}"
+        CLERK_JWT_KEY:            !Sub "{{resolve:ssm:/omnigenius/${Stage}/CLERK_JWT_KEY}}"
+        ORCA_SERVICE_URL:         !Sub "{{resolve:ssm:/omnigenius/${Stage}/ORCA_SERVICE_URL}}"
+        ORCA_SERVICE_API_KEY:     !Sub "{{resolve:ssm:/omnigenius/${Stage}/ORCA_SERVICE_API_KEY}}"
+        STRIPE_SECRET_KEY:        !Sub "{{resolve:ssm:/omnigenius/${Stage}/STRIPE_SECRET_KEY}}"
+        STRIPE_WEBHOOK_SECRET:    !Sub "{{resolve:ssm:/omnigenius/${Stage}/STRIPE_WEBHOOK_SECRET}}"
+        REDIS_URL:                !Sub "{{resolve:ssm:/omnigenius/${Stage}/REDIS_URL}}"
+        INTERNAL_API_SECRET:      !Sub "{{resolve:ssm:/omnigenius/${Stage}/INTERNAL_API_SECRET}}"
+        MS_TENANT_ID:             !Sub "{{resolve:ssm:/omnigenius/${Stage}/MS_TENANT_ID}}"
+        MS_CLIENT_ID:             !Sub "{{resolve:ssm:/omnigenius/${Stage}/MS_CLIENT_ID}}"
+        MS_CLIENT_SECRET:         !Sub "{{resolve:ssm:/omnigenius/${Stage}/MS_CLIENT_SECRET}}"
+        MS_SENDER_EMAIL:          !Sub "{{resolve:ssm:/omnigenius/${Stage}/MS_SENDER_EMAIL}}"
+        EMAIL_BACKEND:            graph
+        AWS_S3_BUCKET: !Ref AssetsBucket
+        SENTRY_ENVIRONMENT: !Ref Stage
+
+# ── Resources ─────────────────────────────────────────────────
+Resources:
+
+  # ── Lambda Function ───────────────────────────────────────
+  OmniGeniusFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "omnigenius-api-${Stage}"
+      CodeUri: .
+      Handler: app.main.handler       # Mangum handler
+      Description: Omnigenius FastAPI application
+      ReservedConcurrentExecutions: 100   # prevent runaway scaling
+      Layers:
+        - !Ref DependenciesLayer
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        ApiGatewayRoot:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /{proxy+}
+            Method: ANY
+        ApiGatewayHealth:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: GET
+      # VPC config — uncomment if your Supabase/Redis requires VPC access
+      # VpcConfig:
+      #   SubnetIds: !Ref SubnetIds
+      #   SecurityGroupIds: !Ref SecurityGroupIds
+
+  # ── Dependencies Layer (pip packages) ────────────────────
+  DependenciesLayer:
+    Type: AWS::Serverless::LayerVersion
+    Properties:
+      LayerName: !Sub "omnigenius-deps-${Stage}"
+      Description: Python dependencies for Omnigenius API
+      ContentUri: .aws-sam/deps/
+      CompatibleRuntimes: [python3.12]
+      CompatibleArchitectures: [arm64]
+    Metadata:
+      BuildMethod: python3.12
+
+  # ── HTTP API Gateway (v2) ──────────────────────────────
+  HttpApi:
+    Type: AWS::Serverless::HttpApi
+    Properties:
+      StageName: !Ref Stage
+      Description: Omnigenius HTTP API Gateway
+      CorsConfiguration:
+        AllowOrigins:
+          - "https://omnigenius.co"
+          - "https://www.omnigenius.co"
+          - "https://staging.omnigenius.co"
+        AllowMethods: ["GET", "POST", "PATCH", "DELETE", "OPTIONS"]
+        AllowHeaders: ["Content-Type", "Authorization", "X-API-Key", "Stripe-Signature"]
+        AllowCredentials: true
+        MaxAge: 600
+      DefaultRouteSettings:
+        ThrottlingBurstLimit: 200
+        ThrottlingRateLimit: 100    # req/sec — adjust per traffic
+      AccessLogSettings:
+        DestinationArn: !GetAtt ApiGatewayLogGroup.Arn
+
+  # ── Custom Domain ─────────────────────────────────────
+  ApiDomainName:
+    Type: AWS::ApiGatewayV2::DomainName
+    Properties:
+      DomainName: !Ref DomainName
+      DomainNameConfigurations:
+        - CertificateArn: !Ref CertificateArn
+          EndpointType: REGIONAL
+          SecurityPolicy: TLS_1_2
+
+  ApiDomainMapping:
+    Type: AWS::ApiGatewayV2::ApiMapping
+    Properties:
+      ApiId: !Ref HttpApi
+      DomainName: !Ref ApiDomainName
+      Stage: !Ref Stage
+    DependsOn: ApiDomainName
+
+  # ── IAM Role ──────────────────────────────────────────
+  LambdaExecutionRole:
+    Type: AWS::IAM::Role
+    Properties:
+      RoleName: !Sub "omnigenius-lambda-role-${Stage}"
+      AssumeRolePolicyDocument:
+        Version: "2012-10-17"
+        Statement:
+          - Effect: Allow
+            Principal:
+              Service: lambda.amazonaws.com
+            Action: sts:AssumeRole
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaBasicExecutionRole
+        - arn:aws:iam::aws:policy/service-role/AWSLambdaVPCAccessExecutionRole
+      Policies:
+        - PolicyName: OmniGeniusS3Policy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - s3:PutObject
+                  - s3:GetObject
+                  - s3:DeleteObject
+                Resource: !Sub "arn:aws:s3:::${AssetsBucket}/*"
+        - PolicyName: OmniGeniusSSMPolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action:
+                  - ssm:GetParameter
+                  - ssm:GetParameters
+                Resource: !Sub "arn:aws:ssm:${AWS::Region}:${AWS::AccountId}:parameter/omnigenius/${Stage}/*"
+        - PolicyName: OmniGeniusLambdaInvokePolicy
+          PolicyDocument:
+            Version: "2012-10-17"
+            Statement:
+              - Effect: Allow
+                Action: lambda:InvokeFunction
+                Resource: !Sub "arn:aws:lambda:${AWS::Region}:${AWS::AccountId}:function:omnigenius-orca-*"
+
+  # ── S3 Bucket (avatars + file uploads) ────────────────
+  AssetsBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: !Sub "omnigenius-assets-${Stage}-${AWS::AccountId}"
+      AccessControl: Private
+      PublicAccessBlockConfiguration:
+        BlockPublicAcls: true
+        BlockPublicPolicy: true
+        IgnorePublicAcls: true
+        RestrictPublicBuckets: true
+      CorsConfiguration:
+        CorsRules:
+          - AllowedOrigins: ["https://omnigenius.co", "https://www.omnigenius.co"]
+            AllowedMethods: [GET]
+            MaxAge: 3600
+      LifecycleConfiguration:
+        Rules:
+          - Id: DeleteTempUploads
+            Status: Enabled
+            Prefix: "uploads/tmp/"
+            ExpirationInDays: 1     # Clean up unlinked temp uploads after 24h
+
+  # ── CloudWatch Log Groups ──────────────────────────────
+  ApiGatewayLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/apigateway/omnigenius-${Stage}"
+      RetentionInDays: 30
+
+  LambdaLogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub "/aws/lambda/omnigenius-api-${Stage}"
+      RetentionInDays: 30
+
+  # ── CloudWatch Alarm: Error Rate ──────────────────────
+  ErrorRateAlarm:
+    Type: AWS::CloudWatch::Alarm
+    Properties:
+      AlarmName: !Sub "omnigenius-${Stage}-high-error-rate"
+      AlarmDescription: "Lambda error rate > 1% over 5 minutes"
+      Namespace: AWS/Lambda
+      MetricName: Errors
+      Dimensions:
+        - Name: FunctionName
+          Value: !Ref OmniGeniusFunction
+      Statistic: Sum
+      Period: 300
+      EvaluationPeriods: 1
+      Threshold: 10
+      ComparisonOperator: GreaterThanThreshold
+      TreatMissingData: notBreaching
+
+# ── Outputs ───────────────────────────────────────────────────
+Outputs:
+  ApiUrl:
+    Description: API Gateway endpoint URL
+    Value: !Sub "https://${HttpApi}.execute-api.${AWS::Region}.amazonaws.com/${Stage}"
+
+  CustomDomainUrl:
+    Description: Custom domain URL
+    Value: !Sub "https://${DomainName}"
+
+  LambdaFunctionArn:
+    Description: Lambda function ARN
+    Value: !GetAtt OmniGeniusFunction.Arn
+
+  AssetsBucketName:
+    Description: S3 assets bucket name
+    Value: !Ref AssetsBucket
+
+  LambdaRoleArn:
+    Description: Lambda IAM role ARN
+    Value: !GetAtt LambdaExecutionRole.Arn
+
+  # ── Flask Lambda (auth, billing, admin, webhooks, etc.) ───
+  OmniGeniusFlaskFunction:
+    Type: AWS::Serverless::Function
+    Properties:
+      FunctionName: !Sub "omnigenius-flask-${Stage}"
+      CodeUri: .
+      Handler: flask_app.wsgi.handler
+      Description: Omnigenius Flask app — auth, billing, admin, webhooks
+      MemorySize: 256
+      ReservedConcurrentExecutions: 50
+      Layers:
+        - !Ref DependenciesLayer
+      Role: !GetAtt LambdaExecutionRole.Arn
+      Events:
+        FlaskApi:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /v1/{proxy+}
+            Method: ANY
+        FlaskHealth:
+          Type: HttpApi
+          Properties:
+            ApiId: !Ref HttpApi
+            Path: /health
+            Method: GET
+
+  # NOTE: API Gateway path priority
+  # More-specific paths (FastAPI) must be registered first.
+  # Add explicit routes for /v1/chat, /v1/search, /v1/reason
+  # pointing to OmniGeniusFunction, then catch-all /v1/{proxy+}
+  # points to OmniGeniusFlaskFunction.
+  # Configure this in the HttpApi Routes overrides if needed.

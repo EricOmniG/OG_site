@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>500 — Something Broke · Omnigenius</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:   #04070f;
+  --red:  #f43f5e;
+  --text: #e8f0fc;
+  --text2:#6b80a0;
+  --text3:#1e2d42;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  min-height:100vh;overflow:hidden;
+  background-image:
+    linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+
+canvas{position:fixed;inset:0;pointer-events:none;z-index:0;}
+#qCanvas{position:relative;z-index:10;display:block;margin-bottom:40px;cursor:crosshair;}
+
+.content{
+  position:relative;z-index:10;
+  display:flex;flex-direction:column;
+  align-items:center;text-align:center;
+  padding:0 24px;
+}
+.error-code{
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:3px;text-transform:uppercase;
+  color:var(--red);margin-bottom:12px;
+  opacity:0;animation:fadeUp .6s .2s ease forwards;
+}
+.error-title{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:clamp(28px,5vw,48px);letter-spacing:-2px;
+  color:var(--text);margin-bottom:12px;
+  opacity:0;animation:fadeUp .6s .35s ease forwards;
+}
+.error-sub{
+  font-size:15px;color:var(--text2);font-weight:300;
+  max-width:380px;line-height:1.7;margin-bottom:36px;
+  opacity:0;animation:fadeUp .6s .5s ease forwards;
+}
+.error-actions{
+  display:flex;gap:10px;flex-wrap:wrap;justify-content:center;
+  opacity:0;animation:fadeUp .6s .65s ease forwards;
+}
+.btn-primary{
+  padding:12px 28px;border-radius:10px;
+  background:var(--red);border:none;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:14px;
+  color:#fff;cursor:pointer;text-decoration:none;
+  transition:all .2s;box-shadow:0 0 20px rgba(244,63,94,.25);
+}
+.btn-primary:hover{background:#f95f77;box-shadow:0 0 36px rgba(244,63,94,.4);transform:translateY(-1px);}
+.btn-ghost{
+  padding:12px 28px;border-radius:10px;
+  background:transparent;border:1px solid rgba(255,255,255,.08);
+  font-family:'DM Mono',monospace;font-size:12px;letter-spacing:.5px;
+  color:var(--text2);cursor:pointer;text-decoration:none;
+  transition:all .2s;
+}
+.btn-ghost:hover{border-color:rgba(244,63,94,.25);color:var(--red);}
+
+/* status ticker */
+.status-ticker{
+  position:fixed;bottom:24px;left:50%;transform:translateX(-50%);
+  display:flex;align-items:center;gap:8px;
+  padding:7px 16px;border-radius:8px;
+  background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.15);
+  font-family:'DM Mono',monospace;font-size:10px;color:var(--red);
+  letter-spacing:.5px;opacity:0;animation:fadeUp .5s .9s ease forwards;
+  z-index:20;
+}
+.ticker-dot{width:5px;height:5px;border-radius:50%;background:var(--red);animation:blink .9s step-end infinite;}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.tb-logo{
+  position:fixed;top:18px;left:24px;z-index:100;
+  display:flex;align-items:center;gap:9px;text-decoration:none;
+}
+.tb-logo svg{filter:drop-shadow(0 0 5px rgba(244,63,94,.3));}
+.tb-wordmark{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:#e8f0fc;}
+
+@keyframes fadeUp{from{opacity:0;transform:translateY(16px)}to{opacity:1;transform:none}}
+</style>
+</head>
+<body>
+
+<a class="tb-logo" href="/">
+  <svg width="28" height="28" viewBox="0 0 90 90" fill="none">
+    <rect width="90" height="90" rx="22" fill="rgba(13,26,42,.9)" stroke="rgba(244,63,94,.2)" stroke-width="1"/>
+    <path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#f43f5e" stroke-width="1.6"/>
+    <circle cx="37" cy="29" r="3" fill="#f43f5e" opacity=".9"/>
+    <circle cx="53" cy="29" r="3" fill="#f43f5e" opacity=".9"/>
+    <circle cx="45" cy="43" r="3" fill="#f43f5e" opacity=".9"/>
+    <line x1="37" y1="29" x2="53" y2="29" stroke="#f43f5e" stroke-width="1.2" opacity=".3"/>
+    <line x1="37" y1="29" x2="45" y2="43" stroke="#f43f5e" stroke-width="1.2" opacity=".3"/>
+    <line x1="53" y1="29" x2="45" y2="43" stroke="#f43f5e" stroke-width="1.2" opacity=".3"/>
+  </svg>
+  <span class="tb-wordmark">Omnigenius</span>
+</a>
+
+<canvas id="bgCanvas"></canvas>
+
+<div class="content">
+  <canvas id="qCanvas"></canvas>
+  <div class="error-code">Error 500</div>
+  <h1 class="error-title">Something broke</h1>
+  <p class="error-sub">The model hit an unexpected error. Our team has been notified and is already investigating. Try again in a moment — it should be back shortly.</p>
+  <div class="error-actions">
+    <a class="btn-primary" href="javascript:location.reload()">↺ Try again</a>
+    <a class="btn-ghost" href="/">Go home</a>
+  </div>
+</div>
+
+<div class="status-ticker">
+  <div class="ticker-dot"></div>
+  Incident detected · Engineering notified · <span id="tickerTime"></span>
+</div>
+
+<script>
+// Show time in ticker
+document.getElementById('tickerTime').textContent = new Date().toLocaleTimeString('en-US',{hour:'2-digit',minute:'2-digit'});
+
+// ============================================================
+//  EXCLAMATION MARK — dot matrix  (for 500)
+// ============================================================
+const qc   = document.getElementById('qCanvas');
+const qctx = qc.getContext('2d');
+
+// ! glyph on 5×11 grid
+const GLYPH = [
+  [0,1,1,1,0],
+  [0,1,1,1,0],
+  [0,1,1,1,0],
+  [0,1,1,1,0],
+  [0,1,1,1,0],
+  [0,1,1,1,0],
+  [0,1,1,1,0],
+  [0,0,0,0,0],
+  [0,0,0,0,0],
+  [0,1,1,1,0],
+  [0,1,1,1,0],
+];
+
+const COLS = GLYPH[0].length;
+const ROWS = GLYPH.length;
+const DOT_R = 7;
+const GAP   = 22;
+const W = COLS * GAP;
+const H = ROWS * GAP;
+
+qc.width  = W;
+qc.height = H;
+qc.style.width  = W + 'px';
+qc.style.height = H + 'px';
+
+const dots = [];
+for (let r = 0; r < ROWS; r++) {
+  for (let c = 0; c < COLS; c++) {
+    if (GLYPH[r][c]) {
+      // bottom dot (the dot of !) gets special treatment
+      const isBottomDot = r >= 9;
+      dots.push({
+        x: c * GAP + GAP / 2,
+        y: r * GAP + GAP / 2,
+        phase: Math.random() * Math.PI * 2,
+        speed: isBottomDot ? 2.2 : (0.4 + Math.random() * 0.9),
+        amp:   isBottomDot ? 6   : (2  + Math.random() * 4),
+        hue:   isBottomDot ? 10  : (0 + Math.random() * 20),   // red range
+        alpha: 0.75 + Math.random() * 0.25,
+        isBottom: isBottomDot,
+      });
+    }
+  }
+}
+
+// Mouse repulsion
+let mouse = { x: -999, y: -999, active: false };
+qc.addEventListener('mousemove', e => {
+  const r = qc.getBoundingClientRect();
+  mouse.x = e.clientX - r.left; mouse.y = e.clientY - r.top; mouse.active = true;
+});
+qc.addEventListener('mouseleave', () => { mouse.active = false; });
+
+let t = 0;
+// Panic: every ~3s the dots "shatter" outward briefly
+let panicT = 0;
+let panicActive = false;
+
+function triggerPanic() {
+  panicActive = true; panicT = 0;
+  setTimeout(() => { panicActive = false; }, 600);
+  setTimeout(triggerPanic, 2800 + Math.random() * 2000);
+}
+triggerPanic();
+
+function drawQ() {
+  qctx.clearRect(0, 0, W, H);
+  t += 0.016;
+  if (panicActive) panicT = Math.min(panicT + 0.05, 1);
+  else panicT = Math.max(panicT - 0.04, 0);
+
+  dots.forEach((d, i) => {
+    const floatX = Math.sin(t * d.speed + d.phase) * d.amp;
+    const floatY = Math.cos(t * d.speed * 0.8 + d.phase + 1) * d.amp * 0.7;
+
+    // Panic scatter
+    const panicDir = (i % 2 === 0 ? 1 : -1);
+    const panicX = Math.sin(d.phase * 3) * panicT * 14 * panicDir;
+    const panicY = Math.cos(d.phase * 3) * panicT * 10;
+
+    // Mouse repulsion
+    let rx = 0, ry = 0;
+    if (mouse.active) {
+      const dx = d.x + floatX - mouse.x;
+      const dy = d.y + floatY - mouse.y;
+      const dist = Math.sqrt(dx*dx + dy*dy);
+      if (dist < 72 && dist > 0) {
+        const str = (1 - dist/72) * 30;
+        rx = dx/dist * str; ry = dy/dist * str;
+      }
+    }
+
+    const fx = d.x + floatX + rx + panicX;
+    const fy = d.y + floatY + ry + panicY;
+
+    // Panic tint shifts hue toward brighter orange/yellow
+    const hue = d.hue + panicT * 15;
+    const sat = 90 + panicT * 10;
+    const lit = 60 + panicT * 15;
+
+    // Glow
+    const glow = qctx.createRadialGradient(fx,fy,0,fx,fy,DOT_R*3.8);
+    glow.addColorStop(0, `hsla(${hue},${sat}%,${lit}%,${(d.alpha*0.22)+panicT*0.15})`);
+    glow.addColorStop(1, `hsla(${hue},${sat}%,${lit}%,0)`);
+    qctx.beginPath();
+    qctx.arc(fx,fy,DOT_R*3.8,0,Math.PI*2);
+    qctx.fillStyle=glow;
+    qctx.fill();
+
+    // Core
+    const pulse = 0.85 + 0.15*Math.sin(t*d.speed*1.4+d.phase) + panicT*0.2;
+    qctx.beginPath();
+    qctx.arc(fx,fy,DOT_R*pulse,0,Math.PI*2);
+    qctx.fillStyle=`hsla(${hue},${sat}%,${lit}%,${d.alpha})`;
+    qctx.fill();
+
+    // Highlight
+    qctx.beginPath();
+    qctx.arc(fx-DOT_R*.25,fy-DOT_R*.25,DOT_R*.3*pulse,0,Math.PI*2);
+    qctx.fillStyle=`hsla(${hue},100%,92%,0.5)`;
+    qctx.fill();
+  });
+
+  // Connecting lines
+  for (let i = 0; i < dots.length; i++) {
+    for (let j = i+1; j < dots.length; j++) {
+      const a=dots[i], b=dots[j];
+      const ax=a.x+Math.sin(t*a.speed+a.phase)*a.amp;
+      const ay=a.y+Math.cos(t*a.speed*.8+a.phase+1)*a.amp*.7;
+      const bx=b.x+Math.sin(t*b.speed+b.phase)*b.amp;
+      const by=b.y+Math.cos(t*b.speed*.8+b.phase+1)*b.amp*.7;
+      const dx=ax-bx, dy=ay-by;
+      const dist=Math.sqrt(dx*dx+dy*dy);
+      if(dist < GAP*1.5){
+        const al=(1-dist/(GAP*1.5))*0.15+panicT*0.08;
+        qctx.beginPath();
+        qctx.moveTo(ax,ay);qctx.lineTo(bx,by);
+        qctx.strokeStyle=`rgba(244,63,94,${al})`;
+        qctx.lineWidth=0.8;
+        qctx.stroke();
+      }
+    }
+  }
+
+  requestAnimationFrame(drawQ);
+}
+drawQ();
+
+// ============================================================
+//  BACKGROUND — red ambient particles
+// ============================================================
+const bg = document.getElementById('bgCanvas');
+const bctx = bg.getContext('2d');
+function resizeBg(){ bg.width=window.innerWidth; bg.height=window.innerHeight; }
+resizeBg(); window.addEventListener('resize',resizeBg);
+
+const PARTICLES = Array.from({length:50},()=>({
+  x:  Math.random()*window.innerWidth,
+  y:  Math.random()*window.innerHeight,
+  r:  0.5+Math.random()*1.4,
+  vx: (Math.random()-.5)*.18,
+  vy: (Math.random()-.5)*.18,
+  alpha: 0.03+Math.random()*.09,
+  hue: 0+Math.random()*20,
+}));
+
+function drawBg(){
+  bctx.clearRect(0,0,bg.width,bg.height);
+  PARTICLES.forEach(p=>{
+    p.x+=p.vx; p.y+=p.vy;
+    if(p.x<0)p.x=bg.width; if(p.x>bg.width)p.x=0;
+    if(p.y<0)p.y=bg.height; if(p.y>bg.height)p.y=0;
+    bctx.beginPath();
+    bctx.arc(p.x,p.y,p.r,0,Math.PI*2);
+    bctx.fillStyle=`hsla(${p.hue},80%,60%,${p.alpha})`;
+    bctx.fill();
+  });
+  requestAnimationFrame(drawBg);
+}
+drawBg();
+</script>
+</body>
+</html>

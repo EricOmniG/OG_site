@@ -1,0 +1,29 @@
+/* ============================================================
+   OMNIGENIUS ADMIN — SHARED STYLES
+   All admin pages import this via <style> (inlined for portability)
+============================================================ */
+:root {
+  --bg:        #03060d;
+  --bg2:       #060a14;
+  --bg3:       #090f1c;
+  --bg4:       #0d1525;
+  --surface:   #0b1220;
+  --surface2:  #101a2e;
+  --teal:      #0ee8d4;
+  --teal-dim:  #0a9e8e;
+  --teal-glow: rgba(14,232,212,0.08);
+  --green:     #22c55e;
+  --red:       #f43f5e;
+  --amber:     #f59e0b;
+  --indigo:    #818cf8;
+  --blue:      #38bdf8;
+  --text:      #e2ecff;
+  --text2:     #5d7499;
+  --text3:     #273347;
+  --border:    rgba(14,232,212,0.10);
+  --border2:   rgba(255,255,255,0.05);
+  --border3:   rgba(255,255,255,0.02);
+  --nav-w:     220px;
+  --status-h:  32px;
+  --topbar-h:  52px;
+}

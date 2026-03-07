@@ -1,0 +1,329 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Blog — Omnigenius</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04070f;--bg2:#070c18;--bg3:#0b1120;--surface:#0d1624;--surface2:#111e30;
+  --teal:#0ee8d4;--teal-glow:rgba(14,232,212,0.07);--teal-ring:rgba(14,232,212,0.15);
+  --green:#22c55e;--indigo:#818cf8;--amber:#f59e0b;--red:#f43f5e;
+  --text:#e8f0fc;--text2:#6b80a0;--text3:#273347;
+  --border2:rgba(255,255,255,0.055);--border3:rgba(255,255,255,0.025);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+  background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{text-decoration:none;color:inherit;}
+
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 35% at 50% 0%,rgba(14,232,212,.04) 0%,transparent 65%);}
+.page{position:relative;z-index:1;}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(4,7,15,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);}
+.tb-logo{display:flex;align-items:center;gap:9px;}
+.tb-wordmark{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--teal);}
+.tb-nav{display:flex;gap:6px;}
+.tb-nav a{padding:6px 14px;border-radius:7px;font-size:13px;color:var(--text2);transition:color .2s;}
+.tb-nav a:hover,.tb-nav a.active{color:var(--text);}
+.tb-cta{padding:7px 18px;border-radius:8px;background:var(--teal);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#050810;cursor:pointer;transition:all .2s;}
+.tb-cta:hover{background:#12f5e0;}
+
+/* HERO */
+.hero{max-width:900px;margin:0 auto;padding:72px 40px 56px;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.hero-eyebrow::after{content:'';display:block;width:24px;height:1px;background:var(--teal);opacity:.4;}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(36px,5.5vw,60px);letter-spacing:-3px;line-height:.95;margin-bottom:18px;}
+.hero-sub{font-size:16px;color:var(--text2);font-weight:300;line-height:1.7;max-width:520px;}
+
+/* TAG FILTER */
+.tag-bar{max-width:900px;margin:0 auto;padding:0 40px 36px;display:flex;gap:6px;flex-wrap:wrap;align-items:center;}
+.tag-chip{padding:6px 14px;border-radius:20px;border:1px solid var(--border2);background:transparent;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.8px;text-transform:uppercase;color:var(--text2);cursor:pointer;transition:all .2s;user-select:none;}
+.tag-chip:hover{border-color:rgba(255,255,255,.1);color:var(--text);}
+.tag-chip.active{background:var(--teal-glow);border-color:var(--teal-ring);color:var(--teal);}
+
+/* FEATURED POST */
+.featured-wrap{max-width:900px;margin:0 auto;padding:0 40px 40px;}
+.featured-card{display:grid;grid-template-columns:1fr 1fr;gap:0;background:var(--surface);border:1px solid var(--border2);border-radius:20px;overflow:hidden;cursor:pointer;transition:transform .3s cubic-bezier(.34,1.56,.64,1),box-shadow .3s;position:relative;}
+.featured-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);z-index:1;}
+.featured-card:hover{transform:translateY(-3px);box-shadow:0 24px 64px rgba(0,0,0,.5);}
+.featured-image{background:linear-gradient(135deg,#04111e 0%,#071528 40%,#040e1a 100%);min-height:280px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.featured-illustration{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;}
+.featured-body{padding:36px 32px;display:flex;flex-direction:column;justify-content:space-between;}
+.feat-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:14px;display:flex;align-items:center;gap:6px;}
+.feat-tag::before{content:'Featured';}
+.feat-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(20px,2.5vw,26px);letter-spacing:-.8px;line-height:1.15;margin-bottom:14px;}
+.feat-excerpt{font-size:14px;color:var(--text2);font-weight:300;line-height:1.75;flex:1;}
+.feat-meta{display:flex;align-items:center;justify-content:space-between;margin-top:20px;padding-top:16px;border-top:1px solid var(--border2);}
+.feat-author{display:flex;align-items:center;gap:8px;}
+.author-avatar{width:28px;height:28px;border-radius:8px;background:linear-gradient(135deg,var(--teal),#0a6e65);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:9px;color:#050810;flex-shrink:0;}
+.author-name{font-size:12px;color:var(--text);font-weight:500;}
+.feat-date{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+.read-time{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+
+/* POST GRID */
+.grid-wrap{max-width:900px;margin:0 auto;padding:0 40px;}
+.grid-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.grid-label::after{content:'';flex:1;height:1px;background:var(--border2);}
+.post-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-bottom:16px;}
+.post-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;overflow:hidden;cursor:pointer;transition:transform .25s cubic-bezier(.34,1.56,.64,1),border-color .2s;display:flex;flex-direction:column;}
+.post-card:hover{transform:translateY(-3px);border-color:rgba(14,232,212,.12);}
+.post-card-img{height:140px;position:relative;overflow:hidden;flex-shrink:0;}
+.post-card-body{padding:18px;flex:1;display:flex;flex-direction:column;}
+.post-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:8px;}
+.post-title{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;letter-spacing:-.3px;line-height:1.3;margin-bottom:8px;flex:1;}
+.post-excerpt{font-size:12px;color:var(--text2);font-weight:300;line-height:1.6;margin-bottom:12px;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
+.post-footer{display:flex;align-items:center;justify-content:space-between;padding-top:10px;border-top:1px solid var(--border3);}
+.post-date{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+.post-read{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+
+/* LOAD MORE */
+.load-more-wrap{text-align:center;padding:24px 0 60px;}
+.load-more{padding:11px 28px;border-radius:10px;border:1px solid var(--border2);background:transparent;color:var(--text2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+.load-more:hover{border-color:var(--teal-ring);color:var(--teal);}
+
+/* NEWSLETTER */
+.newsletter{max-width:900px;margin:0 auto 0;padding:0 40px 72px;}
+.newsletter-card{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:40px;text-align:center;position:relative;overflow:hidden;}
+.newsletter-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
+.nl-eyebrow{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+.nl-title{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-.5px;margin-bottom:8px;}
+.nl-sub{font-size:14px;color:var(--text2);font-weight:300;margin-bottom:28px;line-height:1.65;max-width:400px;margin-left:auto;margin-right:auto;}
+.nl-form{display:flex;gap:8px;max-width:400px;margin:0 auto;}
+.nl-input{flex:1;padding:10px 14px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;color:var(--text);font-size:13px;outline:none;transition:border-color .2s;}
+.nl-input:focus{border-color:var(--teal-ring);}
+.nl-input::placeholder{color:var(--text3);}
+.nl-btn{padding:10px 22px;border-radius:9px;background:var(--teal);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#050810;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.nl-btn:hover{background:#12f5e0;}
+.nl-success{display:none;color:var(--green);font-family:'DM Mono',monospace;font-size:11px;margin-top:14px;}
+
+/* FOOTER */
+.footer{padding:28px 40px;border-top:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.footer-copy{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);transition:color .2s;}
+.footer-links a:hover{color:var(--teal);}
+
+.fade-in{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+
+/* POST ILLUSTRATIONS (CSS-only) */
+.illus-orca{width:100%;height:100%;background:radial-gradient(ellipse 60% 40% at 50% 60%,rgba(14,232,212,.12) 0%,transparent 70%);display:flex;align-items:center;justify-content:center;}
+.illus-training{background:radial-gradient(ellipse 60% 40% at 50% 60%,rgba(129,140,248,.1) 0%,transparent 70%);}
+.illus-latency{background:radial-gradient(ellipse 60% 40% at 50% 60%,rgba(34,197,94,.08) 0%,transparent 70%);}
+.illus-compare{background:radial-gradient(ellipse 60% 40% at 50% 60%,rgba(56,189,248,.08) 0%,transparent 70%);}
+.illus-api{background:radial-gradient(ellipse 60% 40% at 50% 60%,rgba(245,158,11,.08) 0%,transparent 70%);}
+
+@media(max-width:860px){
+  .topbar{padding:0 16px;}.tb-nav{display:none;}
+  .hero,.tag-bar,.featured-wrap,.grid-wrap,.newsletter{padding-left:20px;padding-right:20px;}
+  .featured-card{grid-template-columns:1fr;}
+  .featured-image{min-height:180px;}
+  .post-grid{grid-template-columns:1fr 1fr;}
+  .footer{padding:20px 16px;}
+}
+@media(max-width:560px){.post-grid{grid-template-columns:1fr;}}
+</style>
+</head>
+<body>
+<div class="ambient"></div>
+<header class="topbar">
+  <a class="tb-logo" href="/">
+    <svg width="28" height="28" viewBox="0 0 90 90" fill="none"><rect width="90" height="90" rx="22" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/><path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.6"/><circle cx="37" cy="29" r="3" fill="#0ee8d4" opacity=".9"/><circle cx="53" cy="29" r="3" fill="#0ee8d4" opacity=".9"/><circle cx="45" cy="43" r="3" fill="#0ee8d4" opacity=".9"/><line x1="37" y1="29" x2="53" y2="29" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/><line x1="37" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/><line x1="53" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/></svg>
+    <span class="tb-wordmark">Omnigenius</span>
+  </a>
+  <nav class="tb-nav">
+    <a href="/">Home</a>
+    <a href="/omnigenius_pricing.html">Pricing</a>
+    <a href="/omnigenius_blog.html" class="active">Blog</a>
+    <a href="/omnigenius_about.html">About</a>
+  </nav>
+  <button class="tb-cta" onclick="location.href='/omnigenius_auth.html?mode=signup'">Get started free</button>
+</header>
+
+<div class="page">
+  <section class="hero">
+    <div class="hero-eyebrow">Blog</div>
+    <h1>Writing from<br>inside the build.</h1>
+    <p class="hero-sub">Research notes, engineering deep-dives, and honest updates from the team building ORCA. No fluff, no content marketing — just what we're actually thinking.</p>
+  </section>
+
+  <!-- TAG FILTER -->
+  <div class="tag-bar" id="tagBar">
+    <span class="tag-chip active" data-tag="all" onclick="filterTag(this)">All</span>
+    <span class="tag-chip" data-tag="product" onclick="filterTag(this)">Product</span>
+    <span class="tag-chip" data-tag="engineering" onclick="filterTag(this)">Engineering</span>
+    <span class="tag-chip" data-tag="research" onclick="filterTag(this)">Research</span>
+    <span class="tag-chip" data-tag="company" onclick="filterTag(this)">Company</span>
+    <span class="tag-chip" data-tag="api" onclick="filterTag(this)">API</span>
+  </div>
+
+  <!-- FEATURED -->
+  <div class="featured-wrap fade-in" id="featuredWrap">
+    <div class="featured-card" onclick="location.href='/omnigenius_post.html'">
+      <div class="featured-image">
+        <div class="featured-illustration">
+          <!-- Animated neural net SVG -->
+          <svg width="220" height="180" viewBox="0 0 220 180" fill="none" id="featSvg">
+            <g opacity=".18">
+              <line x1="40" y1="40" x2="110" y2="90" stroke="#0ee8d4" stroke-width="1"/><line x1="40" y1="90" x2="110" y2="90" stroke="#0ee8d4" stroke-width="1"/><line x1="40" y1="140" x2="110" y2="90" stroke="#0ee8d4" stroke-width="1"/>
+              <line x1="110" y1="90" x2="180" y2="60" stroke="#0ee8d4" stroke-width="1"/><line x1="110" y1="90" x2="180" y2="120" stroke="#0ee8d4" stroke-width="1"/>
+              <line x1="40" y1="40" x2="110" y2="60" stroke="#818cf8" stroke-width=".8"/><line x1="40" y1="140" x2="110" y2="120" stroke="#818cf8" stroke-width=".8"/>
+            </g>
+            <circle cx="40" cy="40" r="6" fill="#0ee8d4" opacity=".7"><animate attributeName="opacity" values=".7;1;.7" dur="2.1s" repeatCount="indefinite"/></circle>
+            <circle cx="40" cy="90" r="6" fill="#0ee8d4" opacity=".5"><animate attributeName="opacity" values=".5;.9;.5" dur="2.8s" repeatCount="indefinite"/></circle>
+            <circle cx="40" cy="140" r="6" fill="#0ee8d4" opacity=".6"><animate attributeName="opacity" values=".6;1;.6" dur="1.9s" repeatCount="indefinite"/></circle>
+            <circle cx="110" cy="60" r="7" fill="#818cf8" opacity=".6"><animate attributeName="opacity" values=".6;1;.6" dur="2.4s" repeatCount="indefinite"/></circle>
+            <circle cx="110" cy="90" r="8" fill="#0ee8d4" opacity=".9"><animate attributeName="r" values="8;10;8" dur="2s" repeatCount="indefinite"/><animate attributeName="opacity" values=".9;1;.9" dur="2s" repeatCount="indefinite"/></circle>
+            <circle cx="110" cy="120" r="7" fill="#818cf8" opacity=".6"><animate attributeName="opacity" values=".6;1;.6" dur="3s" repeatCount="indefinite"/></circle>
+            <circle cx="180" cy="60" r="6" fill="#0ee8d4" opacity=".7"><animate attributeName="opacity" values=".7;1;.7" dur="2.2s" repeatCount="indefinite"/></circle>
+            <circle cx="180" cy="120" r="6" fill="#0ee8d4" opacity=".6"><animate attributeName="opacity" values=".6;.95;.6" dur="2.6s" repeatCount="indefinite"/></circle>
+            <circle cx="110" cy="90" r="18" fill="none" stroke="#0ee8d4" stroke-width=".5" opacity=".2"><animate attributeName="r" values="18;26;18" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values=".2;0;.2" dur="3s" repeatCount="indefinite"/></circle>
+          </svg>
+        </div>
+      </div>
+      <div class="featured-body">
+        <div>
+          <div class="feat-tag"> · <span style="color:var(--teal)">Engineering</span></div>
+          <div class="feat-title">Introducing ORCA: Why we built a non-transformer architecture from scratch</div>
+          <div class="feat-excerpt">Three research papers, one lunch break, and a question that wouldn't let go. This is the full story of how ORCA was designed — what transformers can't do, what we tried, what broke, and what finally worked.</div>
+        </div>
+        <div class="feat-meta">
+          <div class="feat-author">
+            <div class="author-avatar">EM</div>
+            <div>
+              <div class="author-name">Eric Martin</div>
+              <div class="feat-date">Mar 1, 2026</div>
+            </div>
+          </div>
+          <span class="read-time">12 min read</span>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- POST GRID -->
+  <div class="grid-wrap">
+    <div class="grid-label">Latest posts</div>
+    <div class="post-grid" id="postGrid"></div>
+    <div class="load-more-wrap">
+      <button class="load-more" onclick="loadMore()">Load more posts</button>
+    </div>
+  </div>
+
+  <!-- NEWSLETTER -->
+  <div class="newsletter fade-in">
+    <div class="newsletter-card">
+      <div class="nl-eyebrow">Newsletter</div>
+      <div class="nl-title">New posts, straight to your inbox.</div>
+      <div class="nl-sub">No digest spam. We publish when we have something worth saying — usually once or twice a month.</div>
+      <div class="nl-form" id="nlForm">
+        <input class="nl-input" type="email" placeholder="you@example.com" id="nlEmail">
+        <button class="nl-btn" onclick="nlSubmit()">Subscribe</button>
+      </div>
+      <div class="nl-success" id="nlSuccess">✓ You're subscribed. Talk soon.</div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span class="footer-copy">© 2026 Omnigenius LLC</span>
+    <div class="footer-links">
+      <a href="/">Home</a><a href="/omnigenius_about.html">About</a>
+      <a href="/omnigenius_pricing.html">Pricing</a><a href="/omnigenius_contact.html">Contact</a>
+    </div>
+  </footer>
+</div>
+
+<script>
+const POSTS = [
+  {title:'How we got inference latency under 2 seconds',tag:'engineering',tagColor:'var(--green)',date:'Feb 20, 2026',read:'8 min',excerpt:'MoE routing, KV-cache tuning, and the three changes that cut our median response time from 4.2s to 1.8s.',illus:'illus-latency',slug:'post'},
+  {title:'The training methodology behind ORCA: free play and earned consolidation',tag:'research',tagColor:'var(--indigo)',date:'Feb 14, 2026',read:'10 min',excerpt:'Why we stopped following RLHF and built a system that rewards performance with unstructured inference time — and what happened when we did.',illus:'illus-training',slug:'post'},
+  {title:'Omnigenius vs GPT-4o: a benchmark breakdown across 12 task categories',tag:'research',tagColor:'var(--indigo)',date:'Feb 5, 2026',read:'7 min',excerpt:"We ran both models through identical prompts across coding, reasoning, summarization, and creative tasks. Here's what we found — including where we lost.",illus:'illus-compare',slug:'post'},
+  {title:'Building the public API: rate limits, streaming, and lessons from our beta',tag:'api',tagColor:'var(--amber)',date:'Jan 28, 2026',read:'6 min',excerpt:'What we got wrong in the first version, how we designed the SSE streaming spec, and why we chose per-minute over per-day rate limits.',illus:'illus-api',slug:'post'},
+  {title:'Why we incorporated as an LLC, not a PBC or nonprofit',tag:'company',tagColor:'var(--teal)',date:'Jan 15, 2026',read:'4 min',excerpt:'A short, honest explanation of the structural decision and what it means for how we think about mission versus growth.',illus:'illus-orca',slug:'post'},
+  {title:'Releasing our first model card',tag:'product',tagColor:'var(--blue,#38bdf8)',date:'Jan 10, 2026',read:'5 min',excerpt:"Full disclosure on Chimera's capabilities, limitations, training data lineage, and known failure modes. We believe users deserve this.",illus:'illus-training',slug:'post'},
+];
+
+let visibleCount = 6;
+let activeTag = 'all';
+
+function renderPosts() {
+  const grid = document.getElementById('postGrid');
+  const filtered = activeTag === 'all' ? POSTS : POSTS.filter(p => p.tag === activeTag);
+  const toShow = filtered.slice(0, visibleCount);
+  grid.innerHTML = '';
+  toShow.forEach((p, i) => {
+    const card = document.createElement('div');
+    card.className = 'post-card fade-in';
+    card.style.transitionDelay = (i % 3 * 80) + 'ms';
+    card.innerHTML = `
+      <div class="post-card-img ${p.illus}">
+        <svg width="100%" height="100%" viewBox="0 0 240 140" fill="none" style="position:absolute;inset:0">
+          ${gridPattern(p.tagColor)}
+        </svg>
+      </div>
+      <div class="post-card-body">
+        <div class="post-tag" style="color:${p.tagColor}">${p.tag}</div>
+        <div class="post-title">${p.title}</div>
+        <div class="post-excerpt">${p.excerpt}</div>
+        <div class="post-footer">
+          <span class="post-date">${p.date}</span>
+          <span class="post-read">${p.read}</span>
+        </div>
+      </div>`;
+    card.onclick = () => location.href = `/omnigenius_post.html`;
+    grid.appendChild(card);
+    // trigger reveal
+    setTimeout(() => {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting){e.target.classList.add('visible');obs.unobserve(e.target);}});
+      },{threshold:.08});
+      obs.observe(card);
+    }, 10);
+  });
+}
+
+function gridPattern(color) {
+  return `<rect width="240" height="140" fill="none"/>
+    <line x1="0" y1="0" x2="240" y2="140" stroke="${color}" stroke-width=".3" opacity=".15"/>
+    <line x1="80" y1="0" x2="240" y2="106" stroke="${color}" stroke-width=".3" opacity=".1"/>
+    <line x1="0" y1="46" x2="160" y2="140" stroke="${color}" stroke-width=".3" opacity=".1"/>
+    <circle cx="120" cy="70" r="28" fill="none" stroke="${color}" stroke-width=".5" opacity=".15"/>
+    <circle cx="120" cy="70" r="48" fill="none" stroke="${color}" stroke-width=".3" opacity=".08"/>`;
+}
+
+function filterTag(el) {
+  document.querySelectorAll('.tag-chip').forEach(c => c.classList.remove('active'));
+  el.classList.add('active');
+  activeTag = el.dataset.tag;
+  visibleCount = 6;
+  renderPosts();
+  // show/hide featured
+  const feat = document.getElementById('featuredWrap');
+  feat.style.display = (activeTag === 'all' || activeTag === 'engineering') ? '' : 'none';
+}
+
+function loadMore() { visibleCount += 3; renderPosts(); }
+renderPosts();
+
+// Global fade-in observer
+const obs = new IntersectionObserver(e => {
+  e.forEach(x => { if(x.isIntersecting){x.target.classList.add('visible');obs.unobserve(x.target);}});
+},{threshold:.06});
+document.querySelectorAll('.fade-in').forEach(el => obs.observe(el));
+
+function nlSubmit() {
+  const v = document.getElementById('nlEmail').value;
+  if (!v || !v.includes('@')) return;
+  document.getElementById('nlForm').style.display = 'none';
+  document.getElementById('nlSuccess').style.display = 'block';
+}
+</script>
+</body>
+</html>

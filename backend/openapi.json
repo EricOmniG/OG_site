@@ -1,0 +1,516 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Omnigenius API",
+    "description": "The ORCA model API. Supports Chat, Search, Reason, and Auto modes with SSE streaming. All inference endpoints require authentication via Bearer token (Clerk JWT) or API key (`og-` prefix, Advanced plan only).",
+    "version": "1.0.0",
+    "contact": {
+      "name": "Omnigenius Support",
+      "email": "support@omnigenius.co",
+      "url": "https://omnigenius.co/contact"
+    },
+    "termsOfService": "https://omnigenius.co/terms",
+    "license": {
+      "name": "Proprietary",
+      "url": "https://omnigenius.co/terms"
+    }
+  },
+  "servers": [
+    {
+      "url": "https://api.omnigenius.co/v1",
+      "description": "Production"
+    },
+    {
+      "url": "https://api-staging.omnigenius.co/v1",
+      "description": "Staging"
+    },
+    {
+      "url": "http://localhost:8000/v1",
+      "description": "Local development"
+    }
+  ],
+  "security": [
+    { "BearerAuth": [] },
+    { "ApiKeyAuth": [] }
+  ],
+  "tags": [
+    { "name": "Auth",          "description": "Authentication and session management" },
+    { "name": "Chat",          "description": "Chat mode inference" },
+    { "name": "Search",        "description": "Web-augmented search mode" },
+    { "name": "Reason",        "description": "Multi-step reasoning mode" },
+    { "name": "Conversations", "description": "Conversation history management" },
+    { "name": "Sharing",       "description": "Public share links and conversation forking" },
+    { "name": "Users",         "description": "User profile, preferences, and account" },
+    { "name": "API Keys",      "description": "Personal API key management (Advanced plan)" },
+    { "name": "Billing",       "description": "Stripe subscription and billing management" },
+    { "name": "Uploads",       "description": "File uploads for conversation context" },
+    { "name": "Health",        "description": "Service health and status" }
+  ],
+  "paths": {
+    "/auth/signup": {
+      "post": {
+        "tags": ["Auth"],
+        "operationId": "signup",
+        "summary": "Create a new account",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": { "$ref": "#/components/schemas/SignUpRequest" }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Account created",
+            "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } } }
+          },
+          "409": { "description": "Email already in use" }
+        }
+      }
+    },
+    "/auth/signin": {
+      "post": {
+        "tags": ["Auth"],
+        "operationId": "signin",
+        "summary": "Sign in",
+        "security": [],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SignInRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Authenticated", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/TokenResponse" } } } },
+          "401": { "description": "Invalid credentials" }
+        }
+      }
+    },
+    "/auth/signout": {
+      "post": {
+        "tags": ["Auth"],
+        "operationId": "signout",
+        "summary": "Sign out (revoke session)",
+        "responses": { "204": { "description": "Signed out" } }
+      }
+    },
+    "/auth/me": {
+      "get": {
+        "tags": ["Auth"],
+        "operationId": "getMe",
+        "summary": "Get authenticated user",
+        "responses": {
+          "200": { "description": "User profile", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } }
+        }
+      }
+    },
+    "/chat": {
+      "post": {
+        "tags": ["Chat"],
+        "operationId": "chat",
+        "summary": "Send a chat message",
+        "description": "Send one or more messages to ORCA in Chat mode. Supports SSE streaming when `stream: true`. Rate limited by plan: Free (50/day), Pro (1,000/day), Advanced (unlimited).",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ChatRequest" } }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Assistant response (non-streaming) or SSE stream",
+            "content": {
+              "application/json": { "schema": { "$ref": "#/components/schemas/ChatResponse" } },
+              "text/event-stream": {
+                "schema": { "type": "string" },
+                "example": "data: {\"id\":\"msg_abc\",\"delta\":\"Hello\",\"done\":false}\n\ndata: {\"id\":\"msg_abc\",\"delta\":\"\",\"done\":true}\n\n"
+              }
+            }
+          },
+          "429": { "description": "Daily query limit reached" }
+        }
+      }
+    },
+    "/search": {
+      "post": {
+        "tags": ["Search"],
+        "operationId": "search",
+        "summary": "Web-augmented search query",
+        "description": "ORCA retrieves and synthesises live web results before responding. Sources are returned inline.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/SearchRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Search response with inline citations" },
+          "429": { "description": "Query limit reached" }
+        }
+      }
+    },
+    "/reason": {
+      "post": {
+        "tags": ["Reason"],
+        "operationId": "reason",
+        "summary": "Multi-step reasoning query",
+        "description": "ORCA iterates through up to `max_loops` reasoning cycles before producing a final answer. `max_loops > 3` requires Advanced plan.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": { "schema": { "$ref": "#/components/schemas/ReasonRequest" } }
+          }
+        },
+        "responses": {
+          "200": { "description": "Reasoning chain + final response (streamed or full)" },
+          "403": { "description": "Advanced plan required for max_loops > 3" },
+          "429": { "description": "Query limit reached" }
+        }
+      }
+    },
+    "/conversations": {
+      "get": {
+        "tags": ["Conversations"],
+        "operationId": "listConversations",
+        "summary": "List conversations",
+        "parameters": [
+          { "name": "limit",  "in": "query", "schema": { "type": "integer", "default": 20, "maximum": 100 } },
+          { "name": "offset", "in": "query", "schema": { "type": "integer", "default": 0 } },
+          { "name": "mode",   "in": "query", "schema": { "type": "string", "enum": ["chat","search","reason","auto"] } },
+          { "name": "search", "in": "query", "schema": { "type": "string" } }
+        ],
+        "responses": {
+          "200": { "description": "Paginated conversation list", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ConversationList" } } } }
+        }
+      },
+      "delete": {
+        "tags": ["Conversations"],
+        "operationId": "clearAllConversations",
+        "summary": "Clear all conversation history",
+        "responses": { "204": { "description": "All conversations deleted" } }
+      }
+    },
+    "/conversations/{conversation_id}": {
+      "get": {
+        "tags": ["Conversations"],
+        "operationId": "getConversation",
+        "summary": "Get conversation with messages",
+        "parameters": [{ "name": "conversation_id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Conversation + messages", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/Conversation" } } } },
+          "404": { "description": "Not found" }
+        }
+      },
+      "patch": {
+        "tags": ["Conversations"],
+        "operationId": "updateConversation",
+        "summary": "Rename conversation",
+        "parameters": [{ "name": "conversation_id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "requestBody": { "content": { "application/json": { "schema": { "type": "object", "properties": { "title": { "type": "string" } } } } } },
+        "responses": { "200": { "description": "Updated" } }
+      },
+      "delete": {
+        "tags": ["Conversations"],
+        "operationId": "deleteConversation",
+        "summary": "Delete conversation",
+        "parameters": [{ "name": "conversation_id", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Deleted" } }
+      }
+    },
+    "/share": {
+      "post": {
+        "tags": ["Sharing"],
+        "operationId": "createShare",
+        "summary": "Create a public share link",
+        "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateShareRequest" } } } },
+        "responses": { "201": { "description": "Share created", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ShareResponse" } } } } }
+      }
+    },
+    "/share/{slug}": {
+      "get": {
+        "tags": ["Sharing"],
+        "operationId": "getShared",
+        "summary": "Fetch a shared conversation (public, no auth)",
+        "security": [],
+        "parameters": [{ "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": {
+          "200": { "description": "Shared conversation" },
+          "404": { "description": "Not found or expired" }
+        }
+      },
+      "delete": {
+        "tags": ["Sharing"],
+        "operationId": "revokeShare",
+        "summary": "Revoke a share link",
+        "parameters": [{ "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "204": { "description": "Revoked" } }
+      }
+    },
+    "/share/{slug}/fork": {
+      "post": {
+        "tags": ["Sharing"],
+        "operationId": "forkShare",
+        "summary": "Fork a shared conversation into your account",
+        "parameters": [{ "name": "slug", "in": "path", "required": true, "schema": { "type": "string" } }],
+        "responses": { "201": { "description": "New conversation created", "content": { "application/json": { "schema": { "type": "object", "properties": { "conversation_id": { "type": "string" } } } } } } }
+      }
+    },
+    "/users/me": {
+      "get": { "tags": ["Users"], "operationId": "getUserProfile", "summary": "Get profile", "responses": { "200": { "description": "User profile", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/User" } } } } } },
+      "patch": { "tags": ["Users"], "operationId": "updateUserProfile", "summary": "Update profile", "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdateProfileRequest" } } } }, "responses": { "200": { "description": "Updated" } } },
+      "delete": { "tags": ["Users"], "operationId": "deleteAccount", "summary": "Delete account", "responses": { "204": { "description": "Account deleted" } } }
+    },
+    "/users/me/avatar": {
+      "post": { "tags": ["Users"], "operationId": "uploadAvatar", "summary": "Upload avatar", "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } } } } }, "responses": { "200": { "description": "Avatar uploaded", "content": { "application/json": { "schema": { "type": "object", "properties": { "avatar_url": { "type": "string" } } } } } } } },
+      "delete": { "tags": ["Users"], "operationId": "removeAvatar", "summary": "Remove avatar", "responses": { "204": { "description": "Removed" } } }
+    },
+    "/users/me/preferences": {
+      "patch": { "tags": ["Users"], "operationId": "updatePreferences", "summary": "Update preferences", "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/UpdatePreferencesRequest" } } } }, "responses": { "200": { "description": "Updated" } } }
+    },
+    "/users/me/usage": {
+      "get": { "tags": ["Users"], "operationId": "getUsage", "summary": "Get usage stats", "responses": { "200": { "description": "Usage breakdown by mode and period" } } }
+    },
+    "/users/me/export": {
+      "post": { "tags": ["Users"], "operationId": "requestExport", "summary": "Request data export", "responses": { "202": { "description": "Export queued" } } }
+    },
+    "/apikeys": {
+      "get": { "tags": ["API Keys"], "operationId": "listApiKeys", "summary": "List API keys", "responses": { "200": { "description": "List of masked keys" } } },
+      "post": { "tags": ["API Keys"], "operationId": "createApiKey", "summary": "Create API key", "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateKeyRequest" } } } }, "responses": { "201": { "description": "Key created (full key shown once)", "content": { "application/json": { "schema": { "$ref": "#/components/schemas/ApiKeyCreatedResponse" } } } }, "403": { "description": "Advanced plan required" } } }
+    },
+    "/apikeys/{key_id}": {
+      "delete": { "tags": ["API Keys"], "operationId": "revokeApiKey", "summary": "Revoke API key", "parameters": [{ "name": "key_id", "in": "path", "required": true, "schema": { "type": "string" } }], "responses": { "204": { "description": "Revoked" } } }
+    },
+    "/billing/checkout": {
+      "post": { "tags": ["Billing"], "operationId": "createCheckout", "summary": "Create Stripe checkout session", "requestBody": { "content": { "application/json": { "schema": { "$ref": "#/components/schemas/CreateCheckoutRequest" } } } }, "responses": { "201": { "description": "Checkout URL", "content": { "application/json": { "schema": { "type": "object", "properties": { "url": { "type": "string" } } } } } } } }
+    },
+    "/billing/portal": {
+      "get": { "tags": ["Billing"], "operationId": "billingPortal", "summary": "Stripe customer portal", "responses": { "200": { "description": "Portal URL", "content": { "application/json": { "schema": { "type": "object", "properties": { "url": { "type": "string" } } } } } } } }
+    },
+    "/billing/subscription": {
+      "get": { "tags": ["Billing"], "operationId": "getSubscription", "summary": "Get subscription details", "responses": { "200": { "description": "Subscription info" } } }
+    },
+    "/billing/webhooks/stripe": {
+      "post": { "tags": ["Billing"], "operationId": "stripeWebhook", "summary": "Stripe webhook receiver", "security": [], "responses": { "200": { "description": "Acknowledged" } } }
+    },
+    "/uploads/file": {
+      "post": { "tags": ["Uploads"], "operationId": "uploadFile", "summary": "Upload file for conversation context", "requestBody": { "content": { "multipart/form-data": { "schema": { "type": "object", "properties": { "file": { "type": "string", "format": "binary" } } } } } }, "responses": { "201": { "description": "File uploaded", "content": { "application/json": { "schema": { "type": "object", "properties": { "file_id": { "type": "string" }, "filename": { "type": "string" }, "size_bytes": { "type": "integer" } } } } } } }
+    },
+    "/health": {
+      "get": { "tags": ["Health"], "operationId": "health", "summary": "Liveness check", "security": [], "responses": { "200": { "description": "Service is up" } } }
+    },
+    "/health/deep": {
+      "get": { "tags": ["Health"], "operationId": "deepHealth", "summary": "Deep health check (checks dependencies)", "security": [], "responses": { "200": { "description": "All components healthy" }, "503": { "description": "One or more components degraded" } } }
+    }
+  },
+  "components": {
+    "securitySchemes": {
+      "BearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT",
+        "description": "Clerk JWT. Obtain by signing in via /auth/signin."
+      },
+      "ApiKeyAuth": {
+        "type": "apiKey",
+        "in": "header",
+        "name": "X-API-Key",
+        "description": "Personal API key with `og-` prefix. Requires Advanced plan. Generate at omnigenius.co/settings."
+      }
+    },
+    "schemas": {
+      "SignUpRequest": {
+        "type": "object",
+        "required": ["email", "password", "first_name", "last_name"],
+        "properties": {
+          "email":      { "type": "string", "format": "email" },
+          "password":   { "type": "string", "minLength": 8 },
+          "first_name": { "type": "string" },
+          "last_name":  { "type": "string" }
+        }
+      },
+      "SignInRequest": {
+        "type": "object",
+        "required": ["email", "password"],
+        "properties": {
+          "email":    { "type": "string", "format": "email" },
+          "password": { "type": "string" }
+        }
+      },
+      "TokenResponse": {
+        "type": "object",
+        "properties": {
+          "access_token": { "type": "string" },
+          "token_type":   { "type": "string", "example": "bearer" },
+          "expires_in":   { "type": "integer", "example": 3600 },
+          "user_id":      { "type": "string" }
+        }
+      },
+      "User": {
+        "type": "object",
+        "properties": {
+          "id":           { "type": "string", "format": "uuid" },
+          "email":        { "type": "string", "format": "email" },
+          "first_name":   { "type": "string" },
+          "last_name":    { "type": "string" },
+          "display_name": { "type": "string" },
+          "bio":          { "type": "string", "nullable": true },
+          "avatar_url":   { "type": "string", "nullable": true },
+          "plan":         { "type": "string", "enum": ["free", "pro", "advanced"] },
+          "clerk_id":     { "type": "string" },
+          "created_at":   { "type": "string", "format": "date-time" }
+        }
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "first_name":   { "type": "string" },
+          "last_name":    { "type": "string" },
+          "display_name": { "type": "string" },
+          "bio":          { "type": "string" },
+          "email":        { "type": "string", "format": "email" }
+        }
+      },
+      "UpdatePreferencesRequest": {
+        "type": "object",
+        "properties": {
+          "theme":                        { "type": "string", "enum": ["dark","light","system"] },
+          "font_size":                    { "type": "integer", "minimum": 12, "maximum": 18 },
+          "show_reasoning":               { "type": "boolean" },
+          "compact_view":                 { "type": "boolean" },
+          "animate_responses":            { "type": "boolean" },
+          "notif_product_updates":        { "type": "boolean" },
+          "notif_usage_alerts":           { "type": "boolean" },
+          "notif_marketing":              { "type": "boolean" },
+          "allow_model_improvement":      { "type": "boolean" },
+          "conversation_history_enabled": { "type": "boolean" }
+        }
+      },
+      "Message": {
+        "type": "object",
+        "required": ["role", "content"],
+        "properties": {
+          "role":    { "type": "string", "enum": ["user", "assistant", "system"] },
+          "content": { "type": "string" }
+        }
+      },
+      "ChatRequest": {
+        "type": "object",
+        "required": ["messages"],
+        "properties": {
+          "messages":        { "type": "array", "items": { "$ref": "#/components/schemas/Message" }, "minItems": 1 },
+          "conversation_id": { "type": "string", "nullable": true, "description": "Omit to start a new conversation" },
+          "stream":          { "type": "boolean", "default": true },
+          "max_tokens":      { "type": "integer", "nullable": true },
+          "system_prompt":   { "type": "string", "nullable": true, "description": "Advanced plan only" }
+        }
+      },
+      "ChatResponse": {
+        "type": "object",
+        "properties": {
+          "id":              { "type": "string" },
+          "conversation_id": { "type": "string" },
+          "role":            { "type": "string", "example": "assistant" },
+          "content":         { "type": "string" },
+          "model":           { "type": "string", "example": "chimera-v1" },
+          "tokens_used":     { "type": "integer" },
+          "created_at":      { "type": "string", "format": "date-time" }
+        }
+      },
+      "SearchRequest": {
+        "type": "object",
+        "required": ["query"],
+        "properties": {
+          "query":           { "type": "string" },
+          "conversation_id": { "type": "string", "nullable": true },
+          "stream":          { "type": "boolean", "default": true },
+          "max_results":     { "type": "integer", "default": 8, "minimum": 1, "maximum": 20 }
+        }
+      },
+      "ReasonRequest": {
+        "type": "object",
+        "required": ["prompt"],
+        "properties": {
+          "prompt":          { "type": "string" },
+          "conversation_id": { "type": "string", "nullable": true },
+          "stream":          { "type": "boolean", "default": true },
+          "max_loops":       { "type": "integer", "default": 3, "minimum": 1, "maximum": 8, "description": "Loops > 3 require Advanced plan" },
+          "show_reasoning":  { "type": "boolean", "default": true }
+        }
+      },
+      "Conversation": {
+        "type": "object",
+        "properties": {
+          "id":         { "type": "string", "format": "uuid" },
+          "title":      { "type": "string" },
+          "mode":       { "type": "string", "enum": ["chat","search","reason","auto"] },
+          "created_at": { "type": "string", "format": "date-time" },
+          "updated_at": { "type": "string", "format": "date-time" },
+          "messages":   { "type": "array", "items": { "$ref": "#/components/schemas/Message" } }
+        }
+      },
+      "ConversationList": {
+        "type": "object",
+        "properties": {
+          "data":   { "type": "array", "items": { "$ref": "#/components/schemas/Conversation" } },
+          "total":  { "type": "integer" },
+          "limit":  { "type": "integer" },
+          "offset": { "type": "integer" }
+        }
+      },
+      "CreateShareRequest": {
+        "type": "object",
+        "required": ["conversation_id"],
+        "properties": {
+          "conversation_id":  { "type": "string" },
+          "expires_in_days":  { "type": "integer", "nullable": true }
+        }
+      },
+      "ShareResponse": {
+        "type": "object",
+        "properties": {
+          "slug":       { "type": "string" },
+          "url":        { "type": "string", "example": "https://omnigenius.co/share/abc123" },
+          "expires_at": { "type": "string", "format": "date-time", "nullable": true }
+        }
+      },
+      "CreateKeyRequest": {
+        "type": "object",
+        "required": ["label"],
+        "properties": {
+          "label":                   { "type": "string" },
+          "rate_limit_per_minute":   { "type": "integer", "default": 60 },
+          "expires_in_days":         { "type": "integer", "nullable": true }
+        }
+      },
+      "ApiKeyCreatedResponse": {
+        "type": "object",
+        "description": "The full API key is only returned once on creation.",
+        "properties": {
+          "id":         { "type": "string" },
+          "key":        { "type": "string", "example": "og-a1b2c3d4e5f6..." },
+          "label":      { "type": "string" },
+          "created_at": { "type": "string", "format": "date-time" }
+        }
+      },
+      "CreateCheckoutRequest": {
+        "type": "object",
+        "required": ["price_id", "success_url", "cancel_url"],
+        "properties": {
+          "price_id":    { "type": "string" },
+          "success_url": { "type": "string", "format": "uri" },
+          "cancel_url":  { "type": "string", "format": "uri" }
+        }
+      },
+      "Error": {
+        "type": "object",
+        "properties": {
+          "detail":  { "type": "string" },
+          "code":    { "type": "string" },
+          "status":  { "type": "integer" }
+        }
+      }
+    }
+  }
+}
