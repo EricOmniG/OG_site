@@ -1,0 +1,1402 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omnigenius — Investor Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+<style>
+/* ============================================================
+   TOKENS
+============================================================ */
+:root {
+  --bg:        #04070f;
+  --bg2:       #070c18;
+  --bg3:       #0b1120;
+  --bg4:       #101928;
+  --surface:   #0d1624;
+  --surface2:  #111e30;
+  --teal:      #0ee8d4;
+  --teal-dim:  #0a9e8e;
+  --teal-glow: rgba(14,232,212,0.09);
+  --green:     #22c55e;
+  --red:       #f43f5e;
+  --amber:     #f59e0b;
+  --indigo:    #818cf8;
+  --blue:      #38bdf8;
+  --text:      #e8f0fc;
+  --text2:     #6b80a0;
+  --text3:     #2e3f58;
+  --border:    rgba(14,232,212,0.10);
+  --border2:   rgba(255,255,255,0.055);
+  --border3:   rgba(255,255,255,0.025);
+  --grid-line: rgba(255,255,255,0.03);
+  --shadow:    0 4px 24px rgba(0,0,0,0.5);
+  --shadow-lg: 0 16px 48px rgba(0,0,0,0.6);
+}
+
+/* ============================================================
+   BASE
+============================================================ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg); color:var(--text);
+  min-height:100vh; overflow-x:hidden;
+  /* subtle grid texture */
+  background-image:
+    linear-gradient(var(--grid-line) 1px, transparent 1px),
+    linear-gradient(90deg, var(--grid-line) 1px, transparent 1px);
+  background-size: 40px 40px;
+}
+
+/* ============================================================
+   TOPBAR
+============================================================ */
+.topbar{
+  position:sticky;top:0;z-index:100;
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 32px; height:58px;
+  background:rgba(4,7,15,0.92);
+  backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border2);
+}
+.topbar-left{display:flex;align-items:center;gap:14px;}
+.tb-logo{
+  display:flex;align-items:center;gap:9px;
+  text-decoration:none;
+}
+.tb-logo svg{filter:drop-shadow(0 0 6px rgba(14,232,212,.4));}
+.tb-wordmark{
+  font-family:'Syne',sans-serif;font-weight:700;font-size:15px;
+  color:var(--teal);letter-spacing:-.2px;
+}
+.tb-divider{width:1px;height:20px;background:var(--border2);}
+.tb-page-title{
+  font-family:'DM Mono',monospace;font-size:11px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--text2);
+}
+.topbar-right{display:flex;align-items:center;gap:12px;}
+.tb-badge{
+  display:flex;align-items:center;gap:6px;
+  padding:5px 12px;border-radius:6px;
+  background:var(--teal-glow);border:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);
+}
+.live-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:var(--teal);
+  animation:livePulse 2s ease-in-out infinite;
+}
+@keyframes livePulse{0%,100%{opacity:1;box-shadow:0 0 0 0 rgba(14,232,212,.4)}50%{opacity:.6;box-shadow:0 0 0 4px rgba(14,232,212,0)}}
+.tb-updated{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:var(--text3);letter-spacing:.5px;
+}
+.tb-export-btn{
+  padding:6px 14px;border-radius:7px;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text2);font-family:'DM Mono',monospace;
+  font-size:10px;letter-spacing:1px;text-transform:uppercase;
+  cursor:pointer;transition:all .2s;
+}
+.tb-export-btn:hover{border-color:var(--border);color:var(--teal);}
+
+/* ============================================================
+   LAYOUT
+============================================================ */
+.page{max-width:1400px;margin:0 auto;padding:32px 32px 64px;}
+
+/* period selector */
+.period-bar{
+  display:flex;align-items:center;justify-content:space-between;
+  margin-bottom:28px;flex-wrap:wrap;gap:12px;
+}
+.period-label{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:22px;letter-spacing:-.5px;color:var(--text);
+}
+.period-label span{color:var(--teal);}
+.period-tabs{
+  display:flex;gap:2px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:8px;padding:3px;
+}
+.period-tab{
+  padding:5px 14px;border-radius:5px;
+  background:transparent;border:none;
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);cursor:pointer;transition:all .2s;
+}
+.period-tab.active{
+  background:var(--surface2);color:var(--teal);
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+
+/* ============================================================
+   KPI STRIP
+============================================================ */
+.kpi-strip{
+  display:grid;
+  grid-template-columns:repeat(4,1fr);
+  gap:12px; margin-bottom:24px;
+}
+.kpi-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:14px;padding:22px 22px 18px;
+  position:relative;overflow:hidden;
+  transition:border-color .2s;
+}
+.kpi-card:hover{border-color:var(--border);}
+.kpi-card::before{
+  content:'';position:absolute;
+  top:0;left:0;right:0;height:2px;
+  opacity:0;transition:opacity .3s;
+}
+.kpi-card:hover::before{opacity:1;}
+.kpi-card.teal::before  {background:linear-gradient(90deg,transparent,var(--teal),transparent);}
+.kpi-card.green::before {background:linear-gradient(90deg,transparent,var(--green),transparent);}
+.kpi-card.amber::before {background:linear-gradient(90deg,transparent,var(--amber),transparent);}
+.kpi-card.indigo::before{background:linear-gradient(90deg,transparent,var(--indigo),transparent);}
+.kpi-card.blue::before  {background:linear-gradient(90deg,transparent,var(--blue),transparent);}
+.kpi-card.red::before   {background:linear-gradient(90deg,transparent,var(--red),transparent);}
+
+.kpi-label{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:2px;text-transform:uppercase;
+  color:var(--text2);margin-bottom:10px;
+}
+.kpi-value{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:clamp(26px,3vw,38px);letter-spacing:-2px;
+  line-height:1;margin-bottom:8px;
+}
+.kpi-card.teal   .kpi-value{color:var(--teal);}
+.kpi-card.green  .kpi-value{color:var(--green);}
+.kpi-card.amber  .kpi-value{color:var(--amber);}
+.kpi-card.indigo .kpi-value{color:var(--indigo);}
+.kpi-card.blue   .kpi-value{color:var(--blue);}
+.kpi-card.red    .kpi-value{color:var(--red);}
+
+.kpi-delta{
+  display:inline-flex;align-items:center;gap:4px;
+  font-family:'DM Mono',monospace;font-size:10px;
+  padding:3px 7px;border-radius:5px;
+}
+.kpi-delta.up  {background:rgba(34,197,94,.08); color:var(--green);}
+.kpi-delta.down{background:rgba(244,63,94,.08);  color:var(--red);}
+.kpi-delta.neu {background:rgba(107,128,160,.08);color:var(--text2);}
+.kpi-sub{
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:var(--text3);margin-top:6px;letter-spacing:.5px;
+}
+
+/* sparkline inside kpi */
+.kpi-spark{
+  position:absolute;bottom:0;right:0;
+  width:90px;height:40px;opacity:.35;
+}
+
+/* ============================================================
+   CHART GRID
+============================================================ */
+.chart-grid{
+  display:grid;
+  grid-template-columns:2fr 1fr;
+  gap:16px; margin-bottom:16px;
+}
+.chart-grid-3{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:16px; margin-bottom:16px;
+}
+.chart-grid-2{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:16px; margin-bottom:16px;
+}
+
+.chart-card{
+  background:var(--surface);
+  border:1px solid var(--border2);
+  border-radius:14px;padding:22px;
+  position:relative;
+  transition:border-color .2s;
+}
+.chart-card:hover{border-color:var(--border);}
+.chart-card.full{grid-column:1/-1;}
+
+.chart-header{
+  display:flex;align-items:flex-start;
+  justify-content:space-between;margin-bottom:20px;gap:12px;
+}
+.chart-title{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:14px;letter-spacing:-.2px;color:var(--text);
+}
+.chart-subtitle{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text2);margin-top:4px;
+}
+.chart-val{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:22px;letter-spacing:-1px;color:var(--teal);
+  text-align:right;
+}
+.chart-val-label{
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:var(--text3);text-align:right;margin-top:2px;
+}
+
+.chart-wrap{position:relative;width:100%;}
+.chart-wrap canvas{width:100%!important;}
+
+/* legend */
+.chart-legend{
+  display:flex;gap:14px;flex-wrap:wrap;margin-top:14px;
+}
+.legend-item{
+  display:flex;align-items:center;gap:6px;
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:.8px;text-transform:uppercase;color:var(--text2);
+}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0;}
+
+/* ============================================================
+   RETENTION TABLE
+============================================================ */
+.cohort-table{width:100%;border-collapse:collapse;font-family:'DM Mono',monospace;}
+.cohort-table th{
+  font-size:9px;letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);padding:8px 10px;text-align:center;
+  border-bottom:1px solid var(--border3);font-weight:400;
+}
+.cohort-table th:first-child{text-align:left;}
+.cohort-table td{
+  padding:8px 10px;text-align:center;
+  font-size:11px;border-bottom:1px solid var(--border3);
+  position:relative;transition:all .2s;
+}
+.cohort-table td:first-child{text-align:left;color:var(--text2);font-size:10px;}
+.cohort-table tr:last-child td{border-bottom:none;}
+.cohort-cell{
+  display:inline-flex;align-items:center;justify-content:center;
+  width:48px;height:26px;border-radius:5px;font-size:10px;font-weight:500;
+}
+
+/* ============================================================
+   RUNWAY METER
+============================================================ */
+.runway-wrap{
+  display:flex;flex-direction:column;gap:14px;
+}
+.runway-months{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:52px;letter-spacing:-3px;color:var(--amber);
+  line-height:1;
+}
+.runway-label{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--text2);
+  margin-top:4px;
+}
+.burn-items{display:flex;flex-direction:column;gap:10px;margin-top:4px;}
+.burn-item{
+  display:flex;align-items:center;justify-content:space-between;
+}
+.burn-item-label{font-family:'DM Mono',monospace;font-size:10px;color:var(--text2);letter-spacing:.5px;}
+.burn-item-val{font-family:'DM Mono',monospace;font-size:11px;color:var(--text);font-weight:500;}
+.burn-bar-wrap{height:3px;background:var(--bg4);border-radius:2px;margin-top:3px;overflow:hidden;}
+.burn-bar-fill{height:100%;border-radius:2px;background:var(--amber);}
+
+/* ============================================================
+   WAITLIST TABLE
+============================================================ */
+.waitlist-stats{
+  display:grid;grid-template-columns:repeat(3,1fr);
+  gap:10px;margin-bottom:16px;
+}
+.wl-stat{
+  padding:14px;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border2);
+  text-align:center;
+}
+.wl-stat-num{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:24px;letter-spacing:-1px;color:var(--teal);
+}
+.wl-stat-label{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:1px;text-transform:uppercase;
+  color:var(--text3);margin-top:4px;
+}
+
+/* ============================================================
+   FOOTER NOTE
+============================================================ */
+.footer-note{
+  margin-top:40px;padding-top:20px;
+  border-top:1px solid var(--border3);
+  display:flex;align-items:center;justify-content:space-between;
+  flex-wrap:wrap;gap:10px;
+}
+.footer-note-text{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:var(--text3);letter-spacing:.5px;
+}
+.footer-note-badge{
+  display:flex;align-items:center;gap:6px;
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:var(--text3);letter-spacing:1px;
+  padding:4px 10px;border-radius:5px;
+  border:1px solid var(--border3);
+}
+
+/* ============================================================
+   ANIMATIONS
+============================================================ */
+.fade-in{opacity:0;transform:translateY(16px);transition:opacity .6s ease,transform .6s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+.fade-in-1{transition-delay:.05s;}
+.fade-in-2{transition-delay:.10s;}
+.fade-in-3{transition-delay:.15s;}
+.fade-in-4{transition-delay:.20s;}
+.fade-in-5{transition-delay:.25s;}
+.fade-in-6{transition-delay:.30s;}
+.fade-in-7{transition-delay:.35s;}
+.fade-in-8{transition-delay:.40s;}
+
+/* ============================================================
+   RESPONSIVE
+============================================================ */
+@media(max-width:1100px){
+  .kpi-strip{grid-template-columns:repeat(2,1fr);}
+  .chart-grid{grid-template-columns:1fr;}
+  .chart-grid-3{grid-template-columns:1fr 1fr;}
+}
+@media(max-width:700px){
+  .page{padding:20px 16px 48px;}
+  .kpi-strip{grid-template-columns:1fr 1fr;}
+  .chart-grid-3,.chart-grid-2{grid-template-columns:1fr;}
+  .topbar{padding:0 16px;}
+}
+
+/* ---- VC GATE ---- */
+.vc-gate{
+  position:fixed;inset:0;z-index:2000;
+  background:rgba(4,7,15,.97);backdrop-filter:blur(16px);
+  display:flex;align-items:center;justify-content:center;padding:24px;
+  transition:opacity .4s;
+}
+.vc-gate.hidden{opacity:0;pointer-events:none;}
+.vc-gate-card{
+  background:var(--surface);border:1px solid var(--border2);
+  border-radius:22px;padding:44px 40px;
+  width:100%;max-width:400px;text-align:center;
+}
+.vc-gate-logo{
+  display:flex;align-items:center;justify-content:center;gap:11px;
+  margin-bottom:30px;
+}
+.vc-gate-wordmark{font-family:"Syne",sans-serif;font-weight:700;font-size:20px;color:var(--teal);}
+.vc-gate-title{font-family:"Syne",sans-serif;font-weight:800;font-size:22px;margin-bottom:8px;letter-spacing:-.5px;}
+.vc-gate-sub{font-size:13px;color:var(--text2);margin-bottom:30px;line-height:1.5;}
+.vc-gate-input{
+  width:100%;padding:12px 14px;margin-bottom:10px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;color:var(--text);font-size:14px;
+  outline:none;transition:border-color .2s;display:block;
+}
+.vc-gate-input:focus{border-color:var(--border);}
+.vc-gate-btn{
+  width:100%;padding:13px;border-radius:10px;
+  background:var(--teal);border:none;margin-top:6px;
+  font-family:"Syne",sans-serif;font-weight:700;font-size:14px;
+  color:#050810;cursor:pointer;transition:all .2s;
+  box-shadow:0 0 24px rgba(14,232,212,.2);
+}
+.vc-gate-btn:hover{background:#12f5e0;box-shadow:0 0 36px rgba(14,232,212,.4);}
+.vc-gate-error{font-size:12px;color:var(--red);margin-top:10px;min-height:18px;font-family:"DM Mono",monospace;}
+.vc-gate-contact{font-size:12px;color:var(--text3);margin-top:16px;}
+.vc-gate-contact a{color:var(--teal);text-decoration:none;}
+
+/* ---- INVESTOR BAR ---- */
+.investor-bar{
+  background:var(--bg2);border-bottom:1px solid var(--border2);
+  position:sticky;top:58px;z-index:99;
+}
+.inv-bar-inner{
+  max-width:1400px;margin:0 auto;padding:10px 32px;
+  display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap;
+}
+.inv-bar-left{display:flex;align-items:center;gap:12px;}
+.inv-avatar{
+  width:36px;height:36px;border-radius:10px;
+  display:flex;align-items:center;justify-content:center;
+  font-family:"Syne",sans-serif;font-weight:800;font-size:14px;
+  color:#050810;flex-shrink:0;
+}
+.inv-name{font-family:"Syne",sans-serif;font-weight:700;font-size:14px;color:var(--text);}
+.inv-firm{font-size:11px;color:var(--text2);font-family:"DM Mono",monospace;letter-spacing:.3px;margin-top:1px;}
+.inv-bar-right{display:flex;align-items:center;gap:12px;}
+.inv-investment-box{
+  display:flex;align-items:center;gap:10px;
+  padding:8px 14px;border-radius:10px;
+  background:var(--bg3);border:1px solid var(--border2);
+}
+.inv-box-label{font-family:"DM Mono",monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);}
+.inv-box-amount{font-family:"Syne",sans-serif;font-weight:800;font-size:15px;color:var(--text);margin:0 6px;}
+.inv-logout-btn{
+  padding:7px 14px;border-radius:8px;
+  background:transparent;border:1px solid var(--border2);
+  color:var(--text3);font-family:"DM Mono",monospace;
+  font-size:10px;letter-spacing:1px;cursor:pointer;transition:all .2s;
+}
+.inv-logout-btn:hover{border-color:var(--border);color:var(--text);}
+
+/* round badge colors */
+.rb-pre-seed  {background:rgba(107,128,160,.10);border:1px solid rgba(107,128,160,.2);color:#8899b4;}
+.rb-seed      {background:rgba(14,232,212,.08); border:1px solid rgba(14,232,212,.2);color:#0ee8d4;}
+.rb-series-a  {background:rgba(34,197,94,.08);  border:1px solid rgba(34,197,94,.2); color:#22c55e;}
+.rb-series-b  {background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);color:#818cf8;}
+.rb-series-c  {background:rgba(245,158,11,.08); border:1px solid rgba(245,158,11,.2);color:#f59e0b;}
+.rb-strategic {background:rgba(56,189,248,.08); border:1px solid rgba(56,189,248,.2);color:#38bdf8;}
+.rb-angel     {background:rgba(251,113,133,.08);border:1px solid rgba(251,113,133,.2);color:#fb7185;}
+
+
+/* ---- INVESTOR GREETING ---- */
+.investor-greeting {
+  max-width:1400px; margin:0 auto; padding:28px 32px 0;
+  opacity:0; transform:translateY(10px);
+  transition:opacity .6s ease, transform .6s ease;
+}
+.investor-greeting.visible { opacity:1; transform:none; }
+.greeting-time {
+  font-family:'DM Mono',monospace; font-size:10px;
+  letter-spacing:2px; text-transform:uppercase;
+  color:var(--text3); margin-bottom:6px;
+}
+.greeting-line {
+  font-family:'Syne',sans-serif; font-weight:800;
+  font-size:clamp(22px,3vw,32px); letter-spacing:-1px;
+  color:var(--text); line-height:1.15;
+}
+.greeting-line .greeting-name { color:var(--teal); }
+.greeting-sub {
+  font-size:13px; color:var(--text2); margin-top:6px;
+  font-weight:300; display:flex; align-items:center; gap:10px;
+}
+.greeting-round-pip {
+  display:inline-flex; align-items:center; gap:5px;
+  padding:3px 10px; border-radius:5px;
+  font-family:'DM Mono',monospace; font-size:9px;
+  letter-spacing:1.2px; text-transform:uppercase;
+}
+
+</style>
+</head>
+<body>
+
+<!-- ============================================================
+     TOPBAR
+============================================================ -->
+
+<!-- ============================================================
+     LOGIN GATE
+============================================================ -->
+<div class="vc-gate" id="vcGate">
+  <div class="vc-gate-card">
+    <div class="vc-gate-logo">
+      <svg width="40" height="40" viewBox="0 0 90 90" fill="none">
+        <rect width="90" height="90" rx="22" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/>
+        <path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.6"/>
+        <circle cx="37" cy="29" r="3" fill="#0ee8d4" opacity=".9"/>
+        <circle cx="53" cy="29" r="3" fill="#0ee8d4" opacity=".9"/>
+        <circle cx="45" cy="43" r="3" fill="#0ee8d4" opacity=".9"/>
+        <line x1="37" y1="29" x2="53" y2="29" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+        <line x1="37" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+        <line x1="53" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+      </svg>
+      <span class="vc-gate-wordmark">Omnigenius</span>
+    </div>
+    <div class="vc-gate-title">Investor Dashboard</div>
+    <div class="vc-gate-sub">Authorized investors only. Enter your credentials below.</div>
+    <input class="vc-gate-input" type="email" id="vcEmail" placeholder="your@email.com" autocomplete="email">
+    <input class="vc-gate-input" type="password" id="vcPass" placeholder="Password" onkeydown="if(event.key==='Enter')vcLogin()">
+    <button class="vc-gate-btn" onclick="vcLogin()">Access Dashboard</button>
+    <div class="vc-gate-error" id="vcError"></div>
+    <div class="vc-gate-contact">Need access? <a href="/cdn-cgi/l/email-protection#4520372c26052a282b2c22202b2c30366b262a">Contact Eric</a></div>
+  </div>
+</div>
+
+<!-- Investor personalization bar (shown after login) -->
+<div class="investor-bar" id="investorBar" style="display:none">
+  <div class="inv-bar-inner">
+    <div class="inv-bar-left">
+      <div class="inv-avatar" id="invAvatar">?</div>
+      <div>
+        <div class="inv-name" id="invName">—</div>
+        <div class="inv-firm" id="invFirm">—</div>
+      </div>
+    </div>
+    <div class="inv-bar-right">
+      <div class="inv-investment-box" id="invBox">
+        <div class="inv-box-label">Your investment</div>
+        <div class="inv-box-amount" id="invAmount">—</div>
+        <div class="inv-box-round" id="invRoundBadge"></div>
+      </div>
+      <button class="inv-logout-btn" onclick="vcLogout()">Log out</button>
+    </div>
+  </div>
+</div>
+
+<header class="topbar">
+  <div class="topbar-left">
+    <a class="tb-logo" href="/">
+      <svg width="28" height="28" viewBox="0 0 90 90" fill="none">
+        <rect width="90" height="90" rx="22" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/>
+        <path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.6"/>
+        <circle cx="37" cy="29" r="3" fill="#0ee8d4" opacity=".9"/>
+        <circle cx="53" cy="29" r="3" fill="#0ee8d4" opacity=".9"/>
+        <circle cx="45" cy="43" r="3" fill="#0ee8d4" opacity=".9"/>
+        <line x1="37" y1="29" x2="53" y2="29" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+        <line x1="37" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+        <line x1="53" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+      </svg>
+      <span class="tb-wordmark">Omnigenius</span>
+    </a>
+    <div class="tb-divider"></div>
+    <span class="tb-page-title">Investor Dashboard</span>
+  </div>
+  <div class="topbar-right">
+    <div class="tb-badge"><div class="live-dot"></div>Live data</div>
+    <span class="tb-updated" id="lastUpdated">Updated just now</span>
+    <button class="tb-export-btn" onclick="exportPDF()">⬇ Export PDF</button>
+  </div>
+</header>
+
+<!-- ============================================================
+     PAGE
+============================================================ -->
+<main class="page">
+
+  <!-- Investor greeting — shown after login -->
+  <div class="investor-greeting" id="investorGreeting" style="display:none">
+    <div class="greeting-time" id="greetingTime"></div>
+    <div class="greeting-line" id="greetingLine"></div>
+    <div class="greeting-sub" id="greetingSub"></div>
+  </div>
+
+
+  <!-- Period selector -->
+  <div class="period-bar fade-in">
+    <div class="period-label">Omnigenius <span>Metrics</span></div>
+    <div class="period-tabs">
+      <button class="period-tab" onclick="setPeriod('1M',this)">1M</button>
+      <button class="period-tab active" onclick="setPeriod('3M',this)">3M</button>
+      <button class="period-tab" onclick="setPeriod('6M',this)">6M</button>
+      <button class="period-tab" onclick="setPeriod('1Y',this)">1Y</button>
+      <button class="period-tab" onclick="setPeriod('ALL',this)">All</button>
+    </div>
+  </div>
+
+  <!-- ---- KPI STRIP ---- -->
+  <div class="kpi-strip">
+
+    <div class="kpi-card teal fade-in fade-in-1">
+      <div class="kpi-label">MRR</div>
+      <div class="kpi-value" data-count="0" data-target="4200" data-prefix="$" data-suffix="">$0</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta up">↑ 38%</span>
+      </div>
+      <div class="kpi-sub">vs $3,043 last month</div>
+      <svg class="kpi-spark" viewBox="0 0 90 40" preserveAspectRatio="none">
+        <polyline points="0,35 15,32 30,28 45,24 60,16 75,10 90,4" fill="none" stroke="rgba(14,232,212,.6)" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <div class="kpi-card green fade-in fade-in-2">
+      <div class="kpi-label">ARR (Projected)</div>
+      <div class="kpi-value" data-count="0" data-target="50400" data-prefix="$" data-suffix="">$0</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta up">↑ 38%</span>
+      </div>
+      <div class="kpi-sub">MRR × 12</div>
+      <svg class="kpi-spark" viewBox="0 0 90 40" preserveAspectRatio="none">
+        <polyline points="0,36 15,33 30,29 45,23 60,15 75,9 90,3" fill="none" stroke="rgba(34,197,94,.6)" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <div class="kpi-card amber fade-in fade-in-3">
+      <div class="kpi-label">Runway</div>
+      <div class="kpi-value" data-count="0" data-target="18" data-prefix="" data-suffix=" mo">0 mo</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta neu">→ Stable</span>
+      </div>
+      <div class="kpi-sub">$142K cash · $7.9K burn/mo</div>
+      <svg class="kpi-spark" viewBox="0 0 90 40" preserveAspectRatio="none">
+        <polyline points="0,5 15,8 30,10 45,12 60,18 75,24 90,30" fill="none" stroke="rgba(245,158,11,.6)" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <div class="kpi-card indigo fade-in fade-in-4">
+      <div class="kpi-label">Total Users</div>
+      <div class="kpi-value" data-count="0" data-target="2847" data-prefix="" data-suffix="">0</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta up">↑ 24%</span>
+      </div>
+      <div class="kpi-sub">847 active last 30 days</div>
+      <svg class="kpi-spark" viewBox="0 0 90 40" preserveAspectRatio="none">
+        <polyline points="0,38 15,35 30,30 45,25 60,18 75,12 90,6" fill="none" stroke="rgba(129,140,248,.6)" stroke-width="1.5"/>
+      </svg>
+    </div>
+
+    <div class="kpi-card teal fade-in fade-in-1">
+      <div class="kpi-label">DAU</div>
+      <div class="kpi-value" data-count="0" data-target="312" data-prefix="" data-suffix="">0</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta up">↑ 11%</span>
+      </div>
+      <div class="kpi-sub">WAU 1,240 · MAU 2,847</div>
+    </div>
+
+    <div class="kpi-card green fade-in fade-in-2">
+      <div class="kpi-label">Free → Paid Conv.</div>
+      <div class="kpi-value" data-count="0" data-target="6.4" data-prefix="" data-suffix="%" data-decimals="1">0%</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta up">↑ 1.2pp</span>
+      </div>
+      <div class="kpi-sub">182 paid of 2,847 total</div>
+    </div>
+
+    <div class="kpi-card blue fade-in fade-in-3">
+      <div class="kpi-label">Queries / Day</div>
+      <div class="kpi-value" data-count="0" data-target="4830" data-prefix="" data-suffix="">0</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta up">↑ 19%</span>
+      </div>
+      <div class="kpi-sub">avg last 7 days</div>
+    </div>
+
+    <div class="kpi-card amber fade-in fade-in-4">
+      <div class="kpi-label">Waitlist</div>
+      <div class="kpi-value" data-count="0" data-target="8340" data-prefix="" data-suffix="">0</div>
+      <div style="display:flex;align-items:center;gap:8px;margin-top:6px">
+        <span class="kpi-delta up">↑ 340 this week</span>
+      </div>
+      <div class="kpi-sub">pre-launch signups</div>
+    </div>
+
+  </div><!-- /kpi-strip -->
+
+  <!-- ---- ROW 1: Revenue + Runway ---- -->
+  <div class="chart-grid">
+
+    <!-- MRR/ARR chart -->
+    <div class="chart-card fade-in fade-in-2">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Revenue Growth</div>
+          <div class="chart-subtitle">MRR · ARR Projected · Monthly</div>
+        </div>
+        <div>
+          <div class="chart-val">$4,200</div>
+          <div class="chart-val-label">Current MRR</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:220px">
+        <canvas id="revenueChart"></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>MRR</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>ARR (proj)</div>
+      </div>
+    </div>
+
+    <!-- Runway card -->
+    <div class="chart-card fade-in fade-in-3">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Runway &amp; Burn</div>
+          <div class="chart-subtitle">Cash position · Monthly burn</div>
+        </div>
+      </div>
+      <div class="runway-wrap">
+        <div>
+          <div class="runway-months" id="runwayNum">0</div>
+          <div class="runway-label">Months of runway</div>
+        </div>
+        <div class="burn-items">
+          <div>
+            <div class="burn-item">
+              <span class="burn-item-label">Cash on hand</span>
+              <span class="burn-item-val">$142,000</span>
+            </div>
+            <div class="burn-bar-wrap"><div class="burn-bar-fill" style="width:71%;background:var(--teal)"></div></div>
+          </div>
+          <div>
+            <div class="burn-item">
+              <span class="burn-item-label">Monthly burn</span>
+              <span class="burn-item-val">$7,900</span>
+            </div>
+            <div class="burn-bar-wrap"><div class="burn-bar-fill" style="width:32%"></div></div>
+          </div>
+          <div>
+            <div class="burn-item">
+              <span class="burn-item-label">Monthly revenue</span>
+              <span class="burn-item-val">$4,200</span>
+            </div>
+            <div class="burn-bar-wrap"><div class="burn-bar-fill" style="width:53%;background:var(--green)"></div></div>
+          </div>
+          <div>
+            <div class="burn-item">
+              <span class="burn-item-label">Net burn</span>
+              <span class="burn-item-val" style="color:var(--red)">-$3,700</span>
+            </div>
+            <div class="burn-bar-wrap"><div class="burn-bar-fill" style="width:19%;background:var(--red)"></div></div>
+          </div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:100px;margin-top:16px">
+        <canvas id="burnChart"></canvas>
+      </div>
+    </div>
+
+  </div><!-- /chart-grid row1 -->
+
+  <!-- ---- ROW 2: User Growth ---- -->
+  <div class="chart-card fade-in fade-in-3" style="margin-bottom:16px">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">User Growth</div>
+        <div class="chart-subtitle">DAU · WAU · MAU · Daily active users</div>
+      </div>
+      <div>
+        <div class="chart-val">2,847</div>
+        <div class="chart-val-label">Total registered</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:200px">
+      <canvas id="userChart"></canvas>
+    </div>
+    <div class="chart-legend">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>DAU</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--indigo)"></div>WAU ÷ 7</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--text3)"></div>MAU ÷ 30</div>
+    </div>
+  </div>
+
+  <!-- ---- ROW 3: Queries + Conversion ---- -->
+  <div class="chart-grid-2">
+
+    <!-- Queries by mode -->
+    <div class="chart-card fade-in fade-in-2">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Queries per Day — by Mode</div>
+          <div class="chart-subtitle">Auto · Chat · Search · Reason</div>
+        </div>
+        <div>
+          <div class="chart-val">4,830</div>
+          <div class="chart-val-label">7-day avg</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="queriesChart"></canvas>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--teal)"></div>Auto</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--green)"></div>Chat</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--indigo)"></div>Search</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--amber)"></div>Reason</div>
+      </div>
+    </div>
+
+    <!-- Free → Paid Conversion -->
+    <div class="chart-card fade-in fade-in-3">
+      <div class="chart-header">
+        <div>
+          <div class="chart-title">Free → Paid Conversion</div>
+          <div class="chart-subtitle">Monthly conversion rate</div>
+        </div>
+        <div>
+          <div class="chart-val">6.4%</div>
+          <div class="chart-val-label">This month</div>
+        </div>
+      </div>
+      <div class="chart-wrap" style="height:200px">
+        <canvas id="conversionChart"></canvas>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:14px">
+        <div style="padding:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--green)">182</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:3px">PAID USERS</div>
+        </div>
+        <div style="padding:12px;background:var(--bg3);border:1px solid var(--border2);border-radius:9px;text-align:center">
+          <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;color:var(--text2)">2,665</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);letter-spacing:1px;margin-top:3px">FREE USERS</div>
+        </div>
+      </div>
+    </div>
+
+  </div><!-- /chart-grid-2 -->
+
+  <!-- ---- ROW 4: Retention Cohorts ---- -->
+  <div class="chart-card fade-in fade-in-4" style="margin-bottom:16px">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Retention Cohorts</div>
+        <div class="chart-subtitle">% of cohort retained at Day 1 · Day 7 · Day 30</div>
+      </div>
+    </div>
+    <div style="overflow-x:auto">
+      <table class="cohort-table" id="cohortTable">
+        <thead>
+          <tr>
+            <th>Cohort</th>
+            <th>Size</th>
+            <th>Day 1</th>
+            <th>Day 3</th>
+            <th>Day 7</th>
+            <th>Day 14</th>
+            <th>Day 30</th>
+            <th>Day 60</th>
+          </tr>
+        </thead>
+        <tbody id="cohortBody"></tbody>
+      </table>
+    </div>
+    <div class="chart-legend" style="margin-top:14px">
+      <div class="legend-item"><div class="legend-dot" style="background:var(--teal);opacity:.9"></div>≥ 60%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--teal);opacity:.5"></div>40–60%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--amber);opacity:.6"></div>20–40%</div>
+      <div class="legend-item"><div class="legend-dot" style="background:var(--text3)"></div>&lt; 20%</div>
+    </div>
+  </div>
+
+  <!-- ---- ROW 5: Waitlist ---- -->
+  <div class="chart-card fade-in fade-in-3" style="margin-bottom:16px">
+    <div class="chart-header">
+      <div>
+        <div class="chart-title">Waitlist Growth</div>
+        <div class="chart-subtitle">Pre-launch signups · Daily additions</div>
+      </div>
+      <div>
+        <div class="chart-val">8,340</div>
+        <div class="chart-val-label">Total signups</div>
+      </div>
+    </div>
+    <div class="waitlist-stats">
+      <div class="wl-stat">
+        <div class="wl-stat-num">8,340</div>
+        <div class="wl-stat-label">Total</div>
+      </div>
+      <div class="wl-stat">
+        <div class="wl-stat-num">340</div>
+        <div class="wl-stat-label">This week</div>
+      </div>
+      <div class="wl-stat">
+        <div class="wl-stat-num">48.6</div>
+        <div class="wl-stat-label">Daily avg (30d)</div>
+      </div>
+    </div>
+    <div class="chart-wrap" style="height:160px">
+      <canvas id="waitlistChart"></canvas>
+    </div>
+  </div>
+
+  <!-- ---- FOOTER NOTE ---- -->
+  <div class="footer-note fade-in">
+    <div class="footer-note-text">
+      Data shown is pre-launch projected / seeded. All figures labeled accordingly.<br>
+      Live metrics will replace projections upon public launch. Source: Omnigenius internal dashboard.
+    </div>
+    <div style="display:flex;gap:8px;flex-wrap:wrap">
+      <div class="footer-note-badge">⚡ Pre-seed stage</div>
+      <div class="footer-note-badge">🔒 Confidential</div>
+      <div class="footer-note-badge">📅 Updated Mar 2026</div>
+    </div>
+  </div>
+
+</main><!-- /page -->
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js">
+function buildGreeting(inv) {
+  const hour = new Date().getHours();
+  const timeLabel = hour < 12 ? 'Good morning' : hour < 17 ? 'Good afternoon' : 'Good evening';
+  const isReturning = sessionStorage.getItem('og_vc_visited_' + inv.id);
+  const greeting   = isReturning ? 'Welcome back' : 'Welcome';
+  sessionStorage.setItem('og_vc_visited_' + inv.id, '1');
+
+  const firstName = inv.name.split(' ')[0];
+  const color     = ROUND_COLORS[inv.round] || '#0ee8d4';
+  const label     = ROUND_LABELS[inv.round] || inv.round || 'Investor';
+
+  const greetEl = document.getElementById('investorGreeting');
+  greetEl.style.display = 'block';
+
+  document.getElementById('greetingTime').textContent = timeLabel;
+  document.getElementById('greetingLine').innerHTML =
+    `${greeting}, <span class="greeting-name" style="color:${color}">${firstName}</span>.`;
+
+  const firm = inv.firm ? ` &middot; ${inv.firm}` : '';
+  document.getElementById('greetingSub').innerHTML =
+    `You are viewing real-time Omnigenius metrics${firm}.
+     <span class="greeting-round-pip rb-${inv.round}" style="color:${color};background:${color}12;border:1px solid ${color}35">${label} Investor</span>`;
+
+  // animate in after a short delay so it feels deliberate
+  setTimeout(() => greetEl.classList.add('visible'), 120);
+}
+
+</script><script>
+// ============================================================
+//  DATA — seeded realistic pre-launch projections
+// ============================================================
+const MONTHS = ['Aug','Sep','Oct','Nov','Dec','Jan','Feb','Mar'];
+
+const DATA = {
+  revenue: {
+    mrr:  [0, 180, 420, 780, 1240, 1980, 3043, 4200],
+    arr:  [0, 2160, 5040, 9360, 14880, 23760, 36516, 50400],
+  },
+  users: {
+    dau:  [0, 12, 28, 55, 102, 178, 281, 312],
+    wau7: [0, 8, 19, 38, 72, 128, 201, 177],   // WAU/7
+    mau30:[0, 2, 5, 12, 27, 56, 97, 95],         // MAU/30
+  },
+  queries: {
+    auto:   [0, 60, 140, 290, 560, 980, 1620, 1930],
+    chat:   [0, 40, 90, 180, 340, 590, 960, 1140],
+    search: [0, 30, 70, 140, 270, 480, 780, 1020],
+    reason: [0, 15, 35, 70, 130, 230, 380, 740],
+  },
+  conversion: [0, 2.1, 2.8, 3.4, 4.1, 4.9, 5.2, 6.4],
+  waitlist:   [120, 310, 680, 1240, 2180, 3640, 5480, 8340],
+  burn: [6200, 6400, 6800, 7100, 7400, 7600, 7800, 7900],
+};
+
+const COHORTS = [
+  { label:'Aug 2024', size:89,  d1:78, d3:61, d7:48, d14:38, d30:24, d60:14 },
+  { label:'Sep 2024', size:142, d1:81, d3:65, d7:51, d14:41, d30:27, d60:17 },
+  { label:'Oct 2024', size:213, d1:79, d3:63, d7:50, d14:40, d30:26, d60:16 },
+  { label:'Nov 2024', size:318, d1:82, d3:67, d7:53, d14:43, d30:29, d60:18 },
+  { label:'Dec 2024', size:441, d1:84, d3:69, d7:55, d14:45, d30:31, d60:null },
+  { label:'Jan 2025', size:612, d1:85, d3:71, d7:57, d14:46, d30:null, d60:null },
+  { label:'Feb 2025', size:847, d1:86, d3:72, d7:58, d14:null, d30:null, d60:null },
+  { label:'Mar 2025', size:312, d1:87, d3:null, d7:null, d14:null, d30:null, d60:null },
+];
+
+// ============================================================
+//  CHART DEFAULTS
+// ============================================================
+Chart.defaults.color = 'rgba(107,128,160,0.8)';
+Chart.defaults.borderColor = 'rgba(255,255,255,0.04)';
+Chart.defaults.font.family = "'DM Mono', monospace";
+Chart.defaults.font.size = 10;
+
+function commonLineOpts(extra = {}) {
+  return {
+    responsive: true, maintainAspectRatio: false,
+    interaction: { intersect: false, mode: 'index' },
+    plugins: {
+      legend: { display: false },
+      tooltip: {
+        backgroundColor: 'rgba(11,17,32,0.95)',
+        borderColor: 'rgba(14,232,212,0.2)',
+        borderWidth: 1,
+        titleColor: 'rgba(14,232,212,0.8)',
+        bodyColor: 'rgba(232,240,252,0.8)',
+        padding: 10,
+        titleFont: { family: "'DM Mono', monospace", size: 10 },
+        bodyFont: { family: "'DM Mono', monospace", size: 10 },
+      }
+    },
+    scales: {
+      x: {
+        grid: { color: 'rgba(255,255,255,0.03)' },
+        ticks: { color: 'rgba(107,128,160,0.7)' }
+      },
+      y: {
+        grid: { color: 'rgba(255,255,255,0.03)' },
+        ticks: { color: 'rgba(107,128,160,0.7)' }
+      }
+    },
+    ...extra
+  };
+}
+
+function makeGradient(ctx, color, alpha1 = 0.18, alpha2 = 0) {
+  const g = ctx.createLinearGradient(0, 0, 0, ctx.canvas.height);
+  g.addColorStop(0, color.replace(')', `,${alpha1})`).replace('rgb', 'rgba'));
+  g.addColorStop(1, color.replace(')', `,${alpha2})`).replace('rgb', 'rgba'));
+  return g;
+}
+
+// ============================================================
+//  BUILD CHARTS
+// ============================================================
+function buildCharts() {
+
+  // --- REVENUE ---
+  const revCtx = document.getElementById('revenueChart').getContext('2d');
+  new Chart(revCtx, {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        {
+          label: 'MRR ($)',
+          data: DATA.revenue.mrr,
+          borderColor: '#0ee8d4',
+          backgroundColor: (ctx) => {
+            const g = ctx.chart.ctx.createLinearGradient(0,0,0,200);
+            g.addColorStop(0,'rgba(14,232,212,0.15)');g.addColorStop(1,'rgba(14,232,212,0)');return g;
+          },
+          fill: true, tension: 0.4, pointRadius: 3,
+          pointBackgroundColor: '#0ee8d4', borderWidth: 2,
+        },
+        {
+          label: 'ARR Proj ($)',
+          data: DATA.revenue.arr,
+          borderColor: '#22c55e',
+          backgroundColor: 'transparent',
+          fill: false, tension: 0.4,
+          pointRadius: 2, borderWidth: 1.5,
+          borderDash: [4,3],
+        }
+      ]
+    },
+    options: commonLineOpts()
+  });
+
+  // --- BURN (mini bar) ---
+  const burnCtx = document.getElementById('burnChart').getContext('2d');
+  new Chart(burnCtx, {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [{
+        label: 'Monthly Burn ($)',
+        data: DATA.burn,
+        backgroundColor: 'rgba(245,158,11,0.25)',
+        borderColor: 'rgba(245,158,11,0.6)',
+        borderWidth: 1, borderRadius: 3,
+      }]
+    },
+    options: { ...commonLineOpts(), plugins: { legend: { display:false }, tooltip: commonLineOpts().plugins.tooltip } }
+  });
+
+  // --- USER GROWTH ---
+  const userCtx = document.getElementById('userChart').getContext('2d');
+  new Chart(userCtx, {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        {
+          label: 'DAU',
+          data: DATA.users.dau,
+          borderColor: '#0ee8d4',
+          backgroundColor: (ctx) => {
+            const g = ctx.chart.ctx.createLinearGradient(0,0,0,180);
+            g.addColorStop(0,'rgba(14,232,212,0.12)');g.addColorStop(1,'rgba(14,232,212,0)');return g;
+          },
+          fill: true, tension: 0.4, pointRadius: 3,
+          pointBackgroundColor: '#0ee8d4', borderWidth: 2,
+        },
+        {
+          label: 'WAU ÷ 7',
+          data: DATA.users.wau7,
+          borderColor: '#818cf8',
+          backgroundColor: 'transparent',
+          fill: false, tension: 0.4, pointRadius: 2, borderWidth: 1.5,
+        },
+        {
+          label: 'MAU ÷ 30',
+          data: DATA.users.mau30,
+          borderColor: 'rgba(107,128,160,0.5)',
+          backgroundColor: 'transparent',
+          fill: false, tension: 0.4, pointRadius: 2, borderWidth: 1.5,
+          borderDash: [3,3],
+        }
+      ]
+    },
+    options: commonLineOpts()
+  });
+
+  // --- QUERIES BY MODE ---
+  const qCtx = document.getElementById('queriesChart').getContext('2d');
+  new Chart(qCtx, {
+    type: 'bar',
+    data: {
+      labels: MONTHS,
+      datasets: [
+        { label:'Auto',   data: DATA.queries.auto,   backgroundColor:'rgba(14,232,212,0.7)',  borderRadius:3 },
+        { label:'Chat',   data: DATA.queries.chat,   backgroundColor:'rgba(34,197,94,0.7)',   borderRadius:3 },
+        { label:'Search', data: DATA.queries.search, backgroundColor:'rgba(129,140,248,0.7)', borderRadius:3 },
+        { label:'Reason', data: DATA.queries.reason, backgroundColor:'rgba(245,158,11,0.7)',  borderRadius:3 },
+      ]
+    },
+    options: { ...commonLineOpts(), scales: { ...commonLineOpts().scales, x: { ...commonLineOpts().scales.x, stacked: true }, y: { ...commonLineOpts().scales.y, stacked: true } } }
+  });
+
+  // --- CONVERSION ---
+  const convCtx = document.getElementById('conversionChart').getContext('2d');
+  new Chart(convCtx, {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [{
+        label: 'Conv. Rate (%)',
+        data: DATA.conversion,
+        borderColor: '#22c55e',
+        backgroundColor: (ctx) => {
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,180);
+          g.addColorStop(0,'rgba(34,197,94,0.15)');g.addColorStop(1,'rgba(34,197,94,0)');return g;
+        },
+        fill: true, tension: 0.4, pointRadius: 3,
+        pointBackgroundColor: '#22c55e', borderWidth: 2,
+      }]
+    },
+    options: commonLineOpts({ scales: { ...commonLineOpts().scales, y: { ...commonLineOpts().scales.y, ticks: { ...commonLineOpts().scales.y.ticks, callback: v => v + '%' } } } })
+  });
+
+  // --- WAITLIST ---
+  const wlCtx = document.getElementById('waitlistChart').getContext('2d');
+  new Chart(wlCtx, {
+    type: 'line',
+    data: {
+      labels: MONTHS,
+      datasets: [{
+        label: 'Waitlist',
+        data: DATA.waitlist,
+        borderColor: '#f59e0b',
+        backgroundColor: (ctx) => {
+          const g = ctx.chart.ctx.createLinearGradient(0,0,0,140);
+          g.addColorStop(0,'rgba(245,158,11,0.18)');g.addColorStop(1,'rgba(245,158,11,0)');return g;
+        },
+        fill: true, tension: 0.4, pointRadius: 3,
+        pointBackgroundColor: '#f59e0b', borderWidth: 2,
+      }]
+    },
+    options: commonLineOpts()
+  });
+}
+
+// ============================================================
+//  COHORT TABLE
+// ============================================================
+function buildCohortTable() {
+  const cols = ['d1','d3','d7','d14','d30','d60'];
+  const body = document.getElementById('cohortBody');
+
+  function heatColor(v) {
+    if (v === null) return `<td><span style="color:var(--text3);font-size:10px">—</span></td>`;
+    let bg, color;
+    if (v >= 60)      { bg = 'rgba(14,232,212,0.22)';  color = '#0ee8d4'; }
+    else if (v >= 40) { bg = 'rgba(14,232,212,0.10)';  color = 'rgba(14,232,212,0.7)'; }
+    else if (v >= 20) { bg = 'rgba(245,158,11,0.12)';  color = '#f59e0b'; }
+    else              { bg = 'rgba(107,128,160,0.06)';  color = 'var(--text3)'; }
+    return `<td><span class="cohort-cell" style="background:${bg};color:${color}">${v}%</span></td>`;
+  }
+
+  COHORTS.forEach(c => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `
+      <td>${c.label}</td>
+      <td style="color:var(--text2)">${c.size.toLocaleString()}</td>
+      ${cols.map(k => heatColor(c[k])).join('')}
+    `;
+    body.appendChild(tr);
+  });
+}
+
+// ============================================================
+//  COUNTER ANIMATION
+// ============================================================
+function animateCounters() {
+  document.querySelectorAll('[data-count]').forEach(el => {
+    const target   = parseFloat(el.dataset.target);
+    const prefix   = el.dataset.prefix  || '';
+    const suffix   = el.dataset.suffix  || '';
+    const decimals = parseInt(el.dataset.decimals || '0');
+    const duration = 1600;
+    const start    = performance.now();
+
+    function tick(now) {
+      const progress = Math.min((now - start) / duration, 1);
+      const ease     = 1 - Math.pow(1 - progress, 3);
+      const value    = target * ease;
+      const display  = decimals > 0
+        ? value.toFixed(decimals)
+        : Math.round(value).toLocaleString();
+      el.textContent = prefix + display + suffix;
+      if (progress < 1) requestAnimationFrame(tick);
+    }
+    requestAnimationFrame(tick);
+  });
+
+  // Runway special
+  const rn = document.getElementById('runwayNum');
+  const rduration = 1400;
+  const rstart = performance.now();
+  function rtick(now) {
+    const p = Math.min((now - rstart) / rduration, 1);
+    const e = 1 - Math.pow(1 - p, 3);
+    rn.textContent = Math.round(18 * e);
+    if (p < 1) requestAnimationFrame(rtick);
+  }
+  requestAnimationFrame(rtick);
+}
+
+// ============================================================
+//  SCROLL REVEAL
+// ============================================================
+function initReveal() {
+  const els = document.querySelectorAll('.fade-in');
+  const obs = new IntersectionObserver((entries) => {
+    entries.forEach(e => {
+      if (e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); }
+    });
+  }, { threshold: 0.08 });
+  els.forEach(el => obs.observe(el));
+}
+
+// ============================================================
+//  PERIOD SELECTOR
+// ============================================================
+function setPeriod(p, btn) {
+  document.querySelectorAll('.period-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  // In production this re-fetches data; here we just show a toast
+  document.getElementById('lastUpdated').textContent = 'Filtered: ' + p;
+}
+
+// ============================================================
+//  EXPORT
+// ============================================================
+function exportPDF() {
+  alert('PDF export would trigger a server-side render of this dashboard in production.\n\nFor now: use browser Print → Save as PDF (Cmd/Ctrl + P).');
+}
+
+// ============================================================
+//  TIMESTAMP
+// ============================================================
+function updateTimestamp() {
+  const now = new Date();
+  document.getElementById('lastUpdated').textContent =
+    'Updated ' + now.toLocaleTimeString('en-US', {hour:'2-digit',minute:'2-digit'});
+}
+
+// ============================================================
+//  INIT
+// ============================================================
+window.addEventListener('DOMContentLoaded', () => {
+  initReveal();
+  buildCohortTable();
+  buildCharts();
+  updateTimestamp();
+  setTimeout(animateCounters, 200);
+  setInterval(updateTimestamp, 60000);
+});
+
+// ============================================================
+//  VC INVESTOR LOGIN
+// ============================================================
+const VC_SESSION = 'og_vc_session';
+const VC_INVESTORS_KEY = 'og_investors';
+const ROUND_LABELS = {
+  'pre-seed':'Pre-seed','seed':'Seed','series-a':'Series A',
+  'series-b':'Series B','series-c':'Series C+',
+  'strategic':'Strategic / Partner','angel':'Angel'
+};
+const ROUND_COLORS = {
+  'pre-seed':'#8899b4','seed':'#0ee8d4','series-a':'#22c55e',
+  'series-b':'#818cf8','series-c':'#f59e0b',
+  'strategic':'#38bdf8','angel':'#fb7185'
+};
+
+function getInvestors() {
+  try { return JSON.parse(localStorage.getItem(VC_INVESTORS_KEY)) || []; }
+  catch { return []; }
+}
+
+function vcLogin() {
+  const email = (document.getElementById('vcEmail').value||'').trim().toLowerCase();
+  const pass  = (document.getElementById('vcPass').value||'').trim();
+  const investors = getInvestors();
+  const match = investors.find(i => i.email.toLowerCase() === email && i.password === pass);
+  if (match) {
+    sessionStorage.setItem(VC_SESSION, JSON.stringify(match));
+    document.getElementById('vcGate').classList.add('hidden');
+    applyInvestorPersonalization(match);
+  } else {
+    document.getElementById('vcError').textContent = 'Invalid credentials — contact Eric for access';
+    document.getElementById('vcPass').value = '';
+  }
+}
+
+function vcLogout() {
+  sessionStorage.removeItem(VC_SESSION);
+  location.reload();
+}
+
+function applyInvestorPersonalization(inv) {
+  // Show bar
+  const bar = document.getElementById('investorBar');
+  bar.style.display = 'block';
+
+  // Avatar initials + color
+  const initials = inv.name.split(' ').map(w=>w[0]).slice(0,2).join('').toUpperCase();
+  const color    = ROUND_COLORS[inv.round] || '#0ee8d4';
+  const avatar   = document.getElementById('invAvatar');
+  avatar.textContent = initials;
+  avatar.style.background = `linear-gradient(135deg, ${color}, ${color}99)`;
+
+  document.getElementById('invName').textContent  = inv.name;
+  document.getElementById('invFirm').textContent  = inv.firm || 'Independent Investor';
+  document.getElementById('invAmount').textContent = inv.amount || '—';
+
+  // Round badge
+  const label = ROUND_LABELS[inv.round] || inv.round || 'Investor';
+  const rb    = document.getElementById('invRoundBadge');
+  rb.innerHTML = `<span class="round-badge rb-${inv.round}" style="padding:3px 9px;border-radius:5px;font-family:DM Mono,monospace;font-size:9px;letter-spacing:1.2px;text-transform:uppercase;display:inline-block">${label}</span>`;
+
+  // Update topbar badge dynamically
+  const tbBadge = document.querySelector('.tb-badge');
+  if (tbBadge) {
+    tbBadge.innerHTML = `<div class="live-dot"></div>${label} Investor`;
+    tbBadge.style.color = color;
+    tbBadge.style.borderColor = color + '40';
+    tbBadge.style.background  = color + '12';
+  }
+
+  // Update footer note
+  const fn = document.querySelector('.footer-note-badge');
+  if (fn) fn.textContent = '⚡ ' + label;
+
+  // Build greeting
+  buildGreeting(inv);
+}
+
+// Check existing session
+(function() {
+  const saved = sessionStorage.getItem(VC_SESSION);
+  if (saved) {
+    try {
+      const inv = JSON.parse(saved);
+      document.getElementById('vcGate').classList.add('hidden');
+      document.addEventListener('DOMContentLoaded', () => applyInvestorPersonalization(inv));
+    } catch(e) {}
+  } else {
+    
