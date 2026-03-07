@@ -1,0 +1,432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Profile — Omnigenius</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="/css/shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04070f;--bg2:#070c18;--bg3:#0b1120;--surface:#0d1624;--surface2:#111e30;
+  --teal:#0ee8d4;--teal-glow:rgba(14,232,212,0.07);--teal-ring:rgba(14,232,212,0.18);
+  --green:#22c55e;--amber:#f59e0b;--red:#f43f5e;--indigo:#818cf8;
+  --text:#e8f0fc;--text2:#6b80a0;--text3:#273347;
+  --border2:rgba(255,255,255,0.055);--border3:rgba(255,255,255,0.025);
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;
+  background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{text-decoration:none;color:inherit;}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:200;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 24px;background:rgba(4,7,15,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.tb-back{display:flex;align-items:center;gap:6px;padding:5px 10px;border-radius:7px;border:1px solid var(--border2);color:var(--text2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+.tb-back:hover{border-color:var(--teal-ring);color:var(--teal);}
+.tb-logo{display:flex;align-items:center;gap:8px;}
+.tb-wordmark{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--teal);}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-settings{padding:6px 13px;border-radius:7px;border:1px solid var(--border2);color:var(--text2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+.tb-settings:hover{border-color:var(--teal-ring);color:var(--teal);}
+
+/* HERO BANNER */
+.profile-hero{position:relative;height:180px;overflow:hidden;}
+.hero-bg{position:absolute;inset:0;background:linear-gradient(135deg,#04070f 0%,#0a1929 40%,#06141f 100%);}
+.hero-pattern{position:absolute;inset:0;
+  background-image:linear-gradient(rgba(14,232,212,.06) 1px,transparent 1px),linear-gradient(90deg,rgba(14,232,212,.06) 1px,transparent 1px);
+  background-size:28px 28px;}
+.hero-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 80% at 30% 50%,rgba(14,232,212,.07) 0%,transparent 65%);}
+.hero-edit-btn{position:absolute;top:14px;right:14px;padding:6px 13px;border-radius:7px;border:1px solid var(--border2);background:rgba(4,7,15,.7);backdrop-filter:blur(8px);color:var(--text2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+.hero-edit-btn:hover{border-color:var(--teal-ring);color:var(--teal);}
+
+/* AVATAR AREA */
+.avatar-wrap{position:relative;margin-top:-52px;margin-left:36px;z-index:10;display:inline-block;}
+.avatar-ring{width:104px;height:104px;border-radius:24px;padding:3px;background:linear-gradient(135deg,var(--teal),#0a6e65);box-shadow:0 0 24px rgba(14,232,212,.2);}
+.avatar-inner{width:100%;height:100%;border-radius:21px;background:linear-gradient(135deg,var(--teal),#0a6e65);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:32px;color:#050810;overflow:hidden;}
+.avatar-inner img{width:100%;height:100%;object-fit:cover;}
+.online-dot{position:absolute;bottom:6px;right:6px;width:14px;height:14px;border-radius:50%;background:var(--green);border:2.5px solid var(--bg);box-shadow:0 0 6px rgba(34,197,94,.5);}
+
+/* PROFILE CONTENT */
+.profile-content{max-width:860px;margin:0 auto;padding:0 36px 80px;}
+
+/* NAME ROW */
+.name-row{display:flex;align-items:flex-end;justify-content:space-between;padding:18px 0 20px;gap:16px;flex-wrap:wrap;}
+.name-block{}
+.display-name{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-.8px;margin-bottom:4px;}
+.handle{font-family:'DM Mono',monospace;font-size:11px;color:var(--text3);letter-spacing:.5px;}
+.name-actions{display:flex;gap:8px;}
+.btn{padding:8px 16px;border-radius:8px;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;cursor:pointer;transition:all .2s;border:none;}
+.btn-primary{background:var(--teal);color:#050810;}
+.btn-primary:hover{background:#12f5e0;}
+.btn-ghost{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.btn-ghost:hover{border-color:rgba(255,255,255,.1);color:var(--text);}
+.btn-sm{padding:6px 12px;font-size:11px;border-radius:7px;}
+
+/* STATS ROW */
+.stats-row{display:flex;gap:0;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);margin-bottom:28px;}
+.stat-item{flex:1;padding:16px 20px;text-align:center;border-right:1px solid var(--border2);}
+.stat-item:last-child{border-right:none;}
+.stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:22px;letter-spacing:-1px;color:var(--teal);}
+.stat-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-top:3px;}
+
+/* GRID */
+.profile-grid{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;}
+
+/* CARDS */
+.card{background:var(--surface);border:1px solid var(--border2);border-radius:14px;overflow:hidden;margin-bottom:16px;}
+.card-header{padding:14px 18px;border-bottom:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;}
+.card-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;}
+.card-sub{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1px;text-transform:uppercase;color:var(--text3);margin-top:2px;}
+.card-body{padding:16px 18px;}
+
+/* BIO */
+.bio-text{font-size:14px;color:var(--text2);font-weight:300;line-height:1.8;}
+
+/* PLAN BADGE */
+.plan-pill{display:inline-flex;align-items:center;gap:5px;padding:4px 10px;border-radius:20px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;}
+.plan-pro{background:rgba(14,232,212,.08);border:1px solid rgba(14,232,212,.2);color:var(--teal);}
+.plan-free{background:rgba(93,116,153,.08);border:1px solid rgba(93,116,153,.15);color:var(--text2);}
+.plan-adv{background:rgba(129,140,248,.08);border:1px solid rgba(129,140,248,.2);color:var(--indigo);}
+
+/* INFO ROWS */
+.info-row{display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border3);}
+.info-row:last-child{border-bottom:none;}
+.info-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);}
+.info-val{font-size:12px;color:var(--text2);}
+
+/* RECENT CONVERSATIONS */
+.convo-item{display:flex;align-items:flex-start;gap:10px;padding:11px 0;border-bottom:1px solid var(--border3);cursor:pointer;transition:background .1s;}
+.convo-item:last-child{border-bottom:none;}
+.convo-item:hover .convo-title{color:var(--teal);}
+.mode-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px;}
+.convo-body{flex:1;min-width:0;}
+.convo-title{font-size:12px;color:var(--text);font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:3px;transition:color .2s;}
+.convo-meta{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);display:flex;gap:8px;}
+.convo-share-icon{font-size:10px;color:var(--text3);flex-shrink:0;margin-top:2px;}
+
+/* USAGE CHART */
+.usage-bars{display:flex;align-items:flex-end;gap:3px;height:60px;margin-bottom:8px;}
+.usage-bar{flex:1;border-radius:3px 3px 0 0;background:var(--teal);opacity:.35;transition:opacity .2s;}
+.usage-bar.today{opacity:1;}
+.usage-bar:hover{opacity:.8;}
+.usage-labels{display:flex;justify-content:space-between;}
+.usage-label{font-family:'DM Mono',monospace;font-size:8px;color:var(--text3);}
+
+/* SHARED CHATS */
+.shared-item{display:flex;align-items:center;gap:10px;padding:10px 0;border-bottom:1px solid var(--border3);}
+.shared-item:last-child{border-bottom:none;}
+.shared-title{font-size:12px;color:var(--text);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.shared-views{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+.shared-copy{padding:3px 8px;border-radius:5px;border:1px solid var(--border2);background:transparent;color:var(--text3);font-family:'DM Mono',monospace;font-size:8px;cursor:pointer;transition:all .2s;}
+.shared-copy:hover{border-color:var(--teal-ring);color:var(--teal);}
+
+/* DANGER ZONE */
+.danger-row{display:flex;align-items:center;justify-content:space-between;padding:11px 0;border-bottom:1px solid var(--border3);gap:12px;flex-wrap:wrap;}
+.danger-row:last-child{border-bottom:none;}
+.danger-label{font-size:12px;color:var(--text);font-weight:500;}
+.danger-desc{font-size:10px;color:var(--text3);margin-top:2px;font-weight:300;}
+.btn-danger-sm{padding:5px 11px;border-radius:6px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.5px;cursor:pointer;background:rgba(244,63,94,.07);border:1px solid rgba(244,63,94,.18);color:var(--red);transition:all .2s;}
+.btn-danger-sm:hover{background:rgba(244,63,94,.14);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;z-index:500;padding:10px 16px;border-radius:9px;background:var(--surface);border:1px solid var(--border2);box-shadow:0 16px 48px rgba(0,0,0,.6);font-size:12px;display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.toast.show{transform:none;opacity:1;}
+
+@media(max-width:760px){
+  .profile-grid{grid-template-columns:1fr;}
+  .profile-content{padding:0 16px 60px;}
+  .avatar-wrap{margin-left:16px;}
+  .name-row{padding:14px 0 16px;}
+  .stats-row{flex-wrap:wrap;}
+  .stat-item{min-width:50%;}
+}
+</style>
+
+<!-- ── SEO: Primary ───────────────────────────────────────── -->
+<meta name="description" content="Your Omnigenius profile and usage stats.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<link rel="canonical" href="https://omnigenius.co/profile.html">
+
+<!-- ── SEO: OpenGraph ────────────────────────────────────── -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Omnigenius Profile">
+<meta property="og:description" content="Your profile and usage stats.">
+<meta property="og:url" content="https://omnigenius.co/profile.html">
+<meta property="og:image" content="https://omnigenius.co/css/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Omnigenius — AI That Thinks Differently">
+<meta property="og:site_name" content="Omnigenius">
+<meta property="og:locale" content="en_US">
+
+<!-- ── SEO: Twitter / X Card ─────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@omnigenius_ai">
+<meta name="twitter:creator" content="@omnigenius_ai">
+<meta name="twitter:title" content="Omnigenius Profile">
+<meta name="twitter:description" content="Your profile and usage stats.">
+<meta name="twitter:image" content="https://omnigenius.co/css/og-image.png">
+
+<!-- ── SEO: Schema.org JSON-LD ───────────────────────────── -->
+<script type="application/ld+json">
+{{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Omnigenius",
+  "url": "https://omnigenius.co",
+  "description": "ORCA-powered AI with deep reasoning, live web search, and human-like memory.",
+  "potentialAction": {{
+    "@type": "SearchAction",
+    "target": "https://omnigenius.co/user.html?q={{search_term_string}}",
+    "query-input": "required name=search_term_string"
+  }}
+}}
+</script>
+<!-- ── /SEO ───────────────────────────────────────────────── -->
+</head>
+<body>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-left">
+    <a class="tb-back" href="/user.html">← Back to chat</a>
+    <div class="tb-logo">
+      <svg width="24" height="24" viewBox="0 0 90 90" fill="none"><rect width="90" height="90" rx="20" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/><path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.5"/><circle cx="37" cy="29" r="2.5" fill="#0ee8d4"/><circle cx="53" cy="29" r="2.5" fill="#0ee8d4"/><circle cx="45" cy="43" r="2.5" fill="#0ee8d4"/></svg>
+      <span class="tb-wordmark">Omnigenius</span>
+    </div>
+  </div>
+  <div class="tb-right">
+    <a class="tb-settings" href="/settings.html">⚙ Settings</a>
+  </div>
+</header>
+
+<!-- HERO BANNER -->
+<div class="profile-hero">
+  <div class="hero-bg"></div>
+  <div class="hero-pattern"></div>
+  <div class="hero-glow"></div>
+  <button class="hero-edit-btn" onclick="location.href='/settings.html'">✎ Edit profile</button>
+</div>
+
+<!-- AVATAR -->
+<div style="background:var(--bg2);border-bottom:1px solid var(--border2);padding-bottom:0;">
+  <div class="profile-content" style="padding-bottom:0;padding-top:0;">
+    <div class="avatar-wrap">
+      <div class="avatar-ring">
+        <div class="avatar-inner" id="profileAvatar">EM</div>
+      </div>
+      <div class="online-dot"></div>
+    </div>
+
+    <div class="name-row">
+      <div class="name-block">
+        <div class="display-name">Eric Martin</div>
+        <div class="handle">Member since January 2026 · <span class="plan-pill plan-pro">✦ Pro</span></div>
+      </div>
+      <div class="name-actions">
+        <button class="btn btn-ghost btn-sm" onclick="location.href='/settings.html'">⚙ Settings</button>
+        <button class="btn btn-primary btn-sm" onclick="location.href='/user.html'">Open chat →</button>
+      </div>
+    </div>
+
+    <!-- STATS -->
+    <div class="stats-row">
+      <div class="stat-item"><div class="stat-val" id="statQueries">4,830</div><div class="stat-label">Queries total</div></div>
+      <div class="stat-item"><div class="stat-val">847</div><div class="stat-label">Conversations</div></div>
+      <div class="stat-item"><div class="stat-val" id="statShared">12</div><div class="stat-label">Shared chats</div></div>
+      <div class="stat-item"><div class="stat-val">68</div><div class="stat-label">Day streak 🔥</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- MAIN CONTENT -->
+<div class="profile-content" style="padding-top:24px;">
+  <div class="profile-grid">
+
+    <!-- LEFT COLUMN -->
+    <div>
+      <!-- Bio -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">About</div><a class="btn btn-ghost btn-sm" href="/settings.html">Edit</a></div>
+        <div class="card-body">
+          <p class="bio-text" id="bioText">Founder of Omnigenius. Building ORCA — a non-transformer AGI architecture — from scratch. Previously at Amazon FC where the idea started.</p>
+        </div>
+      </div>
+
+      <!-- Account info -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Account</div></div>
+        <div class="card-body">
+          <div class="info-row"><span class="info-label">Email</span><span class="info-val"><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="f99c8b909ab9969497909e9c97908c8ad79a96">[email&#160;protected]</a></span></div>
+          <div class="info-row"><span class="info-label">Plan</span><span class="info-val"><span class="plan-pill plan-pro">✦ Pro</span></span></div>
+          <div class="info-row"><span class="info-label">API access</span><span class="info-val" style="color:var(--text3)">Advanced plan required</span></div>
+          <div class="info-row"><span class="info-label">Member since</span><span class="info-val">January 12, 2026</span></div>
+          <div class="info-row"><span class="info-label">Queries today</span><span class="info-val"><span style="color:var(--teal);font-family:'DM Mono',monospace;font-size:11px">248</span><span style="color:var(--text3);font-family:'DM Mono',monospace;font-size:9px"> / 1,000</span></span></div>
+          <div style="margin-top:6px;height:4px;background:var(--bg3);border-radius:2px;overflow:hidden;">
+            <div style="width:24.8%;height:100%;background:var(--teal);border-radius:2px;"></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Usage chart -->
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Query activity</div><div class="card-sub">Last 14 days</div></div></div>
+        <div class="card-body">
+          <div class="usage-bars" id="usageBars"></div>
+          <div class="usage-labels">
+            <span class="usage-label" id="usageDateStart"></span>
+            <span class="usage-label" style="color:var(--teal)">Today</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Danger zone -->
+      <div class="card" style="border-color:rgba(244,63,94,.1);background:rgba(244,63,94,.02)">
+        <div class="card-header"><div class="card-title" style="color:var(--red)">Danger zone</div></div>
+        <div class="card-body">
+          <div class="danger-row">
+            <div><div class="danger-label">Clear chat history</div><div class="danger-desc">Permanently delete all conversations</div></div>
+            <button class="btn-danger-sm" onclick="showToast('Open Settings → Data & Privacy','⚠')">Clear</button>
+          </div>
+          <div class="danger-row">
+            <div><div class="danger-label">Delete account</div><div class="danger-desc">Irreversible — all data will be removed</div></div>
+            <button class="btn-danger-sm" onclick="showToast('Open Settings → Data & Privacy','⚠')">Delete</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- RIGHT COLUMN -->
+    <div>
+      <!-- Recent conversations -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Recent conversations</div><a class="btn btn-ghost btn-sm" href="/user.html">View all</a></div>
+        <div class="card-body" id="recentConvos"></div>
+      </div>
+
+      <!-- Shared chats -->
+      <div class="card">
+        <div class="card-header"><div><div class="card-title">Shared chats</div><div class="card-sub">Active share links</div></div></div>
+        <div class="card-body" id="sharedChats"></div>
+      </div>
+
+      <!-- Favourite modes -->
+      <div class="card">
+        <div class="card-header"><div class="card-title">Usage by mode</div><div class="card-sub">All time</div></div>
+        <div class="card-body" id="modeBreakdown"></div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TOAST -->
+<div class="toast" id="toast"><span id="toastIcon"></span><span id="toastText"></span></div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// Recent convos data
+const CONVOS = [
+  {title:'How does ORCA differ from transformers?',mode:'reason',color:'#818cf8',time:'2h ago',shared:true},
+  {title:'Draft investor update email for Q1',mode:'chat',color:'#0ee8d4',time:'4h ago',shared:false},
+  {title:'Latest AI papers — March 2026',mode:'search',color:'#38bdf8',time:'Yesterday',shared:false},
+  {title:'Supabase RLS policies for multi-tenant app',mode:'chat',color:'#0ee8d4',time:'Yesterday',shared:true},
+  {title:'Compare ORCA training vs PPO reinforcement',mode:'reason',color:'#818cf8',time:'2d ago',shared:false},
+  {title:'Flask API blueprint pattern explanation',mode:'chat',color:'#0ee8d4',time:'2d ago',shared:false},
+];
+const convosEl = document.getElementById('recentConvos');
+CONVOS.forEach(c => {
+  convosEl.innerHTML += `
+    <div class="convo-item" onclick="location.href='/user.html'">
+      <div class="mode-dot" style="background:${c.color};box-shadow:0 0 5px ${c.color}44;margin-top:5px"></div>
+      <div class="convo-body">
+        <div class="convo-title">${c.title}</div>
+        <div class="convo-meta"><span>${c.mode}</span><span>${c.time}</span></div>
+      </div>
+      ${c.shared ? '<span class="convo-share-icon" title="Shared">🔗</span>' : ''}
+    </div>`;
+});
+
+// Shared chats
+const SHARED = [
+  {title:'How ORCA architecture works',views:142,id:'sh_a1b2c3'},
+  {title:'Supabase RLS multi-tenant setup',views:89,id:'sh_d4e5f6'},
+  {title:'GPT vs ORCA benchmark breakdown',views:34,id:'sh_g7h8i9'},
+];
+const sharedEl = document.getElementById('sharedChats');
+if (!SHARED.length) {
+  sharedEl.innerHTML = '<div style="text-align:center;padding:16px;font-family:\'DM Mono\',monospace;font-size:10px;color:var(--text3)">No shared chats yet</div>';
+} else {
+  SHARED.forEach(s => {
+    sharedEl.innerHTML += `
+      <div class="shared-item">
+        <span style="font-size:12px">🔗</span>
+        <div style="flex:1;min-width:0">
+          <div class="shared-title">${s.title}</div>
+          <div class="shared-views">${s.views} views</div>
+        </div>
+        <button class="shared-copy" onclick="copyShareLink('${s.id}',event)">Copy link</button>
+      </div>`;
+  });
+}
+
+// Mode breakdown
+const MODES = [
+  {mode:'Chat',pct:44,color:'var(--teal)',queries:'2,124'},
+  {mode:'Reason',pct:28,color:'var(--indigo)',queries:'1,352'},
+  {mode:'Search',pct:18,color:'var(--blue,#38bdf8)',queries:'870'},
+  {mode:'Auto',pct:10,color:'var(--amber)',queries:'484'},
+];
+const modeEl = document.getElementById('modeBreakdown');
+MODES.forEach(m => {
+  modeEl.innerHTML += `
+    <div style="margin-bottom:12px">
+      <div style="display:flex;justify-content:space-between;margin-bottom:4px">
+        <span style="font-size:12px;color:var(--text2)">${m.mode}</span>
+        <span style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text2)">${m.queries}</span>
+      </div>
+      <div style="height:5px;background:var(--bg3);border-radius:3px;overflow:hidden">
+        <div style="width:${m.pct}%;height:100%;background:${m.color};border-radius:3px;transition:width 1s ease"></div>
+      </div>
+    </div>`;
+});
+
+// Usage sparkline
+const usage = [120,340,210,480,390,520,180,440,610,380,490,720,560,248];
+const maxU = Math.max(...usage);
+const barsEl = document.getElementById('usageBars');
+const now = new Date();
+const startD = new Date(now); startD.setDate(startD.getDate()-13);
+document.getElementById('usageDateStart').textContent = startD.toLocaleDateString('en-US',{month:'short',day:'numeric'});
+usage.forEach((v,i) => {
+  const h = Math.max(4, Math.round(v/maxU*56));
+  barsEl.innerHTML += `<div class="usage-bar${i===usage.length-1?' today':''}" style="height:${h}px" title="${v} queries"></div>`;
+});
+
+// Counter animation
+function animateCount(el, target) {
+  const dur = 1400; const start = performance.now();
+  function tick(now) {
+    const p = Math.min((now-start)/dur, 1);
+    const e = 1 - Math.pow(1-p, 4);
+    el.textContent = Math.round(target*e).toLocaleString();
+    if (p < 1) requestAnimationFrame(tick);
+  }
+  requestAnimationFrame(tick);
+}
+animateCount(document.getElementById('statQueries'), 4830);
+animateCount(document.getElementById('statShared'), 12);
+
+function copyShareLink(id, e) {
+  e.stopPropagation();
+  navigator.clipboard.writeText(`https://omnigenius.co/share/${id}`);
+  showToast('Share link copied','🔗');
+}
+
+let _tt;
+function showToast(txt, icon='✓') {
+  const t = document.getElementById('toast');
+  document.getElementByI

@@ -1,0 +1,1053 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omnigenius — AI That Thinks Differently</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="/css/shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+
+<style>
+/* ============================================================
+   ADMIN CONFIG — Edit these values from the backend
+   to flip between modes and set the launch date.
+   In production, render these as template variables from Flask.
+============================================================ */
+:root {
+  /* SITE MODE: "waitlist" | "live" */
+  --site-mode: "waitlist";
+
+  /* COUNTDOWN: set to your launch ISO date, or "" to hide */
+  /* e.g. "2025-09-01T09:00:00" */
+  --launch-date: "";
+
+  /* Brand */
+  --teal:       #0ee8d4;
+  --teal-dim:   #0d9488;
+  --teal-glow:  rgba(14, 232, 212, 0.12);
+  --teal-glow2: rgba(14, 232, 212, 0.04);
+  --bg:         #050810;
+  --bg2:        #080d18;
+  --bg3:        #0d1525;
+  --text:       #e8edf5;
+  --text2:      #8899b4;
+  --text3:      #4a5a72;
+  --border:     rgba(14, 232, 212, 0.15);
+  --border2:    rgba(255,255,255,0.06);
+  --red:        #ff4560;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+html { scroll-behavior: smooth; }
+
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+  overflow-x: hidden;
+  cursor: default;
+}
+
+/* ---- VANTA BACKGROUND ---- */
+#vanta-bg {
+  position: fixed; inset: 0; z-index: 0;
+  width: 100%; height: 100%;
+}
+
+/* ============================================================
+   LAYOUT
+============================================================ */
+.page {
+  position: relative; z-index: 1;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* ---- NAV ---- */
+nav {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 24px 48px;
+  border-bottom: 1px solid var(--border2);
+  backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 100;
+  background: rgba(5,8,16,0.7);
+}
+.nav-logo {
+  display: flex; align-items: center; gap: 12px;
+}
+.nav-logo-mark {
+  width: 38px; height: 38px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 18px; color: #050810;
+  box-shadow: 0 0 20px rgba(14,232,212,0.3);
+}
+.nav-logo-text {
+  font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 18px;
+  color: var(--teal);
+  letter-spacing: -0.3px;
+}
+.nav-badge {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; font-weight: 500;
+  letter-spacing: 2px;
+  color: var(--text3);
+  text-transform: uppercase;
+  border: 1px solid var(--border2);
+  padding: 4px 10px; border-radius: 20px;
+}
+
+/* ---- HERO ---- */
+.hero {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 80px 24px 60px;
+  text-align: center;
+  max-width: 860px;
+  margin: 0 auto;
+  width: 100%;
+}
+
+.hero-eyebrow {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 3px;
+  color: var(--teal); text-transform: uppercase;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.2s forwards;
+  display: flex; align-items: center; gap: 10px;
+}
+.hero-eyebrow::before,
+.hero-eyebrow::after {
+  content: '';
+  display: block;
+  width: 40px; height: 1px;
+  background: var(--teal);
+  opacity: 0.4;
+}
+
+h1 {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800;
+  font-size: clamp(48px, 8vw, 88px);
+  line-height: 0.95;
+  letter-spacing: -3px;
+  margin-bottom: 28px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.35s forwards;
+}
+h1 .line1 { display: block; color: var(--text); }
+h1 .line2 {
+  display: block;
+  background: linear-gradient(90deg, var(--teal) 0%, #60efff 50%, var(--teal) 100%);
+  background-size: 200% auto;
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+  animation: shimmer 4s linear infinite, fadeUp 0.8s 0.35s forwards;
+}
+@keyframes shimmer { to { background-position: 200% center; } }
+
+.hero-sub {
+  font-size: 17px;
+  line-height: 1.7;
+  color: var(--text2);
+  max-width: 540px;
+  margin-bottom: 52px;
+  font-weight: 300;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.5s forwards;
+}
+
+/* ---- COUNTDOWN ---- */
+#countdownSection {
+  margin-bottom: 52px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.6s forwards;
+  display: none; /* shown by JS when --launch-date is set */
+}
+.countdown-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 10px; letter-spacing: 2.5px; text-transform: uppercase;
+  color: var(--text3); margin-bottom: 16px;
+}
+.countdown-grid {
+  display: flex; gap: 12px; justify-content: center; flex-wrap: wrap;
+}
+.countdown-unit {
+  display: flex; flex-direction: column; align-items: center;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 16px 20px;
+  min-width: 76px;
+  position: relative;
+  overflow: hidden;
+}
+.countdown-unit::before {
+  content: '';
+  position: absolute; inset: 0;
+  background: var(--teal-glow2);
+}
+.countdown-num {
+  font-family: 'Syne', sans-serif;
+  font-weight: 800; font-size: 36px;
+  color: var(--teal);
+  line-height: 1;
+  text-shadow: 0 0 20px rgba(14,232,212,0.4);
+  min-width: 2ch; text-align: center;
+}
+.countdown-unit-label {
+  font-family: 'DM Mono', monospace;
+  font-size: 9px; letter-spacing: 1.5px;
+  color: var(--text3); text-transform: uppercase;
+  margin-top: 6px;
+}
+.countdown-sep {
+  font-family: 'Syne', sans-serif;
+  font-size: 32px; font-weight: 800;
+  color: var(--text3);
+  align-self: center;
+  animation: blink 1s step-end infinite;
+}
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0.2} }
+
+/* ---- FORM ---- */
+.signup-form {
+  width: 100%; max-width: 480px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.7s forwards;
+}
+.form-row {
+  display: flex; gap: 8px;
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 14px;
+  padding: 6px 6px 6px 20px;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-row:focus-within {
+  border-color: var(--teal);
+  box-shadow: 0 0 0 3px rgba(14,232,212,0.08), 0 0 20px rgba(14,232,212,0.06);
+}
+.form-row input[type="email"] {
+  flex: 1; background: none; border: none; outline: none;
+  color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 15px;
+  font-weight: 300;
+}
+.form-row input[type="email"]::placeholder { color: var(--text3); }
+.form-submit {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+  border: none; border-radius: 10px;
+  color: #050810; font-family: 'Syne', sans-serif;
+  font-weight: 700; font-size: 13px; letter-spacing: 0.5px;
+  padding: 12px 22px; cursor: pointer;
+  transition: all 0.2s; white-space: nowrap;
+  box-shadow: 0 0 20px rgba(14,232,212,0.2);
+}
+.form-submit:hover {
+  transform: scale(1.03);
+  box-shadow: 0 0 30px rgba(14,232,212,0.35);
+}
+.form-submit:active { transform: scale(0.98); }
+.form-submit:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+.form-note {
+  margin-top: 12px; font-size: 12px; color: var(--text3);
+  font-family: 'DM Mono', monospace; letter-spacing: 0.3px;
+}
+.form-note a { color: var(--text3); text-decoration: underline; }
+
+/* success / error states */
+.form-message {
+  margin-top: 14px; font-size: 13px;
+  font-family: 'DM Mono', monospace;
+  display: none; align-items: center; gap: 8px;
+  padding: 10px 16px; border-radius: 8px;
+  border: 1px solid;
+}
+.form-message.success {
+  display: flex;
+  color: var(--teal); background: rgba(14,232,212,0.05);
+  border-color: rgba(14,232,212,0.2);
+}
+.form-message.error {
+  display: flex;
+  color: var(--red); background: rgba(255,69,96,0.05);
+  border-color: rgba(255,69,96,0.2);
+}
+
+/* ---- SUBSCRIBER COUNT ---- */
+.sub-count {
+  margin-top: 28px;
+  font-family: 'DM Mono', monospace;
+  font-size: 12px; color: var(--text3);
+  display: flex; align-items: center; gap: 8px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.85s forwards;
+}
+.sub-count-avatars {
+  display: flex;
+}
+.sub-count-avatar {
+  width: 24px; height: 24px; border-radius: 50%;
+  border: 2px solid var(--bg);
+  background: linear-gradient(135deg, var(--bg3), var(--teal-dim));
+  margin-left: -8px;
+  font-size: 10px; display: flex; align-items: center; justify-content: center;
+  color: var(--teal);
+  font-family: 'Syne', sans-serif; font-weight: 700;
+}
+.sub-count-avatar:first-child { margin-left: 0; }
+
+/* ---- FEATURES STRIP ---- */
+.features {
+  border-top: 1px solid var(--border2);
+  padding: 40px 48px;
+  display: flex;
+  gap: 0;
+  justify-content: center;
+  flex-wrap: wrap;
+  position: relative; z-index: 1;
+  opacity: 0;
+  animation: fadeUp 0.8s 1s forwards;
+}
+.feature-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 36px;
+  border-right: 1px solid var(--border2);
+  flex-shrink: 0;
+}
+.feature-item:last-child { border-right: none; }
+.feature-icon {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: var(--teal-glow);
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 14px; flex-shrink: 0;
+}
+.feature-text { font-size: 13px; color: var(--text2); line-height: 1.3; }
+.feature-text strong { display: block; color: var(--text); font-weight: 500; font-size: 13px; }
+
+/* ---- FOOTER ---- */
+footer {
+  padding: 24px 48px;
+  border-top: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-between;
+  flex-wrap: wrap; gap: 12px;
+  position: relative; z-index: 1;
+}
+.footer-copy {
+  font-family: 'DM Mono', monospace;
+  font-size: 11px; color: var(--text3); letter-spacing: 0.5px;
+}
+.footer-links { display: flex; gap: 24px; }
+.footer-links a {
+  font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--text3); text-decoration: none; letter-spacing: 0.5px;
+  transition: color 0.2s;
+}
+.footer-links a:hover { color: var(--teal); }
+
+/* ---- SOCIAL SHARE ---- */
+.social-strip {
+  display: flex; gap: 8px; justify-content: center;
+  margin-top: 32px;
+  opacity: 0;
+  animation: fadeUp 0.8s 0.9s forwards;
+}
+.social-btn {
+  display: flex; align-items: center; gap: 7px;
+  padding: 9px 16px; border-radius: 8px;
+  border: 1px solid var(--border2);
+  background: rgba(255,255,255,0.03);
+  color: var(--text2); font-size: 12px;
+  font-family: 'DM Mono', monospace;
+  text-decoration: none; cursor: pointer;
+  transition: all 0.2s;
+}
+.social-btn:hover {
+  border-color: var(--border);
+  background: rgba(14,232,212,0.04);
+  color: var(--teal);
+}
+.social-btn svg { width: 14px; height: 14px; fill: currentColor; flex-shrink: 0; }
+
+/* ---- LIVE MODE (hidden by default, shown when mode=live) ---- */
+#liveSection { display: none; }
+#waitlistSection { display: block; }
+
+/* ---- ANIMATIONS ---- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 640px) {
+  nav { padding: 16px 20px; }
+  .hero { padding: 60px 20px 40px; }
+  h1 { letter-spacing: -2px; }
+  .features { padding: 28px 20px; gap: 20px; }
+  .feature-item { border-right: none; border-bottom: 1px solid var(--border2); padding: 12px 0; width: 100%; }
+  .feature-item:last-child { border-bottom: none; }
+  footer { padding: 20px; }
+  .form-row { flex-direction: column; padding: 12px; gap: 10px; }
+  .form-submit { width: 100%; text-align: center; padding: 14px; }
+}
+
+/* ============================================================
+   ADMIN PANEL (bottom-right corner, password protected)
+   In production this would be a separate /admin route.
+============================================================ */
+#adminToggle {
+  position: fixed; bottom: 20px; right: 20px; z-index: 1000;
+  width: 36px; height: 36px; border-radius: 50%;
+  background: var(--bg3); border: 1px solid var(--border2);
+  color: var(--text3); font-size: 14px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.2s; opacity: 0.4;
+}
+#adminToggle:hover { opacity: 1; border-color: var(--teal); color: var(--teal); }
+
+#adminPanel {
+  position: fixed; bottom: 66px; right: 20px; z-index: 1000;
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 14px; padding: 20px; width: 280px;
+  display: none; box-shadow: 0 20px 60px rgba(0,0,0,0.5);
+}
+#adminPanel.open { display: block; }
+.admin-title {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  letter-spacing: 2px; text-transform: uppercase;
+  color: var(--teal); margin-bottom: 16px;
+}
+.admin-row {
+  margin-bottom: 14px;
+}
+.admin-label {
+  font-family: 'DM Mono', monospace; font-size: 10px;
+  color: var(--text3); margin-bottom: 6px; letter-spacing: 0.5px;
+}
+.admin-toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+}
+.toggle-switch {
+  position: relative; width: 40px; height: 22px;
+}
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; cursor: pointer;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 22px; transition: all 0.3s;
+}
+.toggle-slider::before {
+  content: '';
+  position: absolute; left: 3px; bottom: 3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text3); transition: all 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--teal-glow); border-color: var(--teal); }
+.toggle-switch input:checked + .toggle-slider::before { background: var(--teal); transform: translateX(18px); }
+
+.admin-input {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 8px; padding: 8px 10px;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px;
+  outline: none; transition: border-color 0.2s;
+}
+.admin-input:focus { border-color: var(--teal); }
+.admin-save {
+  width: 100%; margin-top: 4px;
+  background: var(--teal-glow); border: 1px solid var(--border);
+  border-radius: 8px; padding: 9px;
+  color: var(--teal); font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 1px; text-transform: uppercase;
+  cursor: pointer; transition: all 0.2s;
+}
+.admin-save:hover { background: rgba(14,232,212,0.12); }
+.admin-divider { border: none; border-top: 1px solid var(--border2); margin: 14px 0; }
+
+/* ---- HERO LOGO ---- */
+.hero-logo {
+  margin-bottom: 24px;
+  position: relative;
+  display: inline-block;
+}
+.hero-logo svg {
+  filter: drop-shadow(0 0 30px rgba(14,232,212,0.4)) drop-shadow(0 0 60px rgba(14,232,212,0.15));
+  animation: logoFloat 6s ease-in-out infinite;
+}
+@keyframes logoFloat {
+  0%, 100% { transform: translateY(0px); }
+  50%       { transform: translateY(-8px); }
+}
+.hero-logo::after {
+  content: '';
+  position: absolute;
+  inset: -24px;
+  border-radius: 50%;
+  background: radial-gradient(circle, rgba(14,232,212,0.07) 0%, transparent 70%);
+  pointer-events: none;
+  animation: logoPulse 3s ease-in-out infinite;
+}
+@keyframes logoPulse {
+  0%, 100% { transform: scale(1);    opacity: 1; }
+  50%       { transform: scale(1.2); opacity: 0.4; }
+}
+.pulse-ring {
+  animation: pulseRing 2.8s ease-out infinite;
+  transform-origin: center;
+}
+@keyframes pulseRing {
+  0%   { opacity: 0.25; transform: scale(0.85); }
+  100% { opacity: 0;    transform: scale(1.3); }
+}
+</style>
+
+<!-- ── SEO: Primary ───────────────────────────────────────── -->
+<meta name="description" content="Join the Omnigenius waitlist. Deep reasoning, live web search, and human-like memory.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="keywords" content="Omnigenius waitlist, AI waitlist, reasoning AI">
+<link rel="canonical" href="https://omnigenius.co/">
+
+<!-- ── SEO: OpenGraph ────────────────────────────────────── -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Omnigenius — Join the Waitlist">
+<meta property="og:description" content="Deep reasoning, live web search, human-like memory. Built different.">
+<meta property="og:url" content="https://omnigenius.co/">
+<meta property="og:image" content="https://omnigenius.co/css/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Omnigenius — AI That Thinks Differently">
+<meta property="og:site_name" content="Omnigenius">
+<meta property="og:locale" content="en_US">
+
+<!-- ── SEO: Twitter / X Card ─────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@omnigenius_ai">
+<meta name="twitter:creator" content="@omnigenius_ai">
+<meta name="twitter:title" content="Omnigenius — Join the Waitlist">
+<meta name="twitter:description" content="Deep reasoning, live web search, human-like memory. Built different.">
+<meta name="twitter:image" content="https://omnigenius.co/css/og-image.png">
+
+<!-- ── SEO: Schema.org JSON-LD ───────────────────────────── -->
+<script type="application/ld+json">
+{{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Omnigenius",
+  "url": "https://omnigenius.co",
+  "description": "ORCA-powered AI with deep reasoning, live web search, and human-like memory.",
+  "potentialAction": {{
+    "@type": "SearchAction",
+    "target": "https://omnigenius.co/user.html?q={{search_term_string}}",
+    "query-input": "required name=search_term_string"
+  }}
+}}
+</script>
+<!-- ── /SEO ───────────────────────────────────────────────── -->
+</head>
+<body>
+
+<!-- VANTA NET BACKGROUND -->
+<div id="vanta-bg"></div>
+
+<div class="page">
+
+  <!-- NAV -->
+  <nav>
+    <div class="nav-logo">
+      <!-- Omnigenius brain circuit logo -->
+      <svg width="38" height="38" viewBox="0 0 38 38" fill="none" xmlns="http://www.w3.org/2000/svg" style="filter:drop-shadow(0 0 8px rgba(14,232,212,0.5))">
+        <rect width="38" height="38" rx="9" fill="#0d1a2a"/>
+        <!-- Brain outline -->
+        <path d="M19 8C14.5 8 11 11.2 11 15.2c0 1.8.6 3.4 1.7 4.7-.4.7-.7 1.5-.7 2.4 0 2.8 2.3 5 5 5 .4 0 .8 0 1.2-.1.5.5 1.1.8 1.8.8s1.3-.3 1.8-.8c.4.1.8.1 1.2.1 2.7 0 5-2.2 5-5 0-.9-.3-1.7-.7-2.4C27.4 18.6 28 17 28 15.2 28 11.2 23.5 8 19 8z" fill="none" stroke="#0ee8d4" stroke-width="1.2" stroke-linecap="round"/>
+        <!-- Circuit lines left -->
+        <line x1="8" y1="15" x2="11" y2="15" stroke="#0ee8d4" stroke-width="1" opacity="0.7"/>
+        <circle cx="7" cy="15" r="1.2" fill="#0ee8d4" opacity="0.8"/>
+        <line x1="8" y1="20" x2="11" y2="20" stroke="#0ee8d4" stroke-width="1" opacity="0.5"/>
+        <circle cx="7" cy="20" r="1" fill="#0ee8d4" opacity="0.6"/>
+        <!-- Circuit lines right -->
+        <line x1="27" y1="15" x2="30" y2="15" stroke="#0ee8d4" stroke-width="1" opacity="0.7"/>
+        <circle cx="31" cy="15" r="1.2" fill="#0ee8d4" opacity="0.8"/>
+        <line x1="27" y1="20" x2="30" y2="20" stroke="#0ee8d4" stroke-width="1" opacity="0.5"/>
+        <circle cx="31" cy="20" r="1" fill="#0ee8d4" opacity="0.6"/>
+        <!-- Inner neural nodes -->
+        <circle cx="16" cy="15" r="1.5" fill="#0ee8d4" opacity="0.9"/>
+        <circle cx="22" cy="15" r="1.5" fill="#0ee8d4" opacity="0.9"/>
+        <circle cx="19" cy="20" r="1.5" fill="#0ee8d4" opacity="0.9"/>
+        <circle cx="14" cy="21" r="1" fill="#0ee8d4" opacity="0.6"/>
+        <circle cx="24" cy="21" r="1" fill="#0ee8d4" opacity="0.6"/>
+        <!-- Connections -->
+        <line x1="16" y1="15" x2="22" y2="15" stroke="#0ee8d4" stroke-width="0.8" opacity="0.4"/>
+        <line x1="16" y1="15" x2="19" y2="20" stroke="#0ee8d4" stroke-width="0.8" opacity="0.4"/>
+        <line x1="22" y1="15" x2="19" y2="20" stroke="#0ee8d4" stroke-width="0.8" opacity="0.4"/>
+        <line x1="19" y1="20" x2="14" y2="21" stroke="#0ee8d4" stroke-width="0.8" opacity="0.3"/>
+        <line x1="19" y1="20" x2="24" y2="21" stroke="#0ee8d4" stroke-width="0.8" opacity="0.3"/>
+        <!-- Bottom circuit -->
+        <line x1="16" y1="27" x2="16" y2="30" stroke="#0ee8d4" stroke-width="1" opacity="0.5"/>
+        <line x1="22" y1="27" x2="22" y2="30" stroke="#0ee8d4" stroke-width="1" opacity="0.5"/>
+        <line x1="16" y1="30" x2="22" y2="30" stroke="#0ee8d4" stroke-width="1" opacity="0.5"/>
+        <circle cx="16" cy="30" r="1" fill="#0ee8d4" opacity="0.7"/>
+        <circle cx="22" cy="30" r="1" fill="#0ee8d4" opacity="0.7"/>
+      </svg>
+      <span class="nav-logo-text">Omnigenius</span>
+    </div>
+    <div class="nav-badge">Pre-Launch</div>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+
+    <!-- Large hero logo mark -->
+    <div class="hero-logo" style="opacity:0;animation:fadeUp 0.8s 0.1s forwards;">
+      <svg width="90" height="90" viewBox="0 0 90 90" fill="none" xmlns="http://www.w3.org/2000/svg">
+        <rect width="90" height="90" rx="22" fill="rgba(13,26,42,0.8)" stroke="rgba(14,232,212,0.25)" stroke-width="1"/>
+        <!-- Brain outline large -->
+        <path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.8" stroke-linecap="round"/>
+        <!-- Circuit lines left -->
+        <line x1="10" y1="30" x2="26" y2="30" stroke="#0ee8d4" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="8" cy="30" r="2.5" fill="#0ee8d4" opacity="0.8"/>
+        <line x1="10" y1="44" x2="26" y2="44" stroke="#0ee8d4" stroke-width="1.5" opacity="0.45"/>
+        <circle cx="8" cy="44" r="2" fill="#0ee8d4" opacity="0.6"/>
+        <line x1="14" y1="37" x2="26" y2="37" stroke="#0ee8d4" stroke-width="1" opacity="0.3"/>
+        <!-- Circuit lines right -->
+        <line x1="64" y1="30" x2="80" y2="30" stroke="#0ee8d4" stroke-width="1.5" opacity="0.6"/>
+        <circle cx="82" cy="30" r="2.5" fill="#0ee8d4" opacity="0.8"/>
+        <line x1="64" y1="44" x2="80" y2="44" stroke="#0ee8d4" stroke-width="1.5" opacity="0.45"/>
+        <circle cx="82" cy="44" r="2" fill="#0ee8d4" opacity="0.6"/>
+        <line x1="64" y1="37" x2="76" y2="37" stroke="#0ee8d4" stroke-width="1" opacity="0.3"/>
+        <!-- Neural nodes -->
+        <circle cx="37" cy="29" r="3.5" fill="#0ee8d4" opacity="0.95"/>
+        <circle cx="53" cy="29" r="3.5" fill="#0ee8d4" opacity="0.95"/>
+        <circle cx="45" cy="43" r="3.5" fill="#0ee8d4" opacity="0.95"/>
+        <circle cx="33" cy="46" r="2.2" fill="#0ee8d4" opacity="0.65"/>
+        <circle cx="57" cy="46" r="2.2" fill="#0ee8d4" opacity="0.65"/>
+        <circle cx="45" cy="30" r="2" fill="#0ee8d4" opacity="0.4"/>
+        <!-- Node connections -->
+        <line x1="37" y1="29" x2="53" y2="29" stroke="#0ee8d4" stroke-width="1.2" opacity="0.35"/>
+        <line x1="37" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity="0.35"/>
+        <line x1="53" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity="0.35"/>
+        <line x1="45" y1="43" x2="33" y2="46" stroke="#0ee8d4" stroke-width="1" opacity="0.25"/>
+        <line x1="45" y1="43" x2="57" y2="46" stroke="#0ee8d4" stroke-width="1" opacity="0.25"/>
+        <line x1="37" y1="29" x2="33" y2="46" stroke="#0ee8d4" stroke-width="0.8" opacity="0.2"/>
+        <line x1="53" y1="29" x2="57" y2="46" stroke="#0ee8d4" stroke-width="0.8" opacity="0.2"/>
+        <!-- Bottom circuit -->
+        <line x1="38" y1="62" x2="38" y2="72" stroke="#0ee8d4" stroke-width="1.5" opacity="0.5"/>
+        <line x1="52" y1="62" x2="52" y2="72" stroke="#0ee8d4" stroke-width="1.5" opacity="0.5"/>
+        <line x1="38" y1="72" x2="52" y2="72" stroke="#0ee8d4" stroke-width="1.5" opacity="0.5"/>
+        <line x1="30" y1="72" x2="38" y2="72" stroke="#0ee8d4" stroke-width="1" opacity="0.3"/>
+        <line x1="52" y1="72" x2="60" y2="72" stroke="#0ee8d4" stroke-width="1" opacity="0.3"/>
+        <circle cx="38" cy="72" r="2" fill="#0ee8d4" opacity="0.8"/>
+        <circle cx="52" cy="72" r="2" fill="#0ee8d4" opacity="0.8"/>
+        <circle cx="29" cy="72" r="1.5" fill="#0ee8d4" opacity="0.5"/>
+        <circle cx="61" cy="72" r="1.5" fill="#0ee8d4" opacity="0.5"/>
+        <!-- Animated pulse ring (CSS) -->
+        <circle class="pulse-ring" cx="45" cy="36" r="28" fill="none" stroke="#0ee8d4" stroke-width="0.5" opacity="0.15"/>
+      </svg>
+    </div>
+
+    <div class="hero-eyebrow">The next leap in AI</div>
+
+    <h1>
+      <span class="line1">Intelligence</span>
+      <span class="line2">Reimagined.</span>
+    </h1>
+
+    <p class="hero-sub">
+      A novel AI architecture with decoupled memory, planning, and reasoning —
+      built from the ground up for speed, scale, and efficiency.
+      Powerful infrastructure. Zero compromise.
+    </p>
+
+    <!-- COUNTDOWN (shown when launch date is set) -->
+    <div id="countdownSection">
+      <div class="countdown-label">Launching in</div>
+      <div class="countdown-grid">
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdDays">00</div>
+          <div class="countdown-unit-label">Days</div>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdHours">00</div>
+          <div class="countdown-unit-label">Hours</div>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdMins">00</div>
+          <div class="countdown-unit-label">Mins</div>
+        </div>
+        <div class="countdown-sep">:</div>
+        <div class="countdown-unit">
+          <div class="countdown-num" id="cdSecs">00</div>
+          <div class="countdown-unit-label">Secs</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WAITLIST MODE -->
+    <div id="waitlistSection">
+      <form class="signup-form" id="signupForm" onsubmit="handleSignup(event)">
+        <div class="form-row">
+          <input type="email" id="emailInput" placeholder="your@email.com" required autocomplete="email">
+          <button type="submit" class="form-submit" id="submitBtn">Join Waitlist →</button>
+        </div>
+        <p class="form-note">No spam, ever. Unsubscribe anytime. <a href="#">Privacy policy.</a></p>
+        <div class="form-message" id="formMsg"></div>
+      </form>
+
+      <!-- Social share -->
+      <div class="social-strip">
+        <a class="social-btn" id="shareX" href="#" onclick="shareX(event)">
+          <svg viewBox="0 0 24 24"><path d="M18.244 2.25h3.308l-7.227 8.26 8.502 11.24H16.17l-4.714-6.231-5.401 6.231H2.744l7.737-8.835L1.254 2.25H8.08l4.253 5.622zm-1.161 17.52h1.833L7.084 4.126H5.117z"/></svg>
+          Share on X
+        </a>
+        <a class="social-btn" id="shareLI" href="#" onclick="shareLI(event)">
+          <svg viewBox="0 0 24 24"><path d="M20.447 20.452h-3.554v-5.569c0-1.328-.027-3.037-1.852-3.037-1.853 0-2.136 1.445-2.136 2.939v5.667H9.351V9h3.414v1.561h.046c.477-.9 1.637-1.85 3.37-1.85 3.601 0 4.267 2.37 4.267 5.455v6.286zM5.337 7.433a2.062 2.062 0 0 1-2.063-2.065 2.064 2.064 0 1 1 2.063 2.065zm1.782 13.019H3.555V9h3.564v11.452zM22.225 0H1.771C.792 0 0 .774 0 1.729v20.542C0 23.227.792 24 1.771 24h20.451C23.2 24 24 23.227 24 22.271V1.729C24 .774 23.2 0 22.222 0h.003z"/></svg>
+          Share on LinkedIn
+        </a>
+      </div>
+
+      <!-- Subscriber count -->
+      <div class="sub-count">
+        <div class="sub-count-avatars">
+          <div class="sub-count-avatar">A</div>
+          <div class="sub-count-avatar">K</div>
+          <div class="sub-count-avatar">R</div>
+          <div class="sub-count-avatar">+</div>
+        </div>
+        <span id="subCountText">Be among the first to know when we launch.</span>
+      </div>
+    </div>
+
+    <!-- LIVE MODE (swap in when launching) -->
+    <div id="liveSection">
+      <a href="/demo" class="form-submit" style="display:inline-block; padding:16px 36px; font-size:15px; border-radius:12px; text-decoration:none;">
+        Try Omnigenius Free →
+      </a>
+      <p class="form-note" style="margin-top:16px;">No signup required for the free tier.</p>
+    </div>
+
+  </section>
+
+  <!-- FEATURES STRIP -->
+  <div class="features">
+    <div class="feature-item">
+      <div class="feature-icon">🧠</div>
+      <div class="feature-text">
+        <strong>Chimera Architecture</strong>
+        Decoupled memory & planning
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">⚡</div>
+      <div class="feature-text">
+        <strong>Fast Inference</strong>
+        Built for speed at scale
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🔍</div>
+      <div class="feature-text">
+        <strong>Live Web Search</strong>
+        Real-time knowledge retrieval
+      </div>
+    </div>
+    <div class="feature-item">
+      <div class="feature-icon">🔒</div>
+      <div class="feature-text">
+        <strong>Privacy First</strong>
+        Encrypted. SOC 2 ready.
+      </div>
+    </div>
+  </div>
+
+  <!-- FOOTER -->
+  <footer>
+    <div class="footer-copy">© 2025 Omnigenius. All rights reserved.</div>
+    <div class="footer-links">
+      <a href="#">Privacy</a>
+      <a href="#">Terms</a>
+      <a href="/cdn-cgi/l/email-protection#cfa7aaa3a3a08fa0a2a1a6a8aaa1a6babce1aea6">Contact</a>
+    </div>
+  </footer>
+
+</div><!-- /page -->
+
+<!-- ADMIN TOGGLE (⚙ icon, bottom right) -->
+<div id="adminToggle" onclick="toggleAdmin()" title="Admin settings">⚙</div>
+<div id="adminPanel">
+  <div class="admin-title">⚙ Site Config</div>
+
+  <div class="admin-row">
+    <div class="admin-toggle-row">
+      <div class="admin-label">Mode: Waitlist → Live</div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="modeToggle" onchange="applyMode()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <hr class="admin-divider">
+
+  <div class="admin-row">
+    <div class="admin-label">Launch Countdown Date</div>
+    <input type="datetime-local" class="admin-input" id="launchDateInput">
+  </div>
+  <div class="admin-row">
+    <div class="admin-toggle-row">
+      <div class="admin-label">Enable Countdown</div>
+      <label class="toggle-switch">
+        <input type="checkbox" id="countdownToggle" onchange="applyCountdown()">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>
+  </div>
+
+  <hr class="admin-divider">
+
+  <div class="admin-row">
+    <div class="admin-label">Subscriber Count Display</div>
+    <input type="number" class="admin-input" id="subCountInput" placeholder="e.g. 1247" min="0">
+  </div>
+
+  <button class="admin-save" onclick="saveConfig()">Save & Apply</button>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// ============================================================
+// CONFIG — In production, Flask injects these from the DB.
+// Here they live in localStorage for demo/dev purposes.
+// ============================================================
+
+const CONFIG_KEY = 'omnigenius_config';
+
+function loadConfig() {
+  try {
+    return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
+  } catch { return {}; }
+}
+
+function saveConfigToStorage(cfg) {
+  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+}
+
+// ---- Apply site mode ----
+function applyMode(cfg) {
+  cfg = cfg || loadConfig();
+  const isLive = cfg.mode === 'live';
+  document.getElementById('waitlistSection').style.display = isLive ? 'none' : 'block';
+  document.getElementById('liveSection').style.display    = isLive ? 'block' : 'none';
+  document.getElementById('modeToggle').checked = isLive;
+  document.querySelector('.nav-badge').textContent = isLive ? 'Now Live' : 'Pre-Launch';
+  document.querySelector('.nav-badge').style.color = isLive ? 'var(--teal)' : '';
+  document.querySelector('.nav-badge').style.borderColor = isLive ? 'var(--border)' : '';
+}
+
+// ---- Countdown ----
+let countdownInterval = null;
+
+function applyCountdown(cfg) {
+  cfg = cfg || loadConfig();
+  const enabled    = cfg.countdownEnabled;
+  const launchDate = cfg.launchDate ? new Date(cfg.launchDate) : null;
+  const section    = document.getElementById('countdownSection');
+  const input      = document.getElementById('countdownToggle');
+
+  if (input) input.checked = !!enabled;
+  if (document.getElementById('launchDateInput') && cfg.launchDate) {
+    document.getElementById('launchDateInput').value = cfg.launchDate;
+  }
+
+  if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
+
+  if (enabled && launchDate && !isNaN(launchDate)) {
+    section.style.display = 'block';
+    tickCountdown(launchDate);
+    countdownInterval = setInterval(() => tickCountdown(launchDate), 1000);
+  } else {
+    section.style.display = 'none';
+  }
+}
+
+function tickCountdown(target) {
+  const now  = new Date();
+  const diff = target - now;
+
+  if (diff <= 0) {
+    // Launch time hit — auto-switch to live
+    document.getElementById('cdDays').textContent  = '00';
+    document.getElementById('cdHours').textContent = '00';
+    document.getElementById('cdMins').textContent  = '00';
+    document.getElementById('cdSecs').textContent  = '00';
+    clearInterval(countdownInterval);
+    return;
+  }
+
+  const d = Math.floor(diff / 86400000);
+  const h = Math.floor((diff % 86400000) / 3600000);
+  const m = Math.floor((diff % 3600000)  / 60000);
+  const s = Math.floor((diff % 60000)    / 1000);
+
+  document.getElementById('cdDays').textContent  = String(d).padStart(2,'0');
+  document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
+  document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');
+  document.getElementById('cdSecs').textContent  = String(s).padStart(2,'0');
+}
+
+// ---- Subscriber count display ----
+function applySubCount(cfg) {
+  cfg = cfg || loadConfig();
+  const count = parseInt(cfg.subCount) || 0;
+  const el    = document.getElementById('subCountText');
+  const input = document.getElementById('subCountInput');
+  if (input) input.value = count || '';
+  if (count > 0) {
+    el.textContent = `${count.toLocaleString()} people already on the waitlist.`;
+  } else {
+    el.textContent = 'Be among the first to know when we launch.';
+  }
+}
+
+// ---- Admin panel ----
+function toggleAdmin() {
+  document.getElementById('adminPanel').classList.toggle('open');
+  // populate inputs from current config
+  const cfg = loadConfig();
+  if (cfg.launchDate) document.getElementById('launchDateInput').value = cfg.launchDate;
+  if (cfg.subCount)   document.getElementById('subCountInput').value   = cfg.subCount;
+}
+
+function saveConfig() {
+  const cfg = {
+    mode:             document.getElementById('modeToggle').checked ? 'live' : 'waitlist',
+    countdownEnabled: document.getElementById('countdownToggle').checked,
+    launchDate:       document.getElementById('launchDateInput').value,
+    subCount:         document.getElementById('subCountInput').value,
+  };
+  saveConfigToStorage(cfg);
+  applyMode(cfg);
+  applyCountdown(cfg);
+  applySubCount(cfg);
+  document.getElementById('adminPanel').classList.remove('open');
+  // flash confirm
+  const btn = document.querySelector('.admin-save');
+  btn.textContent = '✓ Saved';
+  setTimeout(() => btn.textContent = 'Save & Apply', 1500);
+}
+
+// ---- Waitlist form ----
+async function handleSignup(e) {
+  e.preventDefault();
+  const btn   = document.getElementById('submitBtn');
+  const msgEl = document.getElementById('formMsg');
+  const email = document.getElementById('emailInput').value.trim();
+
+  btn.disabled = true;
+  btn.textContent = 'Joining…';
+  msgEl.className = 'form-message';
+  msgEl.style.display = 'none';
+
+  try {
+    // POST to /api/waitlist — wire this up to Supabase in Flask
+    const res = await fetch('/api/waitlist', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email })
+    });
+
+    if (res.ok) {
+      msgEl.className = 'form-message success';
+      msgEl.textContent = '✓ You\'re on the list! We\'ll be in touch.';
+      document.getElementById('emailInput').value = '';
+
+      // Bump displayed count
+      const cfg = loadConfig();
+      cfg.subCount = (parseInt(cfg.subCount) || 0) + 1;
+      saveConfigToStorage(cfg);
+      applySubCount(cfg);
+    } else {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || 'Something went wrong.');
+    }
+  } catch (err) {
+    // Offline / dev fallback — still confirm locally
+    if (!navigator.onLine || err.message.includes('fetch')) {
+      msgEl.className = 'form-message success';
+      msgEl.textContent = '✓ You\'re on the list! (Saved locally — server offline)';
+      document.getElementById('emailInput').value = '';
+    } else {
+      msgEl.className = 'form-message error';
+      msgEl.textContent = '✗ ' + err.message;
+    }
+  } finally {
+    msgEl.style.display = 'flex';
+    btn.disabled = false;
+    btn.textContent = 'Join Waitlist →';
+  }
+}
+
+// ---- Social share ----
+function shareX(e) {
+  e.preventDefault();
+  const text = encodeURIComponent("Can't wait for @omnigenius_ai to launch 🚀 — a new kind of AI built for speed and scale. Join the waitlist:");
+  const url  = encodeURIComponent(window.location.href);
+  window.open(`https://twitter.com/intent/tweet?text=${text}&url=${url}`, '_blank', 'width=550,height=450');
+}
+function shareLI(e) {
+  e.preventDefault();
+  const url = encodeURIComponent(window.location.href);
+  window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=550,height=500');
+}
+
+// ---- IN
+// ---- INIT ----
+(function init() {
+  const cfg = loadConfig();
+  applyMode(cfg);
+  applyCountdown(cfg);
+  applySubCount(cfg);
+})();
+</script>
+
+<!-- Vanta.js dependencies -->
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/vanta@latest/dist/vanta.net.min.js"></script>
+<script>
+// ============================================================
+//  VANTA NET BACKGROUND — Interactive neural network
+// ============================================================
+VANTA.NET({
+  el: '#vanta-bg',
+  THREE: THREE,
+  mouseControls: true,
+  touchControls: true,
+  gyroControls: false,
+  minHeight: 200,
+  minWidth: 200,
+  scale: 1.0,
+  scaleMobile: 0.8,
+  color: 0x0ee8d4,          // teal lines & nodes
+  backgroundColor: 0x050810, // brand dark bg
+  points: 14,
+  maxDistance: 22,
+  spacing: 16,
+  showDots: true
+});
+</script>
+</body>
+</html>

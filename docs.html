@@ -1,0 +1,1643 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>API Documentation — Omnigenius</title>
+<!-- Machine-readable API metadata -->
+<meta name="api-version" content="v1">
+<meta name="api-base-url" content="https://api.omnigenius.co/v1">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="/css/shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+/* ============================================================
+   TOKENS
+============================================================ */
+:root {
+  --bg:         #04070f;
+  --bg2:        #070c18;
+  --bg3:        #0b1120;
+  --bg4:        #0f1828;
+  --surface:    #0d1624;
+  --surface2:   #111e30;
+  --teal:       #0ee8d4;
+  --teal-dim:   #0a9e8e;
+  --teal-glow:  rgba(14,232,212,0.08);
+  --green:      #22c55e;
+  --red:        #f43f5e;
+  --amber:      #f59e0b;
+  --indigo:     #818cf8;
+  --blue:       #38bdf8;
+  --rose:       #fb7185;
+  --text:       #e8f0fc;
+  --text2:      #6b80a0;
+  --text3:      #2e3f58;
+  --border:     rgba(14,232,212,0.10);
+  --border2:    rgba(255,255,255,0.055);
+  --border3:    rgba(255,255,255,0.025);
+  --shadow:     0 4px 24px rgba(0,0,0,0.5);
+  --nav-w:      260px;
+  --content-w:  640px;
+  --code-w:     400px;
+}
+
+/* ============================================================
+   RESET
+============================================================ */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{
+  font-family:'DM Sans',sans-serif;
+  background:var(--bg);color:var(--text);
+  min-height:100vh;overflow-x:hidden;
+  background-image:
+    linear-gradient(rgba(255,255,255,.018) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);
+  background-size:44px 44px;
+}
+button,input,select,textarea{font-family:inherit;}
+
+/* ============================================================
+   TOPBAR
+============================================================ */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:54px;
+  background:rgba(4,7,15,0.94);backdrop-filter:blur(16px);
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+}
+.tb-left{display:flex;align-items:center;gap:12px;}
+.tb-logo{display:flex;align-items:center;gap:8px;text-decoration:none;}
+.tb-logo svg{filter:drop-shadow(0 0 5px rgba(14,232,212,.35));}
+.tb-wordmark{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--teal);}
+.tb-div{width:1px;height:18px;background:var(--border2);}
+.tb-section{font-family:'DM Mono',monospace;font-size:11px;letter-spacing:2px;text-transform:uppercase;color:var(--text2);}
+.tb-right{display:flex;align-items:center;gap:10px;}
+.tb-version{
+  padding:4px 10px;border-radius:5px;
+  background:var(--teal-glow);border:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;
+  text-transform:uppercase;color:var(--teal);
+}
+.tb-link{
+  font-size:12px;color:var(--text2);text-decoration:none;
+  font-family:'DM Mono',monospace;letter-spacing:.3px;transition:color .2s;
+}
+.tb-link:hover{color:var(--teal);}
+.tb-key-btn{
+  padding:6px 14px;border-radius:7px;
+  background:var(--teal);border:none;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:12px;
+  color:#050810;cursor:pointer;transition:all .2s;
+}
+.tb-key-btn:hover{background:#12f5e0;}
+
+/* ============================================================
+   THREE-COLUMN LAYOUT
+============================================================ */
+.shell{
+  display:flex;
+  padding-top:54px;
+  min-height:100vh;
+}
+
+/* ---- LEFT NAV ---- */
+.sidenav{
+  width:var(--nav-w);flex-shrink:0;
+  position:fixed;top:54px;left:0;bottom:0;
+  overflow-y:auto;
+  background:var(--bg2);
+  border-right:1px solid var(--border2);
+  padding:20px 0 40px;
+}
+.sidenav::-webkit-scrollbar{width:3px;}
+.sidenav::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+.nav-search{
+  margin:0 12px 14px;position:relative;
+}
+.nav-search input{
+  width:100%;padding:7px 10px 7px 28px;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:7px;color:var(--text);font-size:11px;
+  outline:none;transition:border-color .2s;
+  font-family:'DM Mono',monospace;
+}
+.nav-search input:focus{border-color:var(--border);}
+.nav-search input::placeholder{color:var(--text3);}
+.nav-search::before{
+  content:'⌕';position:absolute;left:9px;top:50%;
+  transform:translateY(-50%);color:var(--text3);font-size:12px;pointer-events:none;
+}
+
+.nav-group{margin-bottom:4px;}
+.nav-group-label{
+  padding:10px 16px 4px;
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:2px;text-transform:uppercase;color:var(--text3);
+}
+.nav-item{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:7px 16px;cursor:pointer;
+  font-size:13px;color:var(--text2);
+  text-decoration:none;transition:all .15s;
+  border-left:2px solid transparent;
+}
+.nav-item:hover{color:var(--text);background:var(--bg3);}
+.nav-item.active{
+  color:var(--teal);background:var(--teal-glow);
+  border-left-color:var(--teal);
+}
+.nav-method{
+  font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:.5px;padding:2px 5px;border-radius:3px;
+  font-weight:500;flex-shrink:0;
+}
+.method-get  {background:rgba(34,197,94,.1);  color:var(--green);}
+.method-post {background:rgba(14,232,212,.1);  color:var(--teal);}
+.method-ws   {background:rgba(129,140,248,.1); color:var(--indigo);}
+
+/* ---- CONTENT + CODE COLUMNS ---- */
+.content-area{
+  margin-left:var(--nav-w);
+  flex:1;
+  display:flex;
+  min-width:0;
+}
+.doc-content{
+  flex:1;min-width:0;max-width:var(--content-w);
+  padding:40px 48px 80px;
+  border-right:1px solid var(--border2);
+}
+.code-panel{
+  width:var(--code-w);flex-shrink:0;
+  position:sticky;top:54px;height:calc(100vh - 54px);
+  overflow-y:auto;
+  background:var(--bg2);
+  padding:0 0 40px;
+}
+.code-panel::-webkit-scrollbar{width:3px;}
+.code-panel::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* ============================================================
+   DOC SECTIONS
+============================================================ */
+.doc-section{
+  padding-top:48px;padding-bottom:48px;
+  border-bottom:1px solid var(--border3);
+}
+.doc-section:first-child{padding-top:0;}
+.doc-section:last-child{border-bottom:none;}
+
+.section-eyebrow{
+  display:inline-flex;align-items:center;gap:6px;
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:2.5px;text-transform:uppercase;
+  color:var(--teal);margin-bottom:12px;
+}
+.section-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--teal);opacity:.5;}
+
+h1.doc-h1{
+  font-family:'Syne',sans-serif;font-weight:800;
+  font-size:clamp(28px,3vw,38px);letter-spacing:-1.5px;
+  color:var(--text);margin-bottom:16px;line-height:1.05;
+}
+h2.doc-h2{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:22px;letter-spacing:-.5px;
+  color:var(--text);margin-bottom:12px;
+  display:flex;align-items:center;gap:10px;
+}
+h3.doc-h3{
+  font-family:'Syne',sans-serif;font-weight:700;
+  font-size:15px;color:var(--text);
+  margin:20px 0 8px;
+}
+.doc-lead{
+  font-size:15px;line-height:1.75;color:var(--text2);
+  font-weight:300;margin-bottom:20px;
+}
+.doc-p{
+  font-size:14px;line-height:1.75;color:var(--text2);
+  font-weight:300;margin-bottom:14px;
+}
+.doc-p:last-child{margin-bottom:0;}
+
+/* method + endpoint pill */
+.endpoint-pill{
+  display:inline-flex;align-items:center;gap:8px;
+  padding:8px 14px;border-radius:8px;
+  background:var(--bg3);border:1px solid var(--border2);
+  font-family:'DM Mono',monospace;font-size:12px;
+  color:var(--text);margin-bottom:20px;
+  word-break:break-all;
+}
+.ep-method{
+  font-size:10px;font-weight:700;letter-spacing:.5px;
+  padding:3px 7px;border-radius:4px;flex-shrink:0;
+}
+
+/* params table */
+.param-table{
+  width:100%;border-collapse:collapse;
+  margin:12px 0 20px;font-size:13px;
+}
+.param-table th{
+  padding:8px 12px;background:var(--bg3);
+  border-bottom:1px solid var(--border2);
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:1.5px;text-transform:uppercase;
+  color:var(--text3);text-align:left;font-weight:400;
+}
+.param-table td{
+  padding:10px 12px;border-bottom:1px solid var(--border3);
+  vertical-align:top;color:var(--text2);line-height:1.5;
+}
+.param-table tr:last-child td{border-bottom:none;}
+.param-name{
+  font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--teal);white-space:nowrap;
+}
+.param-type{
+  font-family:'DM Mono',monospace;font-size:10px;
+  color:var(--indigo);white-space:nowrap;
+}
+.param-req{
+  font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:1px;padding:2px 6px;border-radius:3px;
+  background:rgba(244,63,94,.08);border:1px solid rgba(244,63,94,.2);
+  color:var(--red);white-space:nowrap;
+}
+.param-opt{
+  font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:1px;padding:2px 6px;border-radius:3px;
+  background:rgba(107,128,160,.08);border:1px solid rgba(107,128,160,.15);
+  color:var(--text3);white-space:nowrap;
+}
+
+/* inline code */
+code{
+  font-family:'DM Mono',monospace;font-size:11px;
+  background:var(--bg3);border:1px solid var(--border2);
+  padding:2px 6px;border-radius:4px;color:var(--teal);
+}
+
+/* callout boxes */
+.callout{
+  padding:14px 16px;border-radius:10px;
+  margin:16px 0;display:flex;gap:12px;align-items:flex-start;
+  font-size:13px;line-height:1.6;
+}
+.callout-info{background:rgba(56,189,248,.05);border:1px solid rgba(56,189,248,.15);}
+.callout-warn{background:rgba(245,158,11,.05);border:1px solid rgba(245,158,11,.15);}
+.callout-tip {background:rgba(34,197,94,.05); border:1px solid rgba(34,197,94,.15);}
+.callout-icon{font-size:15px;flex-shrink:0;margin-top:1px;}
+.callout-info .callout-body{color:var(--blue);}
+.callout-warn .callout-body{color:var(--amber);}
+.callout-tip  .callout-body{color:var(--green);}
+
+/* response fields */
+.response-block{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;overflow:hidden;margin:16px 0;
+}
+.response-block-header{
+  padding:8px 14px;background:var(--bg4);
+  border-bottom:1px solid var(--border2);
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);
+  display:flex;align-items:center;gap:8px;
+}
+.status-200{color:var(--green);}
+.status-401{color:var(--red);}
+.status-429{color:var(--amber);}
+
+/* ============================================================
+   CODE PANEL — sticky right
+============================================================ */
+.code-sticky{
+  padding:20px;
+}
+.lang-tabs{
+  display:flex;gap:2px;flex-wrap:wrap;
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:9px;padding:3px;margin-bottom:12px;
+}
+.lang-tab{
+  padding:5px 11px;border-radius:6px;
+  background:transparent;border:none;
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:.5px;color:var(--text3);cursor:pointer;transition:all .2s;
+}
+.lang-tab.active{
+  background:var(--surface2);color:var(--teal);
+  box-shadow:0 1px 4px rgba(0,0,0,.3);
+}
+.lang-tab:hover:not(.active){color:var(--text2);}
+
+.code-block{
+  background:var(--bg3);border:1px solid var(--border2);
+  border-radius:10px;overflow:hidden;margin-bottom:16px;
+  position:relative;
+}
+.code-block-header{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 14px;background:var(--bg4);
+  border-bottom:1px solid var(--border2);
+}
+.code-block-title{
+  font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);
+}
+.copy-btn{
+  padding:3px 9px;border-radius:5px;
+  background:var(--teal-glow);border:1px solid var(--border);
+  color:var(--teal);font-family:'DM Mono',monospace;
+  font-size:9px;letter-spacing:.5px;cursor:pointer;transition:all .2s;
+}
+.copy-btn:hover{background:rgba(14,232,212,.15);}
+.copy-btn.copied{color:var(--green);border-color:rgba(34,197,94,.3);}
+
+pre{
+  padding:16px;overflow-x:auto;
+  font-family:'DM Mono',monospace;font-size:11.5px;
+  line-height:1.7;color:var(--text2);
+}
+pre::-webkit-scrollbar{height:4px;}
+pre::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px;}
+
+/* syntax highlight colors */
+.kw  {color:#818cf8;}  /* keywords */
+.str {color:#86efac;}  /* strings */
+.num {color:#fda4af;}  /* numbers */
+.cmt {color:#2e3f58;}  /* comments */
+.fn  {color:#0ee8d4;}  /* function names */
+.key {color:#93c5fd;}  /* object keys */
+.var {color:#e8f0fc;}  /* variables */
+
+/* ============================================================
+   PLAYGROUND
+============================================================ */
+.playground{
+  background:var(--bg3);border:1px solid var(--border);
+  border-radius:12px;overflow:hidden;margin-bottom:16px;
+}
+.pg-header{
+  padding:12px 16px;background:var(--bg4);
+  border-bottom:1px solid var(--border2);
+  display:flex;align-items:center;justify-content:space-between;
+}
+.pg-title{
+  font-family:'DM Mono',monospace;font-size:10px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);
+  display:flex;align-items:center;gap:7px;
+}
+.pg-dot{width:7px;height:7px;border-radius:50%;background:var(--teal);animation:pgPulse 2s infinite;}
+@keyframes pgPulse{0%,100%{opacity:1}50%{opacity:.3}}
+.pg-body{padding:14px;}
+.pg-field{margin-bottom:10px;}
+.pg-field label{
+  display:block;font-family:'DM Mono',monospace;font-size:9px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);
+  margin-bottom:5px;
+}
+.pg-input{
+  width:100%;padding:8px 11px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:7px;color:var(--text);font-size:12px;
+  font-family:'DM Mono',monospace;outline:none;transition:border-color .2s;
+}
+.pg-input:focus{border-color:var(--border);}
+.pg-select{
+  width:100%;padding:7px 10px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:7px;color:var(--text);font-size:11px;
+  font-family:'DM Mono',monospace;outline:none;cursor:pointer;
+}
+.pg-run-btn{
+  width:100%;padding:10px;border-radius:8px;
+  background:var(--teal);border:none;
+  font-family:'Syne',sans-serif;font-weight:700;font-size:13px;
+  color:#050810;cursor:pointer;transition:all .2s;
+  box-shadow:0 0 14px rgba(14,232,212,.2);margin-top:4px;
+}
+.pg-run-btn:hover{background:#12f5e0;box-shadow:0 0 24px rgba(14,232,212,.35);}
+.pg-run-btn:disabled{opacity:.4;cursor:not-allowed;}
+.pg-response{
+  margin-top:12px;padding:12px;
+  background:var(--bg2);border:1px solid var(--border2);
+  border-radius:8px;
+  font-family:'DM Mono',monospace;font-size:11px;
+  color:var(--text2);line-height:1.7;
+  min-height:80px;max-height:280px;overflow-y:auto;
+  white-space:pre-wrap;word-break:break-word;
+  display:none;
+}
+.pg-response.visible{display:block;}
+.pg-response::-webkit-scrollbar{width:3px;}
+.pg-response::-webkit-scrollbar-thumb{background:var(--border2);}
+.pg-stream-cursor{
+  display:inline-block;width:2px;height:12px;
+  background:var(--teal);margin-left:1px;vertical-align:middle;
+  animation:blink .8s step-end infinite;
+}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+.pg-status{
+  display:flex;align-items:center;gap:6px;
+  font-family:'DM Mono',monospace;font-size:9px;
+  color:var(--text3);margin-top:6px;letter-spacing:.5px;
+}
+.pg-status-dot{width:5px;height:5px;border-radius:50%;background:var(--text3);}
+.pg-status-dot.running{background:var(--teal);animation:pgPulse 1s infinite;}
+.pg-status-dot.done{background:var(--green);}
+.pg-status-dot.error{background:var(--red);}
+
+/* ============================================================
+   MISC
+============================================================ */
+.divider{height:1px;background:var(--border3);margin:32px 0;}
+
+.badge-new{
+  display:inline-block;padding:2px 7px;border-radius:4px;
+  background:rgba(14,232,212,.08);border:1px solid var(--border);
+  font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);
+  vertical-align:middle;margin-left:6px;
+}
+.badge-beta{
+  display:inline-block;padding:2px 7px;border-radius:4px;
+  background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);
+  font-family:'DM Mono',monospace;font-size:8px;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--amber);
+  vertical-align:middle;margin-left:6px;
+}
+
+/* scroll highlight active section in nav */
+.nav-item.active{color:var(--teal);background:var(--teal-glow);border-left-color:var(--teal);}
+
+/* mobile */
+@media(max-width:1100px){
+  .code-panel{display:none;}
+  .doc-content{border-right:none;max-width:100%;padding:32px 24px 60px;}
+}
+@media(max-width:700px){
+  .sidenav{display:none;}
+  .content-area{margin-left:0;}
+}
+</style>
+
+<!-- ── SEO: Primary ───────────────────────────────────────── -->
+<meta name="description" content="Full API reference for the Omnigenius ORCA model. Chat, Search, Reason, and Auto modes with SSE streaming. Advanced plan required for API access.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="keywords" content="Omnigenius API, ORCA API, AI API docs, streaming AI API, developer docs">
+<link rel="canonical" href="https://omnigenius.co/docs.html">
+
+<!-- ── SEO: OpenGraph ────────────────────────────────────── -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Omnigenius API Documentation">
+<meta property="og:description" content="Chat, Search, Reason, and Auto modes with SSE streaming. Full reference with code examples.">
+<meta property="og:url" content="https://omnigenius.co/docs.html">
+<meta property="og:image" content="https://omnigenius.co/css/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Omnigenius — AI That Thinks Differently">
+<meta property="og:site_name" content="Omnigenius">
+<meta property="og:locale" content="en_US">
+
+<!-- ── SEO: Twitter / X Card ─────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@omnigenius_ai">
+<meta name="twitter:creator" content="@omnigenius_ai">
+<meta name="twitter:title" content="Omnigenius API Documentation">
+<meta name="twitter:description" content="Chat, Search, Reason, and Auto modes with SSE streaming. Full reference with code examples.">
+<meta name="twitter:image" content="https://omnigenius.co/css/og-image.png">
+
+<!-- ── SEO: Schema.org JSON-LD ───────────────────────────── -->
+<script type="application/ld+json">
+{{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Omnigenius",
+  "url": "https://omnigenius.co",
+  "description": "ORCA-powered AI with deep reasoning, live web search, and human-like memory.",
+  "potentialAction": {{
+    "@type": "SearchAction",
+    "target": "https://omnigenius.co/user.html?q={{search_term_string}}",
+    "query-input": "required name=search_term_string"
+  }}
+}}
+</script>
+<!-- ── /SEO ───────────────────────────────────────────────── -->
+</head>
+<body>
+
+<!-- Machine-readable structured data for bots/AI -->
+
+<!-- ============================================================
+     TOPBAR
+============================================================ -->
+<header class="topbar">
+  <div class="tb-left">
+    <a class="tb-logo" href="/">
+      <svg width="26" height="26" viewBox="0 0 90 90" fill="none">
+        <rect width="90" height="90" rx="22" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/>
+        <path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.5"/>
+        <circle cx="37" cy="29" r="3" fill="#0ee8d4" opacity=".9"/>
+        <circle cx="53" cy="29" r="3" fill="#0ee8d4" opacity=".9"/>
+        <circle cx="45" cy="43" r="3" fill="#0ee8d4" opacity=".9"/>
+        <line x1="37" y1="29" x2="53" y2="29" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+        <line x1="37" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+        <line x1="53" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/>
+      </svg>
+      <span class="tb-wordmark">Omnigenius</span>
+    </a>
+    <div class="tb-div"></div>
+    <span class="tb-section">API Reference</span>
+  </div>
+  <div class="tb-right">
+    <span class="tb-version">v1.0</span>
+    <a class="tb-link" href="#changelog">Changelog</a>
+    <a class="tb-link" href="https://status.omnigenius.co">Status</a>
+    <button class="tb-key-btn" onclick="showKeyModal()">Get API Key</button>
+  </div>
+</header>
+
+<div class="shell">
+
+<!-- ============================================================
+     LEFT NAV
+============================================================ -->
+<nav class="sidenav" aria-label="API documentation navigation">
+  <div class="nav-search">
+    <input type="text" placeholder="Search docs…" id="navSearch" oninput="filterNav(this.value)">
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Getting Started</div>
+    <a class="nav-item active" href="#introduction" onclick="setActive(this)">Introduction</a>
+    <a class="nav-item" href="#quickstart" onclick="setActive(this)">Quickstart</a>
+    <a class="nav-item" href="#base-url" onclick="setActive(this)">Base URL &amp; Versioning</a>
+    <a class="nav-item" href="#rate-limits" onclick="setActive(this)">Rate limits</a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Authentication</div>
+    <a class="nav-item" href="#api-keys" onclick="setActive(this)">
+      API Keys <span class="nav-method method-post">POST</span>
+    </a>
+    <a class="nav-item" href="#oauth" onclick="setActive(this)">
+      OAuth 2.0 <span class="nav-method method-get">GET</span>
+    </a>
+    <a class="nav-item" href="#token-refresh" onclick="setActive(this)">
+      Token Refresh <span class="nav-method method-post">POST</span>
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Endpoints</div>
+    <a class="nav-item" href="#chat" onclick="setActive(this)">
+      Chat Completions <span class="nav-method method-post">POST</span>
+    </a>
+    <a class="nav-item" href="#search" onclick="setActive(this)">
+      Search <span class="nav-method method-post">POST</span>
+    </a>
+    <a class="nav-item" href="#reasoning" onclick="setActive(this)">
+      Reasoning <span class="nav-method method-post">POST</span>
+    </a>
+    <a class="nav-item" href="#streaming" onclick="setActive(this)">
+      Streaming (SSE) <span class="nav-method method-ws">SSE</span>
+    </a>
+    <a class="nav-item" href="#webhooks" onclick="setActive(this)">
+      Webhooks <span class="nav-method method-post">POST</span>
+    </a>
+  </div>
+
+  <div class="nav-group">
+    <div class="nav-group-label">Reference</div>
+    <a class="nav-item" href="#errors" onclick="setActive(this)">Error codes</a>
+    <a class="nav-item" href="#models" onclick="setActive(this)">Models &amp; modes</a>
+    <a class="nav-item" href="#changelog" onclick="setActive(this)">Changelog</a>
+    <a class="nav-item" href="#openapi" onclick="setActive(this)">OpenAPI spec</a>
+  </div>
+</nav>
+
+<!-- ============================================================
+     CONTENT AREA
+============================================================ -->
+<div class="content-area">
+<article class="doc-content">
+
+<!-- INTRODUCTION -->
+<section class="doc-section" id="introduction">
+  <div class="section-eyebrow">Overview</div>
+  <h1 class="doc-h1">Omnigenius<br>API Reference</h1>
+  <p class="doc-lead">The Omnigenius API gives you programmatic access to the Chimera model — deep reasoning, live web search, and streaming responses — via a simple REST interface compatible with any HTTP client.</p>
+  <p class="doc-p">All requests are made to <code>https://api.omnigenius.co/v1</code> and return JSON. Authentication is handled via Bearer tokens in the <code>Authorization</code> header.</p>
+
+  <div class="callout callout-tip">
+    <span class="callout-icon">⚡</span>
+    <div class="callout-body">New to the API? Jump to <a href="#quickstart" style="color:inherit;text-decoration:underline">Quickstart</a> for a working example in under 2 minutes.</div>
+  </div>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">🤖</span>
+    <div class="callout-body">This documentation is structured for human readers, AI agents, and web crawlers. An OpenAPI 3.1 spec is available at <code>/docs/openapi.json</code> for automated tooling and LLM function-calling.</div>
+  </div>
+</section>
+
+<!-- QUICKSTART -->
+<section class="doc-section" id="quickstart">
+  <div class="section-eyebrow">Getting Started</div>
+  <h2 class="doc-h2">Quickstart</h2>
+  <p class="doc-p">Make your first API call in three steps.</p>
+
+  <h3 class="doc-h3">1. Get an API key</h3>
+  <p class="doc-p">Sign up at <code>omnigenius.co</code>, go to Settings → API Keys, and create a key. Keys are prefixed <code>og-</code> and shown once — store it securely.</p>
+
+  <h3 class="doc-h3">2. Send a request</h3>
+  <p class="doc-p">Send a <code>POST</code> to <code>/v1/chat</code> with your message in the request body. The model responds with a JSON object containing the completion.</p>
+
+  <h3 class="doc-h3">3. Handle the response</h3>
+  <p class="doc-p">The <code>choices[0].message.content</code> field contains the text response. For streaming, set <code>"stream": true</code> and consume Server-Sent Events instead.</p>
+
+  <div class="callout callout-warn">
+    <span class="callout-icon">⚠</span>
+    <div class="callout-body">Never expose API keys in client-side code. Always make API calls from your backend server. Use environment variables — never hardcode keys.</div>
+  </div>
+</section>
+
+<!-- BASE URL -->
+<section class="doc-section" id="base-url">
+  <div class="section-eyebrow">Configuration</div>
+  <h2 class="doc-h2">Base URL &amp; Versioning</h2>
+  <p class="doc-p">All API endpoints are versioned under <code>/v1/</code>. We guarantee backward compatibility within a major version. Breaking changes are released under a new version prefix with 90 days deprecation notice.</p>
+
+  <table class="param-table">
+    <thead><tr><th>Environment</th><th>Base URL</th></tr></thead>
+    <tbody>
+      <tr><td>Production</td><td><code>https://api.omnigenius.co/v1</code></td></tr>
+      <tr><td>Sandbox</td><td><code>https://sandbox.api.omnigenius.co/v1</code></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- RATE LIMITS -->
+<section class="doc-section" id="rate-limits">
+  <div class="section-eyebrow">Limits</div>
+  <h2 class="doc-h2">Rate Limits</h2>
+  <p class="doc-p">Rate limits are applied per API key. Limits are returned in response headers on every request.</p>
+  <table class="param-table">
+    <thead><tr><th>Plan</th><th>Requests/min</th><th>Tokens/day</th></tr></thead>
+    <tbody>
+      <tr><td>Free</td><td>10</td><td>50,000</td></tr>
+      <tr><td>Pro</td><td>60</td><td>5,000,000</td></tr>
+      <tr><td>Advanced</td><td>200</td><td>10,000,000</td></tr>
+      <tr><td>Enterprise</td><td>Custom</td><td>Unlimited</td></tr>
+    </tbody>
+  </table>
+  <p class="doc-p">When you exceed rate limits, the API returns <code>429 Too Many Requests</code>. The <code>Retry-After</code> header indicates when you can retry.</p>
+</section>
+
+<!-- API KEYS -->
+<section class="doc-section" id="api-keys">
+  <div class="section-eyebrow">Authentication</div>
+  <h2 class="doc-h2">API Keys</h2>
+  <p class="doc-p">Include your API key in the <code>Authorization</code> header of every request as a Bearer token.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-post">POST</span>
+    /v1/auth/keys
+  </div>
+
+  <h3 class="doc-h3">Request headers</h3>
+  <table class="param-table">
+    <thead><tr><th>Header</th><th>Value</th><th></th></tr></thead>
+    <tbody>
+      <tr>
+        <td><span class="param-name">Authorization</span></td>
+        <td><code>Bearer og-your-api-key</code></td>
+        <td><span class="param-req">Required</span></td>
+      </tr>
+      <tr>
+        <td><span class="param-name">Content-Type</span></td>
+        <td><code>application/json</code></td>
+        <td><span class="param-req">Required</span></td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="response-block">
+    <div class="response-block-header"><span class="status-200">200</span> Success</div>
+    <pre><span class="key">"id"</span>: <span class="str">"key_01HXYZ123"</span>,
+<span class="key">"object"</span>: <span class="str">"api_key"</span>,
+<span class="key">"created"</span>: <span class="num">1741200000</span>,
+<span class="key">"prefix"</span>: <span class="str">"og-abc1..."</span>,
+<span class="key">"last_used"</span>: <span class="str">"2026-03-05T14:22:00Z"</span></pre>
+  </div>
+</section>
+
+<!-- OAUTH -->
+<section class="doc-section" id="oauth">
+  <div class="section-eyebrow">Authentication</div>
+  <h2 class="doc-h2">OAuth 2.0 <span class="badge-beta">Beta</span></h2>
+  <p class="doc-p">OAuth 2.0 authorization code flow is supported for third-party integrations. Use this if you are building an app on behalf of Omnigenius users.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-get" style="background:rgba(34,197,94,.1);color:var(--green)">GET</span>
+    /v1/oauth/authorize
+  </div>
+
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="param-name">client_id</span></td><td><span class="param-type">string</span></td><td>Your OAuth app client ID</td><td><span class="param-req">Required</span></td></tr>
+      <tr><td><span class="param-name">redirect_uri</span></td><td><span class="param-type">string</span></td><td>Must match registered callback URL</td><td><span class="param-req">Required</span></td></tr>
+      <tr><td><span class="param-name">scope</span></td><td><span class="param-type">string</span></td><td><code>chat read write</code> space-separated</td><td><span class="param-req">Required</span></td></tr>
+      <tr><td><span class="param-name">state</span></td><td><span class="param-type">string</span></td><td>CSRF protection token</td><td><span class="param-opt">Optional</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- TOKEN REFRESH -->
+<section class="doc-section" id="token-refresh">
+  <div class="section-eyebrow">Authentication</div>
+  <h2 class="doc-h2">Token Refresh</h2>
+  <p class="doc-p">Access tokens expire after 1 hour. Use your refresh token to obtain a new access token without re-authenticating the user.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-post">POST</span>
+    /v1/auth/token/refresh
+  </div>
+
+  <table class="param-table">
+    <thead><tr><th>Body param</th><th>Type</th><th>Description</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="param-name">refresh_token</span></td><td><span class="param-type">string</span></td><td>Refresh token from initial OAuth flow</td><td><span class="param-req">Required</span></td></tr>
+      <tr><td><span class="param-name">grant_type</span></td><td><span class="param-type">string</span></td><td>Must be <code>refresh_token</code></td><td><span class="param-req">Required</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CHAT -->
+<section class="doc-section" id="chat">
+  <div class="section-eyebrow">Endpoints</div>
+  <h2 class="doc-h2">Chat Completions</h2>
+  <p class="doc-p">Send a conversation to the Chimera model and receive a completion. Supports multi-turn conversations via the <code>messages</code> array.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-post">POST</span>
+    /v1/chat
+  </div>
+
+  <h3 class="doc-h3">Request body</h3>
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="param-name">messages</span></td><td><span class="param-type">array</span></td><td>Array of <code>{role, content}</code> objects. Roles: <code>system</code>, <code>user</code>, <code>assistant</code></td><td><span class="param-req">Required</span></td></tr>
+      <tr><td><span class="param-name">model</span></td><td><span class="param-type">string</span></td><td>Model ID. Default: <code>chimera-1</code></td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">mode</span></td><td><span class="param-type">string</span></td><td><code>auto</code> | <code>chat</code> | <code>search</code> | <code>reason</code></td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">max_tokens</span></td><td><span class="param-type">integer</span></td><td>Maximum tokens to generate. Default: 2048</td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">temperature</span></td><td><span class="param-type">float</span></td><td>0.0–2.0. Higher = more creative. Default: 0.7</td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">stream</span></td><td><span class="param-type">boolean</span></td><td>If true, returns SSE stream. Default: false</td><td><span class="param-opt">Optional</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="response-block">
+    <div class="response-block-header"><span class="status-200">200</span> Success</div>
+    <pre><span class="key">"id"</span>: <span class="str">"chatcmpl-01HXYZ"</span>,
+<span class="key">"object"</span>: <span class="str">"chat.completion"</span>,
+<span class="key">"model"</span>: <span class="str">"chimera-1"</span>,
+<span class="key">"usage"</span>: {
+  <span class="key">"prompt_tokens"</span>: <span class="num">24</span>,
+  <span class="key">"completion_tokens"</span>: <span class="num">183</span>,
+  <span class="key">"total_tokens"</span>: <span class="num">207</span>
+},
+<span class="key">"choices"</span>: [{
+  <span class="key">"message"</span>: {
+    <span class="key">"role"</span>: <span class="str">"assistant"</span>,
+    <span class="key">"content"</span>: <span class="str">"The Chimera architecture..."</span>
+  },
+  <span class="key">"finish_reason"</span>: <span class="str">"stop"</span>
+}]</pre>
+  </div>
+</section>
+
+<!-- SEARCH -->
+<section class="doc-section" id="search">
+  <div class="section-eyebrow">Endpoints</div>
+  <h2 class="doc-h2">Search</h2>
+  <p class="doc-p">Ground the model's response in live web results. The model retrieves sources, ranks them, and synthesises a cited answer. Sources are returned alongside the completion.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-post">POST</span>
+    /v1/search
+  </div>
+
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="param-name">query</span></td><td><span class="param-type">string</span></td><td>The search query or full question</td><td><span class="param-req">Required</span></td></tr>
+      <tr><td><span class="param-name">num_sources</span></td><td><span class="param-type">integer</span></td><td>Number of sources to retrieve. Default: 5, max: 20</td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">freshness</span></td><td><span class="param-type">string</span></td><td><code>day</code> | <code>week</code> | <code>month</code> | <code>any</code></td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">synthesise</span></td><td><span class="param-type">boolean</span></td><td>Generate an AI summary of results. Default: true</td><td><span class="param-opt">Optional</span></td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- REASONING -->
+<section class="doc-section" id="reasoning">
+  <div class="section-eyebrow">Endpoints</div>
+  <h2 class="doc-h2">Reasoning <span class="badge-new">New</span></h2>
+  <p class="doc-p">Activate the Chimera deep reasoning engine. The model performs multiple internal reasoning loops before responding — ideal for complex analysis, multi-step logic, and research tasks.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-post">POST</span>
+    /v1/reason
+  </div>
+
+  <table class="param-table">
+    <thead><tr><th>Parameter</th><th>Type</th><th>Description</th><th></th></tr></thead>
+    <tbody>
+      <tr><td><span class="param-name">messages</span></td><td><span class="param-type">array</span></td><td>Conversation history as <code>{role, content}</code></td><td><span class="param-req">Required</span></td></tr>
+      <tr><td><span class="param-name">depth</span></td><td><span class="param-type">integer</span></td><td>Reasoning loops: 1–8. Higher = more thorough but slower. Default: 3</td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">show_thinking</span></td><td><span class="param-type">boolean</span></td><td>Include intermediate reasoning steps in response. Default: false</td><td><span class="param-opt">Optional</span></td></tr>
+      <tr><td><span class="param-name">stream</span></td><td><span class="param-type">boolean</span></td><td>Stream thinking steps and final answer via SSE</td><td><span class="param-opt">Optional</span></td></tr>
+    </tbody>
+  </table>
+
+  <div class="callout callout-info">
+    <span class="callout-icon">💡</span>
+    <div class="callout-body">Reasoning mode consumes more tokens than standard chat. Use <code>depth: 1–2</code> for most tasks. Reserve <code>depth: 6–8</code> for research-grade problems.</div>
+  </div>
+</section>
+
+<!-- STREAMING -->
+<section class="doc-section" id="streaming">
+  <div class="section-eyebrow">Endpoints</div>
+  <h2 class="doc-h2">Streaming (SSE)</h2>
+  <p class="doc-p">Set <code>"stream": true</code> on any chat or reasoning request to receive a Server-Sent Events stream. Each event contains a delta chunk. The stream terminates with <code>data: [DONE]</code>.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-ws" style="background:rgba(129,140,248,.1);color:var(--indigo)">SSE</span>
+    /v1/chat (stream: true)
+  </div>
+
+  <h3 class="doc-h3">Event format</h3>
+  <div class="response-block">
+    <div class="response-block-header">Stream chunk</div>
+    <pre><span class="cmt">// Each SSE event looks like this:</span>
+data: {
+  <span class="key">"id"</span>: <span class="str">"chatcmpl-01HXYZ"</span>,
+  <span class="key">"object"</span>: <span class="str">"chat.completion.chunk"</span>,
+  <span class="key">"delta"</span>: {
+    <span class="key">"role"</span>: <span class="str">"assistant"</span>,
+    <span class="key">"content"</span>: <span class="str">"The "</span>
+  }
+}
+
+data: { <span class="key">"delta"</span>: { <span class="key">"content"</span>: <span class="str">"Chimera "</span> } }
+data: { <span class="key">"delta"</span>: { <span class="key">"content"</span>: <span class="str">"architecture..."</span> } }
+data: [DONE]</pre>
+  </div>
+</section>
+
+<!-- WEBHOOKS -->
+<section class="doc-section" id="webhooks">
+  <div class="section-eyebrow">Endpoints</div>
+  <h2 class="doc-h2">Webhooks</h2>
+  <p class="doc-p">Register a URL to receive POST notifications when events occur in your Omnigenius account — completions, errors, usage thresholds, and billing events.</p>
+
+  <div class="endpoint-pill">
+    <span class="ep-method method-post">POST</span>
+    /v1/webhooks
+  </div>
+
+  <table class="param-table">
+    <thead><tr><th>Event type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span class="param-name">completion.done</span></td><td>A chat or reasoning completion finished</td></tr>
+      <tr><td><span class="param-name">usage.threshold</span></td><td>Token usage crossed 80% or 100% of plan limit</td></tr>
+      <tr><td><span class="param-name">key.created</span></td><td>A new API key was created</td></tr>
+      <tr><td><span class="param-name">key.revoked</span></td><td>An API key was revoked</td></tr>
+      <tr><td><span class="param-name">billing.payment</span></td><td>A subscription payment succeeded or failed</td></tr>
+    </tbody>
+  </table>
+
+  <p class="doc-p">All webhook payloads include a <code>X-Omnigenius-Signature</code> header — an HMAC-SHA256 signature of the payload using your webhook secret. Always verify this before processing.</p>
+</section>
+
+<!-- ERRORS -->
+<section class="doc-section" id="errors">
+  <div class="section-eyebrow">Reference</div>
+  <h2 class="doc-h2">Error Codes</h2>
+  <table class="param-table">
+    <thead><tr><th>HTTP code</th><th>Error type</th><th>Description</th></tr></thead>
+    <tbody>
+      <tr><td><span style="color:var(--green)">200</span></td><td><code>—</code></td><td>Success</td></tr>
+      <tr><td><span style="color:var(--amber)">400</span></td><td><code>invalid_request</code></td><td>Malformed request body or missing required field</td></tr>
+      <tr><td><span style="color:var(--red)">401</span></td><td><code>unauthorized</code></td><td>Invalid or missing API key</td></tr>
+      <tr><td><span style="color:var(--red)">403</span></td><td><code>forbidden</code></td><td>Valid key but insufficient permissions</td></tr>
+      <tr><td><span style="color:var(--amber)">429</span></td><td><code>rate_limited</code></td><td>Too many requests. Check <code>Retry-After</code> header</td></tr>
+      <tr><td><span style="color:var(--red)">500</span></td><td><code>server_error</code></td><td>Internal error — retry with exponential backoff</td></tr>
+      <tr><td><span style="color:var(--red)">503</span></td><td><code>overloaded</code></td><td>Model at capacity — retry after a few seconds</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- MODELS -->
+<section class="doc-section" id="models">
+  <div class="section-eyebrow">Reference</div>
+  <h2 class="doc-h2">Models &amp; Modes</h2>
+  <table class="param-table">
+    <thead><tr><th>Model ID</th><th>Context</th><th>Best for</th></tr></thead>
+    <tbody>
+      <tr><td><code>chimera-1</code></td><td>128k tokens</td><td>General purpose — auto-selects mode</td></tr>
+      <tr><td><code>chimera-1-search</code></td><td>128k tokens</td><td>Live web-grounded answers</td></tr>
+      <tr><td><code>chimera-1-reason</code></td><td>128k tokens</td><td>Deep multi-step reasoning</td></tr>
+      <tr><td><code>chimera-1-fast</code></td><td>32k tokens</td><td>Low-latency applications</td></tr>
+    </tbody>
+  </table>
+</section>
+
+<!-- CHANGELOG -->
+<section class="doc-section" id="changelog">
+  <div class="section-eyebrow">Reference</div>
+  <h2 class="doc-h2">Changelog</h2>
+  <p class="doc-p"><strong style="color:var(--text)">v1.0.0</strong> — March 2026 — Initial public API release. Endpoints: <code>/chat</code>, <code>/search</code>, <code>/reason</code>, streaming SSE, webhooks, OAuth 2.0 beta.</p>
+</section>
+
+<!-- OPENAPI -->
+<section class="doc-section" id="openapi">
+  <div class="section-eyebrow">Reference</div>
+  <h2 class="doc-h2">OpenAPI Spec</h2>
+  <p class="doc-p">The full OpenAPI 3.1 specification is available at <code>https://api.omnigenius.co/v1/openapi.json</code>. Import it into Postman, Insomnia, or any OpenAPI-compatible tool for instant collection generation.</p>
+  <p class="doc-p">AI agents and LLMs can use the spec for automated function-calling integration. The spec includes all request/response schemas, authentication details, and example payloads in machine-readable format.</p>
+</section>
+
+</article>
+
+<!-- ============================================================
+     RIGHT CODE PANEL
+============================================================ -->
+<aside class="code-panel" aria-label="Code examples and API playground">
+  <div class="code-sticky">
+
+    <!-- Language tabs -->
+    <div class="lang-tabs" id="langTabs">
+      <button class="lang-tab active" onclick="setLang('python',this)">Python</button>
+      <button class="lang-tab" onclick="setLang('js',this)">Node</button>
+      <button class="lang-tab" onclick="setLang('curl',this)">cURL</button>
+      <button class="lang-tab" onclick="setLang('go',this)">Go</button>
+      <button class="lang-tab" onclick="setLang('ruby',this)">Ruby</button>
+      <button class="lang-tab" onclick="setLang('php',this)">PHP</button>
+    </div>
+
+    <!-- Code block -->
+    <div class="code-block">
+      <div class="code-block-header">
+        <span class="code-block-title" id="codeBlockTitle">Chat completion</span>
+        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+      </div>
+      <pre id="codeDisplay"></pre>
+    </div>
+
+    <!-- ---- PLAYGROUND ---- -->
+    <div class="playground">
+      <div class="pg-header">
+        <div class="pg-title">
+          <div class="pg-dot"></div>
+          Live Playground
+        </div>
+        <span style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Simulated</span>
+      </div>
+      <div class="pg-body">
+
+        <div class="pg-field">
+          <label>Endpoint</label>
+          <select class="pg-select" id="pgEndpoint" onchange="updatePlayground()">
+            <option value="chat">POST /v1/chat</option>
+            <option value="search">POST /v1/search</option>
+            <option value="reason">POST /v1/reason</option>
+            <option value="stream">SSE /v1/chat (stream)</option>
+            <option value="webhook">POST /v1/webhooks</option>
+          </select>
+        </div>
+
+        <div class="pg-field">
+          <label>API Key</label>
+          <input type="text" class="pg-input" id="pgKey" placeholder="og-your-api-key" value="og-demo-key-playground">
+        </div>
+
+        <div class="pg-field" id="pgMsgField">
+          <label>Message</label>
+          <input type="text" class="pg-input" id="pgMessage" placeholder="Ask the Chimera anything…" value="Explain how mixture of experts routing works">
+        </div>
+
+        <div class="pg-field" id="pgModeField">
+          <label>Mode</label>
+          <select class="pg-select" id="pgMode">
+            <option value="auto">auto</option>
+            <option value="chat">chat</option>
+            <option value="search">search</option>
+            <option value="reason">reason</option>
+          </select>
+        </div>
+
+        <div class="pg-field" id="pgDepthField" style="display:none">
+          <label>Reasoning depth (1–8)</label>
+          <input type="number" class="pg-input" id="pgDepth" value="3" min="1" max="8">
+        </div>
+
+        <div class="pg-field" id="pgQueryField" style="display:none">
+          <label>Search query</label>
+          <input type="text" class="pg-input" id="pgQuery" placeholder="What are the latest AI benchmarks?">
+        </div>
+
+        <button class="pg-run-btn" id="pgRunBtn" onclick="runPlayground()">▶ Run request</button>
+
+        <div class="pg-status" id="pgStatus">
+          <div class="pg-status-dot" id="pgStatusDot"></div>
+          <span id="pgStatusText">Ready</span>
+        </div>
+
+        <div class="pg-response" id="pgResponse"></div>
+      </div>
+    </div>
+
+  </div>
+</aside>
+</div><!-- /content-area -->
+</div><!-- /shell -->
+
+<!-- API Key Modal -->
+<div id="keyModal" style="display:none;position:fixed;inset:0;z-index:500;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:flex;align-items:center;justify-content:center;padding:20px;opacity:0;pointer-events:none;transition:opacity .25s">
+  <div style="background:var(--bg2);border:1px solid var(--border2);border-radius:18px;padding:32px;max-width:400px;width:100%;text-align:center">
+    <div style="font-family:'Syne',sans-serif;font-weight:800;font-size:20px;margin-bottom:8px">Get your API Key</div>
+    <p style="font-size:13px;color:var(--text2);margin-bottom:20px;line-height:1.6">API access is coming soon with the Advanced plan. Join the waitlist and we will notify you when the API opens.</p>
+    <a href="/signup" style="display:block;padding:12px;border-radius:10px;background:var(--teal);color:#050810;font-family:'Syne',sans-serif;font-weight:700;font-size:14px;text-decoration:none;margin-bottom:10px">Join waitlist →</a>
+    <button onclick="hideKeyModal()" style="width:100%;padding:10px;border-radius:10px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer">Close</button>
+  </div>
+</div>
+
+<!-- ============================================================
+     JAVASCRIPT
+============================================================ -->
+<script>
+// ============================================================
+//  CODE EXAMPLES — all 6 languages × all endpoints
+// ============================================================
+const LANG = 'python';
+let currentLang = 'python';
+
+const CODES = {
+  python: {
+    chat: `<span class="kw">import</span> requests
+
+<span class="var">response</span> = requests.post(
+    <span class="str">"https://api.omnigenius.co/v1/chat"</span>,
+    headers={
+        <span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span>,
+        <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>
+    },
+    json={
+        <span class="str">"model"</span>: <span class="str">"chimera-1"</span>,
+        <span class="str">"mode"</span>: <span class="str">"auto"</span>,
+        <span class="str">"messages"</span>: [{
+            <span class="str">"role"</span>: <span class="str">"user"</span>,
+            <span class="str">"content"</span>: <span class="str">"Explain MoE routing"</span>
+        }]
+    }
+)
+<span class="fn">print</span>(response.json()[<span class="str">"choices"</span>][<span class="num">0</span>][<span class="str">"message"</span>][<span class="str">"content"</span>])`,
+
+    search: `<span class="kw">import</span> requests
+
+<span class="var">res</span> = requests.post(
+    <span class="str">"https://api.omnigenius.co/v1/search"</span>,
+    headers={<span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span>},
+    json={
+        <span class="str">"query"</span>: <span class="str">"latest AI benchmark results 2026"</span>,
+        <span class="str">"num_sources"</span>: <span class="num">5</span>,
+        <span class="str">"freshness"</span>: <span class="str">"week"</span>,
+        <span class="str">"synthesise"</span>: <span class="kw">True</span>
+    }
+)
+<span class="var">data</span> = res.json()
+<span class="fn">print</span>(data[<span class="str">"summary"</span>])
+<span class="kw">for</span> src <span class="kw">in</span> data[<span class="str">"sources"</span>]:
+    <span class="fn">print</span>(src[<span class="str">"url"</span>])`,
+
+    reason: `<span class="kw">import</span> requests
+
+<span class="var">res</span> = requests.post(
+    <span class="str">"https://api.omnigenius.co/v1/reason"</span>,
+    headers={<span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span>},
+    json={
+        <span class="str">"messages"</span>: [{
+            <span class="str">"role"</span>: <span class="str">"user"</span>,
+            <span class="str">"content"</span>: <span class="str">"Analyse the risks of AGI by 2030"</span>
+        }],
+        <span class="str">"depth"</span>: <span class="num">4</span>,
+        <span class="str">"show_thinking"</span>: <span class="kw">True</span>
+    }
+)
+<span class="var">result</span> = res.json()
+<span class="fn">print</span>(result[<span class="str">"thinking_steps"</span>])
+<span class="fn">print</span>(result[<span class="str">"answer"</span>])`,
+
+    stream: `<span class="kw">import</span> requests, json
+
+<span class="kw">with</span> requests.post(
+    <span class="str">"https://api.omnigenius.co/v1/chat"</span>,
+    headers={<span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span>},
+    json={<span class="str">"messages"</span>: [{<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Hello"</span>}], <span class="str">"stream"</span>: <span class="kw">True</span>},
+    stream=<span class="kw">True</span>
+) <span class="kw">as</span> r:
+    <span class="kw">for</span> line <span class="kw">in</span> r.iter_lines():
+        <span class="kw">if</span> line <span class="kw">and</span> line != <span class="str">b"data: [DONE]"</span>:
+            chunk = json.loads(line[<span class="num">6</span>:])
+            <span class="fn">print</span>(chunk[<span class="str">"delta"</span>][<span class="str">"content"</span>], end=<span class="str">""</span>)`,
+
+    webhook: `<span class="kw">import</span> requests
+
+<span class="var">res</span> = requests.post(
+    <span class="str">"https://api.omnigenius.co/v1/webhooks"</span>,
+    headers={<span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span>},
+    json={
+        <span class="str">"url"</span>: <span class="str">"https://yourapp.com/webhooks/og"</span>,
+        <span class="str">"events"</span>: [
+            <span class="str">"completion.done"</span>,
+            <span class="str">"usage.threshold"</span>
+        ],
+        <span class="str">"secret"</span>: <span class="str">"wh-secret-abc123"</span>
+    }
+)
+<span class="fn">print</span>(res.json()[<span class="str">"id"</span>])`
+  },
+
+  js: {
+    chat: `<span class="kw">const</span> <span class="var">res</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.omnigenius.co/v1/chat"</span>, {
+  method: <span class="str">"POST"</span>,
+  headers: {
+    <span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span>,
+    <span class="str">"Content-Type"</span>: <span class="str">"application/json"</span>
+  },
+  body: JSON.<span class="fn">stringify</span>({
+    model: <span class="str">"chimera-1"</span>,
+    mode: <span class="str">"auto"</span>,
+    messages: [{ role: <span class="str">"user"</span>, content: <span class="str">"Explain MoE routing"</span> }]
+  })
+});
+<span class="kw">const</span> <span class="var">data</span> = <span class="kw">await</span> res.<span class="fn">json</span>();
+console.<span class="fn">log</span>(data.choices[<span class="num">0</span>].message.content);`,
+
+    search: `<span class="kw">const</span> <span class="var">res</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.omnigenius.co/v1/search"</span>, {
+  method: <span class="str">"POST"</span>,
+  headers: { <span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span> },
+  body: JSON.<span class="fn">stringify</span>({
+    query: <span class="str">"latest AI benchmarks 2026"</span>,
+    num_sources: <span class="num">5</span>,
+    freshness: <span class="str">"week"</span>,
+    synthesise: <span class="kw">true</span>
+  })
+});
+<span class="kw">const</span> { summary, sources } = <span class="kw">await</span> res.<span class="fn">json</span>();
+console.<span class="fn">log</span>(summary);
+sources.<span class="fn">forEach</span>(s => console.<span class="fn">log</span>(s.url));`,
+
+    reason: `<span class="kw">const</span> <span class="var">res</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.omnigenius.co/v1/reason"</span>, {
+  method: <span class="str">"POST"</span>,
+  headers: { <span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span> },
+  body: JSON.<span class="fn">stringify</span>({
+    messages: [{ role: <span class="str">"user"</span>, content: <span class="str">"Analyse AGI risks by 2030"</span> }],
+    depth: <span class="num">4</span>,
+    show_thinking: <span class="kw">true</span>
+  })
+});
+<span class="kw">const</span> { thinking_steps, answer } = <span class="kw">await</span> res.<span class="fn">json</span>();
+console.<span class="fn">log</span>(answer);`,
+
+    stream: `<span class="kw">const</span> <span class="var">res</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.omnigenius.co/v1/chat"</span>, {
+  method: <span class="str">"POST"</span>,
+  headers: { <span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span> },
+  body: JSON.<span class="fn">stringify</span>({ messages: [{ role: <span class="str">"user"</span>, content: <span class="str">"Hello"</span> }], stream: <span class="kw">true</span> })
+});
+<span class="kw">const</span> <span class="var">reader</span> = res.body.<span class="fn">getReader</span>();
+<span class="kw">const</span> <span class="var">decoder</span> = <span class="kw">new</span> TextDecoder();
+<span class="kw">while</span> (<span class="kw">true</span>) {
+  <span class="kw">const</span> { done, value } = <span class="kw">await</span> reader.<span class="fn">read</span>();
+  <span class="kw">if</span> (done) <span class="kw">break</span>;
+  <span class="kw">const</span> chunk = decoder.<span class="fn">decode</span>(value);
+  process.stdout.<span class="fn">write</span>(JSON.<span class="fn">parse</span>(chunk.slice(<span class="num">6</span>)).delta.content);
+}`,
+
+    webhook: `<span class="kw">const</span> <span class="var">res</span> = <span class="kw">await</span> <span class="fn">fetch</span>(<span class="str">"https://api.omnigenius.co/v1/webhooks"</span>, {
+  method: <span class="str">"POST"</span>,
+  headers: { <span class="str">"Authorization"</span>: <span class="str">"Bearer og-your-key"</span> },
+  body: JSON.<span class="fn">stringify</span>({
+    url: <span class="str">"https://yourapp.com/webhooks/og"</span>,
+    events: [<span class="str">"completion.done"</span>, <span class="str">"usage.threshold"</span>],
+    secret: <span class="str">"wh-secret-abc123"</span>
+  })
+});
+<span class="kw">const</span> { id } = <span class="kw">await</span> res.<span class="fn">json</span>();
+console.<span class="fn">log</span>(<span class="str">\`Webhook registered: \${id}\`</span>);`
+  },
+
+  curl: {
+    chat: `<span class="fn">curl</span> https://api.omnigenius.co/v1/chat \\
+  -H <span class="str">"Authorization: Bearer og-your-key"</span> \\
+  -H <span class="str">"Content-Type: application/json"</span> \\
+  -d <span class="str">'{
+    "model": "chimera-1",
+    "mode": "auto",
+    "messages": [{"role":"user","content":"Explain MoE routing"}]
+  }'</span>`,
+
+    search: `<span class="fn">curl</span> https://api.omnigenius.co/v1/search \\
+  -H <span class="str">"Authorization: Bearer og-your-key"</span> \\
+  -d <span class="str">'{
+    "query": "latest AI benchmarks 2026",
+    "num_sources": 5,
+    "freshness": "week"
+  }'</span>`,
+
+    reason: `<span class="fn">curl</span> https://api.omnigenius.co/v1/reason \\
+  -H <span class="str">"Authorization: Bearer og-your-key"</span> \\
+  -d <span class="str">'{
+    "messages": [{"role":"user","content":"Analyse AGI risks"}],
+    "depth": 4,
+    "show_thinking": true
+  }'</span>`,
+
+    stream: `<span class="fn">curl</span> https://api.omnigenius.co/v1/chat \\
+  -H <span class="str">"Authorization: Bearer og-your-key"</span> \\
+  -H <span class="str">"Accept: text/event-stream"</span> \\
+  -d <span class="str">'{
+    "messages": [{"role":"user","content":"Hello"}],
+    "stream": true
+  }'</span> \\
+  --no-buffer`,
+
+    webhook: `<span class="fn">curl</span> https://api.omnigenius.co/v1/webhooks \\
+  -H <span class="str">"Authorization: Bearer og-your-key"</span> \\
+  -d <span class="str">'{
+    "url": "https://yourapp.com/webhooks/og",
+    "events": ["completion.done", "usage.threshold"],
+    "secret": "wh-secret-abc123"
+  }'</span>`
+  },
+
+  go: {
+    chat: `<span class="kw">package</span> main
+
+<span class="kw">import</span> (
+    <span class="str">"bytes"</span>; <span class="str">"encoding/json"</span>
+    <span class="str">"fmt"</span>; <span class="str">"net/http"</span>
+)
+
+<span class="kw">func</span> <span class="fn">main</span>() {
+    body, _ := json.<span class="fn">Marshal</span>(map[string]any{
+        <span class="str">"model"</span>: <span class="str">"chimera-1"</span>,
+        <span class="str">"mode"</span>:  <span class="str">"auto"</span>,
+        <span class="str">"messages"</span>: []map[string]string{{
+            <span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Explain MoE"</span>,
+        }},
+    })
+    req, _ := http.<span class="fn">NewRequest</span>(<span class="str">"POST"</span>,
+        <span class="str">"https://api.omnigenius.co/v1/chat"</span>,
+        bytes.<span class="fn">NewBuffer</span>(body))
+    req.Header.<span class="fn">Set</span>(<span class="str">"Authorization"</span>, <span class="str">"Bearer og-your-key"</span>)
+    req.Header.<span class="fn">Set</span>(<span class="str">"Content-Type"</span>, <span class="str">"application/json"</span>)
+    res, _ := http.DefaultClient.<span class="fn">Do</span>(req)
+    <span class="kw">defer</span> res.Body.<span class="fn">Close</span>()
+    <span class="kw">var</span> data map[string]any
+    json.<span class="fn">NewDecoder</span>(res.Body).<span class="fn">Decode</span>(&data)
+    fmt.<span class="fn">Println</span>(data)
+}`,
+    search: `<span class="cmt">// Go Search example</span>
+body, _ := json.<span class="fn">Marshal</span>(map[string]any{
+    <span class="str">"query"</span>:       <span class="str">"AI benchmarks 2026"</span>,
+    <span class="str">"num_sources"</span>: <span class="num">5</span>,
+    <span class="str">"freshness"</span>:   <span class="str">"week"</span>,
+    <span class="str">"synthesise"</span>:  <span class="kw">true</span>,
+})
+<span class="cmt">// ... same request pattern as chat</span>`,
+    reason: `<span class="cmt">// Go Reasoning example</span>
+body, _ := json.<span class="fn">Marshal</span>(map[string]any{
+    <span class="str">"messages"</span>:     []map[string]string{
+        {<span class="str">"role"</span>: <span class="str">"user"</span>, <span class="str">"content"</span>: <span class="str">"Analyse AGI risks"</span>},
+    },
+    <span class="str">"depth"</span>:         <span class="num">4</span>,
+    <span class="str">"show_thinking"</span>: <span class="kw">true</span>,
+})`,
+    stream: `<span class="cmt">// Go SSE streaming example</span>
+req.Header.<span class="fn">Set</span>(<span class="str">"Accept"</span>, <span class="str">"text/event-stream"</span>)
+<span class="cmt">// Set stream: true in JSON body</span>
+<span class="cmt">// Use bufio.Scanner to read SSE lines</span>
+scanner := bufio.<span class="fn">NewScanner</span>(res.Body)
+<span class="kw">for</span> scanner.<span class="fn">Scan</span>() {
+    line := scanner.<span class="fn">Text</span>()
+    <span class="kw">if</span> line == <span class="str">"data: [DONE]"</span> { <span class="kw">break</span> }
+    fmt.<span class="fn">Print</span>(line)
+}`,
+    webhook: `<span class="cmt">// Go Webhook registration</span>
+body, _ := json.<span class="fn">Marshal</span>(map[string]any{
+    <span class="str">"url"</span>:    <span class="str">"https://yourapp.com/webhooks/og"</span>,
+    <span class="str">"events"</span>: []string{<span class="str">"completion.done"</span>},
+    <span class="str">"secret"</span>: <span class="str">"wh-secret-abc123"</span>,
+})`
+  },
+
+  ruby: {
+    chat: `<span class="kw">require</span> <span class="str">"net/http"</span>
+<span class="kw">require</span> <span class="str">"json"</span>
+
+<span class="var">uri</span> = URI(<span class="str">"https://api.omnigenius.co/v1/chat"</span>)
+<span class="var">req</span> = Net::HTTP::Post.<span class="fn">new</span>(uri)
+req[<span class="str">"Authorization"</span>] = <span class="str">"Bearer og-your-key"</span>
+req[<span class="str">"Content-Type"</span>]  = <span class="str">"application/json"</span>
+req.body = {
+  model: <span class="str">"chimera-1"</span>,
+  mode: <span class="str">"auto"</span>,
+  messages: [{ role: <span class="str">"user"</span>, content: <span class="str">"Explain MoE routing"</span> }]
+}.<span class="fn">to_json</span>
+
+<span class="var">res</span> = Net::HTTP.<span class="fn">start</span>(uri.hostname, use_ssl: <span class="kw">true</span>) { |h| h.<span class="fn">request</span>(req) }
+<span class="var">data</span> = JSON.<span class="fn">parse</span>(res.body)
+<span class="fn">puts</span> data[<span class="str">"choices"</span>][<span class="num">0</span>][<span class="str">"message"</span>][<span class="str">"content"</span>]`,
+    search: `<span class="cmt"># Ruby Search example</span>
+req.body = {
+  query: <span class="str">"latest AI benchmarks 2026"</span>,
+  num_sources: <span class="num">5</span>,
+  freshness: <span class="str">"week"</span>
+}.<span class="fn">to_json</span>`,
+    reason: `<span class="cmt"># Ruby Reasoning example</span>
+req.body = {
+  messages: [{ role: <span class="str">"user"</span>, content: <span class="str">"Analyse AGI risks"</span> }],
+  depth: <span class="num">4</span>,
+  show_thinking: <span class="kw">true</span>
+}.<span class="fn">to_json</span>`,
+    stream: `<span class="cmt"># Ruby SSE Streaming</span>
+req[<span class="str">"Accept"</span>] = <span class="str">"text/event-stream"</span>
+req.body = { messages: [...], stream: <span class="kw">true</span> }.<span class="fn">to_json</span>
+<span class="cmt"># Use EventSource gem or parse SSE manually</span>`,
+    webhook: `<span class="cmt"># Ruby Webhook</span>
+req.body = {
+  url: <span class="str">"https://yourapp.com/webhooks/og"</span>,
+  events: [<span class="str">"completion.done"</span>],
+  secret: <span class="str">"wh-secret-abc123"</span>
+}.<span class="fn">to_json</span>`
+  },
+
+  php: {
+    chat: `<span class="var">$ch</span> = curl_init(<span class="str">"https://api.omnigenius.co/v1/chat"</span>);
+curl_setopt_array(<span class="var">$ch</span>, [
+    CURLOPT_POST           => <span class="kw">true</span>,
+    CURLOPT_RETURNTRANSFER => <span class="kw">true</span>,
+    CURLOPT_HTTPHEADER     => [
+        <span class="str">"Authorization: Bearer og-your-key"</span>,
+        <span class="str">"Content-Type: application/json"</span>
+    ],
+    CURLOPT_POSTFIELDS => json_encode([
+        <span class="str">"model"</span>    => <span class="str">"chimera-1"</span>,
+        <span class="str">"mode"</span>     => <span class="str">"auto"</span>,
+        <span class="str">"messages"</span> => [[
+            <span class="str">"role"</span>    => <span class="str">"user"</span>,
+            <span class="str">"content"</span> => <span class="str">"Explain MoE routing"</span>
+        ]]
+    ])
+]);
+<span class="var">$res</span>  = json_decode(curl_exec(<span class="var">$ch</span>), <span class="kw">true</span>);
+<span class="kw">echo</span> <span class="var">$res</span>[<span class="str">"choices"</span>][<span class="num">0</span>][<span class="str">"message"</span>][<span class="str">"content"</span>];`,
+    search: `<span class="cmt">// PHP Search</span>
+CURLOPT_POSTFIELDS => json_encode([
+    <span class="str">"query"</span>       => <span class="str">"AI benchmarks 2026"</span>,
+    <span class="str">"num_sources"</span> => <span class="num">5</span>,
+    <span class="str">"freshness"</span>   => <span class="str">"week"</span>,
+    <span class="str">"synthesise"</span>  => <span class="kw">true</span>
+])`,
+    reason: `<span class="cmt">// PHP Reasoning</span>
+CURLOPT_POSTFIELDS => json_encode([
+    <span class="str">"messages"</span>     => [[<span class="str">"role"</span>=><span class="str">"user"</span>,<span class="str">"content"</span>=><span class="str">"Analyse AGI risks"</span>]],
+    <span class="str">"depth"</span>         => <span class="num">4</span>,
+    <span class="str">"show_thinking"</span> => <span class="kw">true</span>
+])`,
+    stream: `<span class="cmt">// PHP SSE Streaming</span>
+CURLOPT_HTTPHEADER => [
+    <span class="str">"Authorization: Bearer og-your-key"</span>,
+    <span class="str">"Accept: text/event-stream"</span>
+],
+<span class="cmt">// Parse CURLOPT_WRITEFUNCTION for chunks</span>`,
+    webhook: `<span class="cmt">// PHP Webhook</span>
+CURLOPT_POSTFIELDS => json_encode([
+    <span class="str">"url"</span>    => <span class="str">"https://yourapp.com/webhooks/og"</span>,
+    <span class="str">"events"</span> => [<span class="str">"completion.done"</span>],
+    <span class="str">"secret"</span> => <span class="str">"wh-secret-abc123"</span>
+])`
+  }
+};
+
+// Map section ID to code key
+const SECTION_CODE_MAP = {
+  introduction:'chat', quickstart:'chat', 'base-url':'chat',
+  'rate-limits':'chat', 'api-keys':'chat', oauth:'chat',
+  'token-refresh':'chat', chat:'chat', search:'search',
+  reasoning:'reason', streaming:'stream', webhooks:'webhook',
+  errors:'chat', models:'chat', changelog:'chat', openapi:'chat'
+};
+
+let currentSection = 'chat';
+
+// ---- LANGUAGE SWITCH ----
+function setLang(lang, btn) {
+  currentLang = lang;
+  document.querySelectorAll('.lang-tab').forEach(t => t.classList.remove('active'));
+  btn.classList.add('active');
+  updateCode();
+}
+
+function updateCode() {
+  const code = (CODES[currentLang] || CODES.python)[currentSection] || '';
+  document.getElementById('codeDisplay').innerHTML = code;
+}
+
+// ---- NAV ----
+function setActive(el) {
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  el.classList.add('active');
+  const section = el.getAttribute('href').replace('#','');
+  currentSection = SECTION_CODE_MAP[section] || 'chat';
+  document.getElementById('codeBlockTitle').textContent =
+    ({chat:'Chat completion',search:'Search',reason:'Reasoning',stream:'Streaming SSE',webhook:'Webhook'})[currentSection] || 'Example';
+  updateCode();
+}
+
+function filterNav(q) {
+  document.querySelectorAll('.nav-item').forEach(el => {
+    el.style.display = el.textContent.toLowerCase().includes(q.toLowerCase()) ? '' : 'none';
+  });
+}
+
+// ---- COPY CODE ----
+function copyCode(btn) {
+  const pre = btn.closest('.code-block').querySelector('pre');
+  const text = pre.innerText;
+  navigator.clipboard.writeText(text).then(() => {
+    btn.textContent = 'Copied!';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('copied'); }, 2000);
+  });
+}
+
+// ---- PLAYGROUND ----
+function updatePlayground() {
+  const ep = document.getElementById('pgEndpoint').value;
+  document.getElementById('pgMsgField').style.display   = ['chat','reason','stream'].includes(ep) ? '' : 'none';
+  document.getElementById('pgModeField').style.display  = ep === 'chat' ? '' : 'none';
+  document.getElementById('pgDepthField').style.display = ep === 'reason' ? '' : 'none';
+  document.getElementById('pgQueryField').style.display = ep === 'search' ? '' : 'none';
+  currentSection = { chat:'chat', search:'search', reason:'reason', stream:'stream', webhook:'webhook' }[ep];
+  updateCode();
+}
+
+// Simulated API responses per endpoint
+const SIM_RESPONSES = {
+  chat: {
+    pre: '{\n  "id": "chatcmpl-01HXYZ9a",\n  "object": "chat.completion",\n  "model": "chimera-1",\n  "usage": { "prompt_tokens": 18, "completion_tokens": 142, "total_tokens": 160 },\n  "choices": [{\n    "message": {\n      "role": "assistant",\n      "content": "',
+    body: 'Mixture of Experts (MoE) routing works by maintaining N independent sub-networks (experts) within a model layer. For each token, a lightweight router network computes a softmax score across all experts and activates only the top-K — typically 2 of 16. This gives the model the capacity of a large dense network while only activating a fraction of parameters per forward pass, dramatically reducing inference compute.',
+    post: '"\n    },\n    "finish_reason": "stop"\n  }]\n}'
+  },
+  search: {
+    pre: '{\n  "id": "search-01HABC",\n  "query": "AI benchmarks 2026",\n  "summary": "',
+    body: 'As of early 2026, Gemini Ultra 2.0 and Claude Opus 4 lead MMLU at 92.1% and 91.8% respectively. Omnigenius Chimera-1 achieves 89.4% on MMLU and 94.2% on HumanEval (coding), placing it competitively in the reasoning category.',
+    post: '",\n  "sources": [\n    { "title": "AI Index 2026", "url": "https://aiindex.stanford.edu", "score": 0.94 },\n    { "title": "HELM Benchmark Report", "url": "https://crfm.stanford.edu/helm", "score": 0.91 }\n  ]\n}'
+  },
+  reason: {
+    pre: '{\n  "id": "reason-01HDEF",\n  "model": "chimera-1-reason",\n  "thinking_steps": [\n    "Step 1: Decompose the problem into subcomponents...",\n    "Step 2: Evaluate risk vectors across 3 axes...",\n    "Step 3: Synthesise findings..."\n  ],\n  "answer": "',
+    body: 'AGI risks by 2030 fall into three primary categories: misalignment (goal specification failures), misuse (deliberate weaponisation), and structural displacement (economic/social disruption at scale). The 2030 timeline remains speculative — current consensus places transformative AGI at 2027–2035 with high variance.',
+    post: '",\n  "loops": 4,\n  "tokens_used": 892\n}'
+  },
+  stream: {
+    lines: [
+      'data: {"delta":{"role":"assistant","content":"The "}}',
+      'data: {"delta":{"content":"Chimera "}}',
+      'data: {"delta":{"content":"architecture "}}',
+      'data: {"delta":{"content":"separates "}}',
+      'data: {"delta":{"content":"memory, "}}',
+      'data: {"delta":{"content":"planning "}}',
+      'data: {"delta":{"content":"and "}}',
+      'data: {"delta":{"content":"reasoning "}}',
+      'data: {"delta":{"content":"into "}}',
+      'data: {"delta":{"content":"discrete "}}',
+      'data: {"delta":{"content":"modules..."}}',
+      'data: [DONE]'
+    ]
+  },
+  webhook: {
+    pre: '{\n  "id": "wh-01HGHI",\n  "object": "webhook",\n  "url": "',
+    body: 'https://yourapp.com/webhooks/og',
+    post: '",\n  "events": ["completion.done", "usage.threshold"],\n  "created": 1741200000,\n  "active": true\n}'
+  }
+};
+
+async function runPlayground() {
+  const ep  = document.getElementById('pgEndpoint').value;
+  const btn = document.getElementById('pgRunBtn');
+  const res = document.getElementById('pgResponse');
+  const dot = document.getElementById('pgStatusDot');
+  const txt = document.getElementById('pgStatusText');
+
+  btn.disabled = true;
+  res.classList.add('visible');
+  res.textContent = '';
+  dot.className = 'pg-status-dot running';
+  txt.textContent = 'Sending request…';
+
+  await delay(400);
+
+  const sim = SIM_RESPONSES[ep];
+
+  if (ep === 'stream') {
+    txt.textContent = 'Streaming…';
+    res.textContent = '';
+    const cursor = document.createElement('span');
+    cursor.className = 'pg-stream-cursor';
+    res.appendChild(cursor);
+    for (const line of sim.lines) {
+      await delay(120 + Math.random() * 80);
+      if (line === 'data: [DONE]') {
+        cursor.remove();
+        res.textContent += '\ndata: [DONE]';
+      } else {
+        try {
+          const chunk = JSON.parse(line.slice(6));
+          const content = chunk.delta?.content || '';
+          cursor.before(content);
+        } catch { cursor.before(line + '\n'); }
+      }
+    }
+  } else {
+    txt.textContent = 'Receiving response…';
+    const full = sim.pre + sim.body + sim.post;
+    let i = 0;
+    const cursor = document.createElement('span');
+    cursor.className = 'pg-stream-cursor';
+    res.appendChild(cursor);
+    while (i < full.length) {
+      const chunk = full.slice(i, i + 3 + Math.floor(Math.random()*4));
+      cursor.before(chunk);
+      i += chunk.length;
+      await delay(12);
+    }
+    cursor.remove();
+  }
+
+  dot.className = 'pg-status-dot done';
+  txt.textContent = 'Response received · ' + new Date().toLocaleTimeString();
+  btn.disabled = false;
+}
+
+function delay(ms) { return new Promise(r => setTimeout(r, ms)); }
+
+// ---- KEY MODAL ----
+function showKeyModal() {
+  const m = document.getElementById('keyModal');
+  m.style.display = 'flex';
+  setTimeout(() => { m.style.opacity = '1'; m.style.pointerEvents = 'all'; }, 10);
+}
+function hideKeyModal() {
+  const m = document.getElementById('keyModal');
+  m.style.opacity = '0'; m.style.pointerEvents = 'none';
+  setTimeout(() => m.style.display = 'none', 250);
+}
+
+// ---- SCROLL SPY ----
+const sections = document.querySelectorAll('.doc-section');
+const navItems = document.querySelectorAll('.nav-item');
+const observer = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navItems.forEach(n => {
+        const active = n.getAttribute('href') === '#' + id;
+        n.classList.toggle('active', active);
+        if (active) {
+          currentSection = SECTION_CODE_MAP[id] || 'chat';
+          updateCode();
+        }
+      });
+    }
+  });
+}, { rootMargin:'-20% 0px -70% 0px' });
+sections.forEach(s => observer.observe(s));
+
+// ---- INIT ----
+updateCode();
+updatePlayground();
+</script>
+</body>
+</html>

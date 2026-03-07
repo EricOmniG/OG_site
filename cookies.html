@@ -1,0 +1,470 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie Policy — Omnigenius</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="/css/shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04070f;--bg2:#070c18;--bg3:#0b1120;--surface:#0d1624;--teal:#0ee8d4;--teal-glow:rgba(14,232,212,0.07);--green:#22c55e;--amber:#f59e0b;--red:#f43f5e;--text:#e8f0fc;--text2:#6b80a0;--text3:#2e3f58;--border2:rgba(255,255,255,0.055);--border3:rgba(255,255,255,0.025);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;background-image:linear-gradient(rgba(255,255,255,.016) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.016) 1px,transparent 1px);background-size:44px 44px;}
+.topbar{position:sticky;top:0;z-index:100;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(4,7,15,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);}
+.tb-logo{display:flex;align-items:center;gap:9px;text-decoration:none;}
+.tb-logo svg{filter:drop-shadow(0 0 5px rgba(14,232,212,.35));}
+.tb-wordmark{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--teal);}
+.tb-links{display:flex;gap:6px;}
+.tb-link{padding:6px 12px;border-radius:7px;font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.5px;color:var(--text2);text-decoration:none;transition:all .2s;border:1px solid transparent;}
+.tb-link:hover{color:var(--teal);border-color:var(--border2);}
+.tb-link.active{color:var(--teal);background:var(--teal-glow);border-color:rgba(14,232,212,.12);}
+.shell{display:flex;max-width:1100px;margin:0 auto;padding:40px 32px 80px;gap:48px;}
+.doc-nav{width:220px;flex-shrink:0;position:sticky;top:74px;height:calc(100vh - 74px);overflow-y:auto;padding-bottom:40px;}
+.doc-nav::-webkit-scrollbar{width:3px;}
+.doc-nav::-webkit-scrollbar-thumb{background:var(--border2);}
+.doc-nav-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:8px;padding:0 4px;}
+.doc-nav a{display:block;padding:7px 10px;border-radius:7px;font-size:12px;color:var(--text2);text-decoration:none;transition:all .15s;border-left:2px solid transparent;margin-bottom:2px;}
+.doc-nav a:hover{color:var(--text);background:var(--bg3);}
+.doc-nav a.active{color:var(--teal);background:var(--teal-glow);border-left-color:var(--teal);}
+.doc-content{flex:1;min-width:0;}
+.doc-hero{padding:32px 36px;border-radius:16px;background:var(--surface);border:1px solid var(--border2);margin-bottom:32px;position:relative;overflow:hidden;}
+.doc-hero::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
+.doc-hero-eyebrow{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:10px;display:flex;align-items:center;gap:8px;}
+.doc-hero-eyebrow::before{content:'';display:block;width:16px;height:1px;background:var(--teal);opacity:.5;}
+.doc-hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(24px,3vw,34px);letter-spacing:-1px;color:var(--text);margin-bottom:10px;}
+.doc-hero p{font-size:13.5px;line-height:1.75;color:var(--text2);font-weight:300;}
+.doc-hero-meta{display:flex;gap:16px;flex-wrap:wrap;font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);letter-spacing:.5px;margin-top:14px;}
+.doc-section{margin-bottom:40px;scroll-margin-top:80px;}
+.doc-section h2{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.3px;color:var(--text);margin-bottom:12px;padding-bottom:10px;border-bottom:1px solid var(--border3);display:flex;align-items:center;gap:10px;}
+.doc-section h2 .sec-num{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:1px;color:var(--text3);font-weight:400;}
+.doc-section h3{font-family:'Syne',sans-serif;font-weight:600;font-size:14px;color:var(--text);margin:18px 0 8px;}
+.doc-section p{font-size:13.5px;line-height:1.8;color:var(--text2);font-weight:300;margin-bottom:12px;}
+.doc-section p:last-child{margin-bottom:0;}
+.doc-section ul{padding-left:20px;margin-bottom:12px;}
+.doc-section li{font-size:13.5px;line-height:1.8;color:var(--text2);font-weight:300;margin-bottom:4px;}
+.doc-section li::marker{color:var(--teal);font-size:10px;}
+.callout{padding:14px 16px;border-radius:10px;margin:16px 0;display:flex;gap:11px;align-items:flex-start;font-size:13px;line-height:1.65;}
+.callout-info{background:rgba(14,232,212,.05);border:1px solid rgba(14,232,212,.12);color:rgba(14,232,212,.8);}
+.callout-icon{font-size:14px;flex-shrink:0;margin-top:1px;}
+.contact-box{padding:20px 24px;border-radius:12px;background:var(--bg3);border:1px solid var(--border2);margin-top:16px;}
+.contact-box-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:var(--text);margin-bottom:8px;}
+.contact-box p{font-size:13px;color:var(--text2);margin-bottom:4px;}
+.contact-box a{color:var(--teal);text-decoration:none;}
+.legal-table{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13px;}
+.legal-table th{padding:9px 12px;background:var(--bg3);border-bottom:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);text-align:left;font-weight:400;}
+.legal-table td{padding:10px 12px;border-bottom:1px solid var(--border3);color:var(--text2);line-height:1.6;vertical-align:top;}
+.legal-table tr:last-child td{border-bottom:none;}
+.legal-table td:first-child{color:var(--text);font-weight:500;}
+.cookie-type{display:inline-flex;align-items:center;gap:5px;padding:3px 8px;border-radius:5px;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1px;text-transform:uppercase;font-weight:500;}
+.ct-essential{background:rgba(34,197,94,.08);border:1px solid rgba(34,197,94,.2);color:var(--green);}
+.ct-analytics{background:rgba(56,189,248,.08);border:1px solid rgba(56,189,248,.2);color:#38bdf8;}
+.ct-advertising{background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.2);color:var(--amber);}
+
+/* Cookie consent banner */
+.cookie-banner{
+  position:fixed;bottom:0;left:0;right:0;z-index:1000;
+  background:rgba(7,12,24,.97);backdrop-filter:blur(12px);
+  border-top:1px solid var(--border2);
+  padding:18px 32px;
+  display:flex;align-items:center;justify-content:space-between;
+  gap:20px;flex-wrap:wrap;
+  transform:translateY(0);
+  transition:transform .4s cubic-bezier(.34,1.56,.64,1);
+}
+.cookie-banner.hidden{transform:translateY(120%);}
+.cookie-banner-text{
+  font-size:13px;color:var(--text2);line-height:1.5;flex:1;min-width:200px;
+}
+.cookie-banner-text a{color:var(--teal);text-decoration:none;}
+.cookie-banner-btns{display:flex;gap:8px;flex-shrink:0;flex-wrap:wrap;}
+.cb-btn{
+  padding:8px 18px;border-radius:8px;font-size:13px;
+  font-family:'Syne',sans-serif;font-weight:700;cursor:pointer;transition:all .2s;border:none;
+}
+.cb-accept{background:var(--teal);color:#050810;box-shadow:0 0 14px rgba(14,232,212,.2);}
+.cb-accept:hover{background:#12f5e0;}
+.cb-necessary{background:transparent;border:1px solid var(--border2);color:var(--text2);}
+.cb-necessary:hover{border-color:var(--border);color:var(--text);}
+.cb-settings{background:transparent;border:1px solid var(--border2);color:var(--text2);font-family:'DM Mono',monospace;font-size:10px;letter-spacing:.5px;}
+.cb-settings:hover{border-color:var(--border);color:var(--text);}
+
+/* Preferences modal */
+.pref-overlay{position:fixed;inset:0;z-index:2000;background:rgba(0,0,0,.7);backdrop-filter:blur(6px);display:flex;align-items:flex-end;justify-content:center;padding:0;opacity:0;pointer-events:none;transition:opacity .25s;}
+.pref-overlay.open{opacity:1;pointer-events:all;}
+.pref-modal{background:var(--bg2);border:1px solid var(--border2);border-radius:20px 20px 0 0;width:100%;max-width:560px;padding:28px 28px 36px;transform:translateY(40px);transition:transform .35s cubic-bezier(.34,1.56,.64,1);}
+.pref-overlay.open .pref-modal{transform:none;}
+.pref-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:4px;}
+.pref-sub{font-size:12px;color:var(--text2);margin-bottom:20px;}
+.pref-row{display:flex;align-items:center;justify-content:space-between;padding:14px 0;border-bottom:1px solid var(--border3);}
+.pref-row:last-of-type{border-bottom:none;}
+.pref-row-left{flex:1;padding-right:20px;}
+.pref-row-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:3px;}
+.pref-row-desc{font-size:12px;color:var(--text2);line-height:1.5;}
+/* toggle */
+.toggle{position:relative;width:40px;height:22px;flex-shrink:0;}
+.toggle input{opacity:0;width:0;height:0;position:absolute;}
+.toggle-track{position:absolute;inset:0;background:var(--bg3);border:1px solid var(--border2);border-radius:11px;cursor:pointer;transition:all .25s;}
+.toggle input:checked+.toggle-track{background:var(--teal);border-color:var(--teal);}
+.toggle-track::after{content:'';position:absolute;top:3px;left:3px;width:14px;height:14px;border-radius:50%;background:#fff;transition:transform .25s;}
+.toggle input:checked+.toggle-track::after{transform:translateX(18px);}
+.toggle input:disabled+.toggle-track{opacity:.5;cursor:not-allowed;}
+.pref-btns{display:flex;gap:8px;margin-top:20px;}
+.pref-save{flex:1;padding:11px;border-radius:9px;background:var(--teal);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#050810;cursor:pointer;transition:all .2s;}
+.pref-save:hover{background:#12f5e0;}
+.pref-cancel{padding:11px 18px;border-radius:9px;background:transparent;border:1px solid var(--border2);color:var(--text2);font-size:13px;cursor:pointer;transition:all .2s;}
+.pref-cancel:hover{border-color:var(--border);color:var(--text);}
+
+.doc-footer{margin-top:48px;padding-top:20px;border-top:1px solid var(--border3);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.doc-footer-text{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.doc-footer-links{display:flex;gap:16px;}
+.doc-footer-links a{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);text-decoration:none;transition:color .2s;}
+.doc-footer-links a:hover{color:var(--teal);}
+@media(max-width:800px){.doc-nav{display:none;}.shell{padding:24px 16px 60px;gap:0;}}
+@media(max-width:500px){.topbar{padding:0 16px;}.tb-links{display:none;}.cookie-banner{padding:16px;}.cookie-banner-btns{width:100%;}.cb-btn{flex:1;text-align:center;}}
+</style>
+
+<!-- ── SEO: Primary ───────────────────────────────────────── -->
+<meta name="description" content="How Omnigenius uses cookies and similar tracking technologies.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="keywords" content="Omnigenius cookie policy, tracking, analytics cookies">
+<link rel="canonical" href="https://omnigenius.co/cookies.html">
+
+<!-- ── SEO: OpenGraph ────────────────────────────────────── -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="Omnigenius Cookie Policy">
+<meta property="og:description" content="How we use cookies and similar tracking technologies.">
+<meta property="og:url" content="https://omnigenius.co/cookies.html">
+<meta property="og:image" content="https://omnigenius.co/css/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Omnigenius — AI That Thinks Differently">
+<meta property="og:site_name" content="Omnigenius">
+<meta property="og:locale" content="en_US">
+
+<!-- ── SEO: Twitter / X Card ─────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@omnigenius_ai">
+<meta name="twitter:creator" content="@omnigenius_ai">
+<meta name="twitter:title" content="Omnigenius Cookie Policy">
+<meta name="twitter:description" content="How we use cookies and similar tracking technologies.">
+<meta name="twitter:image" content="https://omnigenius.co/css/og-image.png">
+
+<!-- ── SEO: Schema.org JSON-LD ───────────────────────────── -->
+<script type="application/ld+json">
+{{
+  "@context": "https://schema.org",
+  "@type": "WebSite",
+  "name": "Omnigenius",
+  "url": "https://omnigenius.co",
+  "description": "ORCA-powered AI with deep reasoning, live web search, and human-like memory.",
+  "potentialAction": {{
+    "@type": "SearchAction",
+    "target": "https://omnigenius.co/user.html?q={{search_term_string}}",
+    "query-input": "required name=search_term_string"
+  }}
+}}
+</script>
+<!-- ── /SEO ───────────────────────────────────────────────── -->
+</head>
+<body>
+<header class="topbar">
+  <a class="tb-logo" href="/"><svg width="26" height="26" viewBox="0 0 90 90" fill="none"><rect width="90" height="90" rx="22" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/><path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.5"/><circle cx="37" cy="29" r="3" fill="#0ee8d4" opacity=".9"/><circle cx="53" cy="29" r="3" fill="#0ee8d4" opacity=".9"/><circle cx="45" cy="43" r="3" fill="#0ee8d4" opacity=".9"/><line x1="37" y1="29" x2="53" y2="29" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/><line x1="37" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/><line x1="53" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/></svg><span class="tb-wordmark">Omnigenius</span></a>
+  <nav class="tb-links">
+    <a class="tb-link" href="/privacy.html">Privacy Policy</a>
+    <a class="tb-link" href="/tos.html">Terms of Service</a>
+    <a class="tb-link active" href="/cookies.html">Cookie Policy</a>
+  </nav>
+</header>
+
+<div class="shell">
+  <nav class="doc-nav">
+    <div class="doc-nav-label">Cookie Policy</div>
+    <a href="#what-are-cookies">What Are Cookies</a>
+    <a href="#how-we-use">How We Use Cookies</a>
+    <a href="#types">Types of Cookies</a>
+    <a href="#third-party">Third-Party Cookies</a>
+    <a href="#your-choices">Your Choices</a>
+    <a href="#do-not-track">Do Not Track</a>
+    <a href="#changes">Changes</a>
+    <a href="#contact">Contact</a>
+  </nav>
+
+  <article class="doc-content">
+    <div class="doc-hero">
+      <div class="doc-hero-eyebrow">Legal</div>
+      <h1>Cookie Policy</h1>
+      <p>This Cookie Policy explains how Omnigenius LLC ("Omnigenius," "we," "us," or "our") uses cookies and similar tracking technologies on our website and services, and what choices you have about them.</p>
+      <div class="doc-hero-meta">
+        <span>📅 Effective: March 5, 2026</span>
+        <span>📍 Jurisdiction: United States</span>
+        <span>🏢 Omnigenius LLC</span>
+      </div>
+    </div>
+
+    <div class="callout callout-info">
+      <span class="callout-icon">🍪</span>
+      <span>You can manage your cookie preferences at any time using the cookie settings panel. Essential cookies cannot be disabled as they are required for the Service to function.</span>
+    </div>
+
+    <div class="doc-section" id="what-are-cookies">
+      <h2><span class="sec-num">01</span> What Are Cookies</h2>
+      <p>Cookies are small text files placed on your device by websites you visit. They are widely used to make websites work, improve efficiency, and provide information to site owners. Cookies can be "session" cookies (deleted when you close your browser) or "persistent" cookies (remaining until they expire or you delete them).</p>
+      <p>We also use similar technologies including local storage, pixel tags, and web beacons, which are collectively referred to as "cookies" in this policy.</p>
+    </div>
+
+    <div class="doc-section" id="how-we-use">
+      <h2><span class="sec-num">02</span> How We Use Cookies</h2>
+      <p>We use cookies to:</p>
+      <ul>
+        <li>Keep you signed in and maintain your session securely</li>
+        <li>Remember your preferences and settings</li>
+        <li>Understand how visitors use our Service (analytics)</li>
+        <li>Measure the effectiveness of our advertising campaigns</li>
+        <li>Prevent fraud and enhance security</li>
+        <li>Improve performance and personalize your experience</li>
+      </ul>
+    </div>
+
+    <div class="doc-section" id="types">
+      <h2><span class="sec-num">03</span> Types of Cookies We Use</h2>
+      <table class="legal-table">
+        <thead>
+          <tr><th>Cookie / Technology</th><th>Type</th><th>Purpose</th><th>Duration</th></tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>og_session</td>
+            <td><span class="cookie-type ct-essential">Essential</span></td>
+            <td>Maintains your authenticated session</td>
+            <td>Session</td>
+          </tr>
+          <tr>
+            <td>og_csrf</td>
+            <td><span class="cookie-type ct-essential">Essential</span></td>
+            <td>Prevents cross-site request forgery attacks</td>
+            <td>Session</td>
+          </tr>
+          <tr>
+            <td>og_prefs</td>
+            <td><span class="cookie-type ct-essential">Essential</span></td>
+            <td>Stores your theme, language, and UI preferences</td>
+            <td>1 year</td>
+          </tr>
+          <tr>
+            <td>og_cookie_consent</td>
+            <td><span class="cookie-type ct-essential">Essential</span></td>
+            <td>Records your cookie consent choices</td>
+            <td>1 year</td>
+          </tr>
+          <tr>
+            <td>_ga, _gid</td>
+            <td><span class="cookie-type ct-analytics">Analytics</span></td>
+            <td>Google Analytics — measures site usage and traffic sources</td>
+            <td>2 years / 1 day</td>
+          </tr>
+          <tr>
+            <td>_ga_[ID]</td>
+            <td><span class="cookie-type ct-analytics">Analytics</span></td>
+            <td>Google Analytics 4 — session and engagement tracking</td>
+            <td>2 years</td>
+          </tr>
+          <tr>
+            <td>__stripe_mid, __stripe_sid</td>
+            <td><span class="cookie-type ct-essential">Essential</span></td>
+            <td>Stripe — fraud prevention for payment processing</td>
+            <td>1 year / Session</td>
+          </tr>
+          <tr>
+            <td>_fbp, _fbc</td>
+            <td><span class="cookie-type ct-advertising">Advertising</span></td>
+            <td>Meta Pixel — measures ad campaign effectiveness and retargeting</td>
+            <td>90 days</td>
+          </tr>
+          <tr>
+            <td>og_retarget</td>
+            <td><span class="cookie-type ct-advertising">Advertising</span></td>
+            <td>Identifies returning visitors for relevant ad delivery</td>
+            <td>30 days</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-section" id="third-party">
+      <h2><span class="sec-num">04</span> Third-Party Cookies</h2>
+      <p>Some cookies on our Service are placed by third parties. We do not control these cookies and they are subject to the respective third party's privacy policy:</p>
+      <table class="legal-table">
+        <thead><tr><th>Provider</th><th>Purpose</th><th>Policy</th></tr></thead>
+        <tbody>
+          <tr><td>Google Analytics</td><td>Usage analytics and traffic measurement</td><td>policies.google.com/privacy</td></tr>
+          <tr><td>Stripe</td><td>Secure payment processing and fraud detection</td><td>stripe.com/privacy</td></tr>
+          <tr><td>Meta (Facebook)</td><td>Advertising measurement and retargeting</td><td>facebook.com/privacy/policy</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <div class="doc-section" id="your-choices">
+      <h2><span class="sec-num">05</span> Your Choices</h2>
+      <h3>Cookie Preferences Panel</h3>
+      <p>You can manage your cookie preferences at any time by clicking the button below. Essential cookies cannot be disabled — all others are optional.</p>
+      <p style="margin-top:14px">
+        <button onclick="openPrefs()" style="padding:10px 20px;border-radius:9px;background:var(--teal);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#050810;cursor:pointer;transition:all .2s;box-shadow:0 0 14px rgba(14,232,212,.2)">
+          ⚙ Manage Cookie Preferences
+        </button>
+      </p>
+
+      <h3>Browser Controls</h3>
+      <p>Most browsers allow you to refuse or delete cookies through their settings. Note that disabling cookies may affect the functionality of the Service. Browser-specific instructions:</p>
+      <ul>
+        <li><strong style="color:var(--text)">Chrome</strong> — Settings → Privacy and security → Cookies and other site data</li>
+        <li><strong style="color:var(--text)">Firefox</strong> — Settings → Privacy &amp; Security → Cookies and Site Data</li>
+        <li><strong style="color:var(--text)">Safari</strong> — Preferences → Privacy → Manage Website Data</li>
+        <li><strong style="color:var(--text)">Edge</strong> — Settings → Cookies and site permissions → Cookies and site data</li>
+      </ul>
+
+      <h3>Opt Out of Analytics</h3>
+      <p>You can opt out of Google Analytics tracking by installing the <a href="https://tools.google.com/dlpage/gaoptout" style="color:var(--teal)">Google Analytics Opt-out Browser Add-on</a>.</p>
+
+      <h3>Opt Out of Advertising Cookies</h3>
+      <p>You can opt out of interest-based advertising through the <a href="https://optout.aboutads.info" style="color:var(--teal)">Digital Advertising Alliance</a> or by adjusting your Meta ad preferences at <a href="https://facebook.com/ads/preferences" style="color:var(--teal)">facebook.com/ads/preferences</a>.</p>
+    </div>
+
+    <div class="doc-section" id="do-not-track">
+      <h2><span class="sec-num">06</span> Do Not Track</h2>
+      <p>Some browsers send a "Do Not Track" (DNT) signal to websites. Currently, there is no industry-standard interpretation of DNT signals, so our Service does not respond to DNT browser settings. However, you can use our Cookie Preferences panel to limit tracking on our Service specifically.</p>
+    </div>
+
+    <div class="doc-section" id="changes">
+      <h2><span class="sec-num">07</span> Changes to This Policy</h2>
+      <p>We may update this Cookie Policy to reflect changes in our practices or applicable law. When we make material changes, we will update the effective date at the top of this page and notify you via a banner on the Service or by email. We encourage you to review this policy periodically.</p>
+    </div>
+
+    <div class="doc-section" id="contact">
+      <h2><span class="sec-num">08</span> Contact Us</h2>
+      <div class="contact-box">
+        <div class="contact-box-title">Omnigenius LLC — Privacy Team</div>
+        <p>📧 Email: <a href="/cdn-cgi/l/email-protection#48383a213e292b3108272526212f2d26213d3b662b27"><span class="__cf_email__" data-cfemail="92e2e0fbe4f3f1ebd2fdfffcfbf5f7fcfbe7e1bcf1fd">[email&#160;protected]</span></a></p>
+        <p>🌐 <a href="https://omnigenius.co">omnigenius.co</a></p>
+      </div>
+    </div>
+
+    <div class="doc-footer">
+      <span class="doc-footer-text">© 2026 Omnigenius LLC · All rights reserved</span>
+      <div class="doc-footer-links">
+        <a href="/privacy.html">Privacy Policy</a>
+        <a href="/tos.html">Terms of Service</a>
+        <a href="/">Home</a>
+      </div>
+    </div>
+  </article>
+</div>
+
+<!-- COOKIE CONSENT BANNER -->
+<div class="cookie-banner" id="cookieBanner">
+  <div class="cookie-banner-text">
+    We use cookies to provide essential functionality, analyze usage, and serve relevant ads. By clicking "Accept all" you consent to our use of cookies as described in this <a href="/cookies.html">Cookie Policy</a>.
+  </div>
+  <div class="cookie-banner-btns">
+    <button class="cb-btn cb-settings" onclick="openPrefs()">⚙ Preferences</button>
+    <button class="cb-btn cb-necessary" onclick="acceptNecessary()">Necessary only</button>
+    <button class="cb-btn cb-accept" onclick="acceptAll()">Accept all</button>
+  </div>
+</div>
+
+<!-- COOKIE PREFERENCES MODAL -->
+<div class="pref-overlay" id="prefOverlay" onclick="if(event.target===this)closePrefs()">
+  <div class="pref-modal">
+    <div class="pref-title">Cookie Preferences</div>
+    <div class="pref-sub">Manage which cookies you allow. Essential cookies are always active.</div>
+
+    <div class="pref-row">
+      <div class="pref-row-left">
+        <div class="pref-row-name">Essential cookies</div>
+        <div class="pref-row-desc">Required for login, security, and core functionality. Cannot be disabled.</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" checked disabled>
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-row-left">
+        <div class="pref-row-name">Analytics cookies</div>
+        <div class="pref-row-desc">Help us understand how visitors use the site via Google Analytics. All data is aggregated and anonymized.</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggleAnalytics" checked>
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+
+    <div class="pref-row">
+      <div class="pref-row-left">
+        <div class="pref-row-name">Advertising cookies</div>
+        <div class="pref-row-desc">Used to measure ad effectiveness and show relevant ads on other platforms (Meta Pixel, retargeting).</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" id="toggleAds" checked>
+        <div class="toggle-track"></div>
+      </label>
+    </div>
+
+    <div class="pref-btns">
+      <button class="pref-cancel" onclick="closePrefs()">Cancel</button>
+      <button class="pref-save" onclick="savePrefs()">Save preferences</button>
+    </div>
+  </div>
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+// Scroll spy
+const sections = document.querySelectorAll('.doc-section');
+const navLinks  = document.querySelectorAll('.doc-nav a');
+const obs = new IntersectionObserver((entries) => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      navLinks.forEach(a => a.classList.toggle('active', a.getAttribute('href') === '#'+id));
+    }
+  });
+}, { rootMargin:'-15% 0px -75% 0px' });
+sections.forEach(s => obs.observe(s));
+
+// Cookie consent logic
+const CONSENT_KEY = 'og_cookie_consent';
+function getConsent() {
+  try { return JSON.parse(localStorage.getItem(CONSENT_KEY)); } catch { return null; }
+}
+function setConsent(prefs) {
+  localStorage.setItem(CONSENT_KEY, JSON.stringify({ ...prefs, ts: Date.now() }));
+  document.getElementById('cookieBanner').classList.add('hidden');
+}
+
+// Show banner if no consent stored
+window.addEventListener('DOMContentLoaded', () => {
+  if (!getConsent()) {
+    setTimeout(() => {}, 300); // banner visible by default
+  } else {
+    document.getElementById('cookieBanner').classList.add('hidden');
+  }
+});
+
+function acceptAll()       { setConsent({ essential:true, analytics:true, advertising:true }); }
+function acceptNecessary() { setConsent({ essential:true, analytics:false, advertising:false }); }
+
+function openPrefs() {
+  const c = getConsent();
+  if (c) {
+    document.getElementById('toggleAnalytics').checked = c.analytics !== false;
+    document.getElementById('toggleAds').checked       = c.advertising !== false;
+  }
+  document.getElementById('prefOverlay').classList.add('open');
+}
+function closePrefs() { document.getElementById('prefOverlay').classList.remove('open'); }
+function savePrefs() {
+  setConsent({
+    essential:   true,
+    analytics:   docu

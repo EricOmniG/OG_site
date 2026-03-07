@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>About Omnigenius — Built from a Warehouse Floor</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="/css/shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet">
+<style>
+:root{--bg:#04070f;--bg2:#070c18;--bg3:#0b1120;--surface:#0d1624;--teal:#0ee8d4;--teal-glow:rgba(14,232,212,0.07);--text:#e8f0fc;--text2:#6b80a0;--text3:#273347;--border2:rgba(255,255,255,0.055);--border3:rgba(255,255,255,0.025);}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+  background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{text-decoration:none;color:inherit;}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:100;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 40px;background:rgba(4,7,15,.9);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);}
+.tb-logo{display:flex;align-items:center;gap:9px;}
+.tb-wordmark{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--teal);}
+.tb-nav{display:flex;gap:6px;}
+.tb-nav a{padding:6px 14px;border-radius:7px;font-size:13px;color:var(--text2);transition:color .2s;}
+.tb-nav a:hover,.tb-nav a.active{color:var(--text);}
+.tb-cta{padding:7px 18px;border-radius:8px;background:var(--teal);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#050810;cursor:pointer;transition:all .2s;box-shadow:0 0 14px rgba(14,232,212,.2);}
+.tb-cta:hover{background:#12f5e0;}
+
+/* AMBIENT */
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 60% 40% at 50% 0%,rgba(14,232,212,.04) 0%,transparent 65%);}
+
+.page{position:relative;z-index:1;}
+
+/* ── HERO ── */
+.hero{max-width:800px;margin:0 auto;padding:80px 40px 64px;text-align:center;}
+.hero-eyebrow{font-family:'DM Mono',monospace;font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--teal);margin-bottom:20px;display:flex;align-items:center;justify-content:center;gap:10px;}
+.hero-eyebrow::before,.hero-eyebrow::after{content:'';display:block;width:24px;height:1px;background:var(--teal);opacity:.4;}
+.hero h1{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(36px,5.5vw,64px);letter-spacing:-3px;line-height:.95;color:var(--text);margin-bottom:28px;}
+.hero h1 .line2{display:block;color:var(--teal);}
+.hero-lede{font-size:17px;color:var(--text2);font-weight:300;line-height:1.75;max-width:560px;margin:0 auto;}
+
+/* ── DIVIDER ── */
+.divider{width:1px;height:60px;background:linear-gradient(to bottom,var(--teal),transparent);margin:0 auto;opacity:.3;}
+
+/* ── STORY ── */
+.story{max-width:700px;margin:0 auto;padding:0 40px;}
+
+.story-section{margin-bottom:64px;opacity:0;transform:translateY(20px);transition:opacity .7s ease,transform .7s ease;}
+.story-section.visible{opacity:1;transform:none;}
+
+.story-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:16px;display:flex;align-items:center;gap:10px;}
+.story-label::after{content:'';flex:1;height:1px;background:var(--border2);}
+
+.story-section h2{font-family:'Syne',sans-serif;font-weight:700;font-size:clamp(20px,3vw,28px);letter-spacing:-.8px;margin-bottom:20px;line-height:1.2;}
+
+.story-section p{font-size:15px;line-height:1.85;color:var(--text2);font-weight:300;margin-bottom:16px;}
+.story-section p strong{color:var(--text);font-weight:600;}
+.story-section p:last-child{margin-bottom:0;}
+
+/* pull quote */
+.pull-quote{margin:32px 0;padding:20px 24px 20px 28px;border-left:2px solid var(--teal);background:var(--teal-glow);border-radius:0 10px 10px 0;}
+.pull-quote p{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;letter-spacing:-.3px;color:var(--text);line-height:1.5;font-style:italic;margin:0;}
+.pull-quote cite{display:block;font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-top:10px;font-style:normal;}
+
+/* ── TIMELINE ── */
+.timeline{position:relative;max-width:700px;margin:0 auto 80px;padding:0 40px;}
+.timeline-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:32px;display:flex;align-items:center;gap:10px;}
+.timeline-title::after{content:'';flex:1;height:1px;background:var(--border2);}
+.timeline-spine{position:absolute;left:calc(40px + 15px);top:52px;bottom:20px;width:1px;background:linear-gradient(to bottom,var(--teal),rgba(14,232,212,.1));opacity:.25;}
+.tl-item{display:flex;gap:24px;margin-bottom:36px;opacity:0;transform:translateX(-12px);transition:opacity .6s ease,transform .6s ease;}
+.tl-item.visible{opacity:1;transform:none;}
+.tl-dot-wrap{display:flex;flex-direction:column;align-items:center;flex-shrink:0;width:30px;}
+.tl-dot{width:10px;height:10px;border-radius:50%;background:var(--teal);border:2px solid var(--bg);box-shadow:0 0 8px rgba(14,232,212,.5);flex-shrink:0;margin-top:4px;}
+.tl-content{}
+.tl-date{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.tl-head{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--text);margin-bottom:5px;}
+.tl-body{font-size:13px;color:var(--text2);font-weight:300;line-height:1.65;}
+
+/* ── ORCA CALLOUT ── */
+.orca-card{max-width:700px;margin:0 auto 80px;padding:0 40px;}
+.orca-inner{background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:36px 40px;position:relative;overflow:hidden;}
+.orca-inner::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
+.orca-eyebrow{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+.orca-title{font-family:'Syne',sans-serif;font-weight:800;font-size:26px;letter-spacing:-1px;margin-bottom:16px;}
+.orca-body{font-size:14px;color:var(--text2);font-weight:300;line-height:1.8;}
+.orca-body strong{color:var(--text);}
+.orca-stats{display:flex;gap:0;margin-top:28px;border-top:1px solid var(--border2);padding-top:24px;flex-wrap:wrap;}
+.orca-stat{flex:1;min-width:120px;padding-right:20px;}
+.orca-stat-val{font-family:'Syne',sans-serif;font-weight:800;font-size:28px;letter-spacing:-1px;color:var(--teal);}
+.orca-stat-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);margin-top:4px;}
+
+/* ── FOUNDER ── */
+.founder{max-width:700px;margin:0 auto 80px;padding:0 40px;}
+.founder-card{display:flex;gap:32px;align-items:flex-start;background:var(--surface);border:1px solid var(--border2);border-radius:20px;padding:32px;}
+.founder-avatar{width:72px;height:72px;border-radius:16px;background:linear-gradient(135deg,var(--teal),#0a6e65);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:22px;color:#050810;flex-shrink:0;}
+.founder-name{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;margin-bottom:3px;}
+.founder-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:12px;}
+.founder-bio{font-size:13.5px;color:var(--text2);font-weight:300;line-height:1.75;}
+.founder-links{display:flex;gap:8px;margin-top:14px;}
+.founder-link{padding:5px 12px;border-radius:6px;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;color:var(--text2);transition:all .2s;}
+.founder-link:hover{border-color:var(--teal);color:var(--teal);}
+
+/* ── MISSION STRIP ── */
+.mission-strip{max-width:700px;margin:0 auto 80px;padding:0 40px;}
+.mission-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;}
+.mission-card{background:var(--bg3);border:1px solid var(--border2);border-radius:14px;padding:22px 20px;}
+.mission-icon{font-size:22px;margin-bottom:12px;}
+.mission-head{font-family:'Syne',sans-serif;font-weight:700;font-size:14px;margin-bottom:7px;}
+.mission-desc{font-size:12px;color:var(--text2);font-weight:300;line-height:1.65;}
+
+/* ── FOOTER ── */
+.footer{margin-top:40px;padding:32px 40px;border-top:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:16px;}
+.footer-copy{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);transition:color .2s;}
+.footer-links a:hover{color:var(--teal);}
+
+/* FADE IN */
+.fade-in{opacity:0;transform:translateY(18px);transition:opacity .65s ease,transform .65s ease;}
+.fade-in.visible{opacity:1;transform:none;}
+
+@media(max-width:700px){
+  .topbar{padding:0 16px;}.tb-nav{display:none;}
+  .hero,.story,.timeline,.orca-card,.founder,.mission-strip{padding-left:20px;padding-right:20px;}
+  .founder-card{flex-direction:column;gap:16px;}
+  .mission-grid{grid-template-columns:1fr;}
+}
+</style>
+
+<!-- ── SEO: Primary ───────────────────────────────────────── -->
+<meta name="description" content="The founding story of Omnigenius and ORCA — a non-transformer AI architecture built from scratch by Eric Martin in January 2025.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="keywords" content="Omnigenius founders, ORCA architecture, AI startup story, Eric Martin, non-transformer AI">
+<link rel="canonical" href="https://omnigenius.co/about.html">
+
+<!-- ── SEO: OpenGraph ────────────────────────────────────── -->
+<meta property="og:type" content="website">
+<meta property="og:title" content="About Omnigenius — The ORCA Story">
+<meta property="og:description" content="Three research papers, one lunch break, and a question that wouldn't let go. How ORCA was built from scratch.">
+<meta property="og:url" content="https://omnigenius.co/about.html">
+<meta property="og:image" content="https://omnigenius.co/css/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Omnigenius — AI That Thinks Differently">
+<meta property="og:site_name" content="Omnigenius">
+<meta property="og:locale" content="en_US">
+
+<!-- ── SEO: Twitter / X Card ─────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@omnigenius_ai">
+<meta name="twitter:creator" content="@omnigenius_ai">
+<meta name="twitter:title" content="About Omnigenius — The ORCA Story">
+<meta name="twitter:description" content="Three research papers, one lunch break, and a question that wouldn't let go. How ORCA was built from scratch.">
+<meta name="twitter:image" content="https://omnigenius.co/css/og-image.png">
+
+<!-- ── SEO: Schema.org JSON-LD ───────────────────────────── -->
+<script type="application/ld+json">
+{{
+  "@context": "https://schema.org",
+  "@type": "Organization",
+  "name": "Omnigenius",
+  "url": "https://omnigenius.co",
+  "logo": "https://omnigenius.co/css/og-image.png",
+  "description": "ORCA-powered AI platform built from scratch.",
+  "founder": {{
+    "@type": "Person",
+    "name": "Eric Martin"
+  }},
+  "foundingDate": "2025",
+  "sameAs": [
+    "https://twitter.com/omnigenius_ai"
+  ],
+  "contactPoint": {{
+    "@type": "ContactPoint",
+    "email": "support@omnigenius.net",
+    "contactType": "customer service"
+  }}
+}}
+</script>
+<!-- ── /SEO ───────────────────────────────────────────────── -->
+</head>
+<body>
+<div class="ambient"></div>
+
+<header class="topbar">
+  <a class="tb-logo" href="/">
+    <svg width="28" height="28" viewBox="0 0 90 90" fill="none"><rect width="90" height="90" rx="22" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/><path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.6"/><circle cx="37" cy="29" r="3" fill="#0ee8d4" opacity=".9"/><circle cx="53" cy="29" r="3" fill="#0ee8d4" opacity=".9"/><circle cx="45" cy="43" r="3" fill="#0ee8d4" opacity=".9"/><line x1="37" y1="29" x2="53" y2="29" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/><line x1="37" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/><line x1="53" y1="29" x2="45" y2="43" stroke="#0ee8d4" stroke-width="1.2" opacity=".3"/></svg>
+    <span class="tb-wordmark">Omnigenius</span>
+  </a>
+  <nav class="tb-nav">
+    <a href="/" >Home</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/about.html" class="active">About</a>
+    <a href="/careers.html">Careers</a>
+    <a href="/contact.html">Contact</a>
+  </nav>
+  <button class="tb-cta" onclick="location.href='/auth.html?mode=signup'">Get started</button>
+</header>
+
+<div class="page">
+
+  <section class="hero">
+    <div class="hero-eyebrow">Our story</div>
+    <h1>A warehouse floor.<br><span class="line2">A few research papers.<br>A new kind of mind.</span></h1>
+    <p class="hero-lede">Omnigenius didn't start in a lab or a boardroom. It started with a question asked during a lunch break — and a refusal to accept that the question had already been answered.</p>
+  </section>
+
+  <div class="divider"></div>
+
+  <div class="story" style="margin-top:56px">
+
+    <div class="story-section">
+      <div class="story-label">The beginning</div>
+      <h2>January 2025. Amazon Fulfillment Center, somewhere in America.</h2>
+      <p>Eric Martin was working a shift at an Amazon fulfillment center when he picked up a stack of freshly published AI research papers on his break. He wasn't looking for a business idea. He was just reading — the way he always had, curious about what was happening at the frontier.</p>
+      <p>Three papers sat in front of him. Each was interesting on its own. But as he read, a different question started forming: <strong>what if these weren't separate ideas? What if they were pieces of the same thing?</strong></p>
+      <div class="pull-quote">
+        <p>"I looked at those papers and asked: what if they were combined? Could this make an AGI model that wasn't a transformer?"</p>
+        <cite>— Eric Martin, Founder</cite>
+      </div>
+      <p>He went home that night and started working. Not sketching — actually combining. By morning, the architecture that would become ORCA had its first blueprint.</p>
+    </div>
+
+    <div class="story-section">
+      <div class="story-label">The insight</div>
+      <h2>The training is the problem. It always has been.</h2>
+      <p>Most people building AI focus on the model. Eric focused on something else: the way models learn. Current training methods, he noticed, are fundamentally inefficient — they expose a model to enormous amounts of data without any of the feedback mechanisms that make human learning stick.</p>
+      <p><strong>Humans don't learn by being shown every possible example.</strong> We learn through play, through failure, through reward — and crucially, through free exploration once we've earned it. The brain consolidates knowledge during unstructured time, not during rote repetition.</p>
+      <p>Eric built a training system designed around that insight. Models trained under this system earn free play time — unstructured inference cycles where the model can consolidate and generalize — when they perform well enough on structured tasks. The result is a model that doesn't just accumulate pattern matches. It builds understanding.</p>
+    </div>
+
+    <div class="story-section">
+      <div class="story-label">The architecture</div>
+      <h2>ORCA. Named for what it does.</h2>
+      <p>The model architecture Eric designed is called ORCA — not a transformer, not a derivative of anything that already existed. It's a new construction, built from the synthesis of those three papers and the months of engineering work that followed.</p>
+      <p>The name isn't arbitrary. <strong>Orcas are among the most intelligent animals on the planet</strong> — not because of brute-force brain size, but because of how they learn: socially, adaptively, through play and collaboration. The architecture mirrors that philosophy. It is designed to be capable not just of knowledge retrieval, but of reasoning, adaptation, and growth.</p>
+      <p>The thesis: architecture matters, but <strong>training is the real key to AGI</strong>. With both working together — a novel architecture trained the way humans actually learn — you get a model with the knowledge base and the cognitive flexibility to keep improving.</p>
+    </div>
+
+  </div><!-- /story -->
+
+  <!-- TIMELINE -->
+  <div class="timeline">
+    <div class="timeline-title">Timeline</div>
+    <div class="timeline-spine"></div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot"></div></div>
+      <div class="tl-content">
+        <div class="tl-date">January 2025</div>
+        <div class="tl-head">The question asked on a warehouse break</div>
+        <div class="tl-body">Three research papers. One question: what if they were combined? Eric goes home and starts building ORCA from scratch.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot"></div></div>
+      <div class="tl-content">
+        <div class="tl-date">Spring 2025</div>
+        <div class="tl-head">ORCA architecture complete</div>
+        <div class="tl-body">First working version of the ORCA architecture running. Initial benchmarks show reasoning capabilities that diverge from transformer-based baselines in promising ways.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot"></div></div>
+      <div class="tl-content">
+        <div class="tl-date">Summer 2025</div>
+        <div class="tl-head">Human-learning training system developed</div>
+        <div class="tl-body">The breakthrough training methodology — free play, structured tasks, earned consolidation — is formalized and integrated with the ORCA architecture.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot"></div></div>
+      <div class="tl-content">
+        <div class="tl-date">Fall 2025</div>
+        <div class="tl-head">Omnigenius LLC founded</div>
+        <div class="tl-body">The product layer — chat, search, reasoning — is built on top of the ORCA model. Omnigenius is incorporated. The waitlist opens quietly.</div>
+      </div>
+    </div>
+    <div class="tl-item">
+      <div class="tl-dot-wrap"><div class="tl-dot"></div></div>
+      <div class="tl-content">
+        <div class="tl-date">March 2026</div>
+        <div class="tl-head">Public beta launch</div>
+        <div class="tl-body">Omnigenius opens to the first wave of waitlist users. 8,300+ people on the list. The Chimera model — built on the ORCA architecture — goes live.</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ORCA CALLOUT -->
+  <div class="orca-card fade-in">
+    <div class="orca-inner">
+      <div class="orca-eyebrow">The ORCA Architecture</div>
+      <div class="orca-title">Not a transformer. Not a derivative. Something new.</div>
+      <div class="orca-body">
+        ORCA (Omnigenius Reasoning &amp; Cognition Architecture) is the model architecture at the core of everything Omnigenius does. Built by synthesizing research that had never been combined before, it was designed from the ground up to support <strong>adaptive reasoning, long-context understanding, and human-like knowledge consolidation</strong> — without inheriting the structural limitations of the transformer paradigm.
+        <br><br>
+        Paired with a training methodology that mirrors how humans actually learn — through play, earned free exploration, and structured feedback — ORCA isn't just a smarter model. It's a model designed to <strong>keep getting smarter</strong>.
+      </div>
+      <div class="orca-stats">
+        <div class="orca-stat">
+          <div class="orca-stat-val">&lt;2s</div>
+          <div class="orca-stat-label">Median response</div>
+        </div>
+        <div class="orca-stat">
+          <div class="orca-stat-val">128k</div>
+          <div class="orca-stat-label">Context window</div>
+        </div>
+        <div class="orca-stat">
+          <div class="orca-stat-val">4</div>
+          <div class="orca-stat-label">Inference modes</div>
+        </div>
+        <div class="orca-stat">
+          <div class="orca-stat-val">8</div>
+          <div class="orca-stat-label">Max reasoning loops</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- FOUNDER -->
+  <div class="founder fade-in">
+    <div class="founder-card">
+      <div class="founder-avatar">EM</div>
+      <div>
+        <div class="founder-name">Eric Martin</div>
+        <div class="founder-title">Founder &amp; CEO · Omnigenius LLC</div>
+        <div class="founder-bio">Eric built the ORCA architecture and the Omnigenius training system independently, starting from a warehouse break and three research papers in January 2025. He believes the path to AGI runs through training methodology, not just model scale — and that the most important AI systems will be built by people who ask questions that the consensus has stopped asking.</div>
+        <div class="founder-links">
+          <a class="founder-link" href="/cdn-cgi/l/email-protection#7d180f141e3d121013141a181314080e531e12">✉ Email</a>
+          <a class="founder-link" href="/contact.html">Contact</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MISSION -->
+  <div class="mission-strip fade-in">
+    <div style="font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:20px;display:flex;align-items:center;gap:10px;">What we believe<span style="flex:1;height:1px;background:var(--border2)"></span></div>
+    <div class="mission-grid">
+      <div class="mission-card">
+        <div class="mission-icon">🧠</div>
+        <div class="mission-head">Training is the unlock</div>
+        <div class="mission-desc">Architecture matters. But the way a model learns — the feedback loops, the free play, the consolidation — is what separates capable from transformative.</div>
+      </div>
+      <div class="mission-card">
+        <div class="mission-icon">🔍</div>
+        <div class="mission-head">Honesty over hype</div>
+        <div class="mission-desc">We tell you what the model can and can't do. We don't obscure limitations behind demos designed to deceive. The work should speak.</div>
+      </div>
+      <div class="mission-card">
+        <div class="mission-icon">🌊</div>
+        <div class="mission-head">Built to keep improving</div>
+        <div class="mission-desc">Orcas learn socially and adaptively, across lifetimes. That's the standard we're building toward — a model that genuinely gets better, not just bigger.</div>
+      </div>
+    </div>
+  </div>
+
+  <footer class="footer">
+    <span class="footer-copy">© 2026 Omnigenius LLC</span>
+    <div class="footer-links">
+      <a href="/pricing.html">Pricing</a>
+      <a href="/careers.html">Careers</a>
+      <a href="/press.html">Press</a>
+      <a href="/contact.html">Contact</a>
+    </div>
+  </footer>
+
+</div>
+
+<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting){ e.target.classList.add('visible'); obs.unobserve(e.target); } });
+}, { threshold:.08 });
+document.querySelectorAll('.story-section,.tl-item,.fade-in').forEach(el => obs.observe(el));
+// st

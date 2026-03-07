@@ -1,0 +1,83 @@
+# robots.txt — omnigenius.co
+# https://omnigenius.co/robots.txt
+
+# ── All crawlers (Google, Bing, etc.) ────────────────────────
+User-agent: *
+Allow: /
+Allow: /blog.html
+Allow: /post.html
+Allow: /about.html
+Allow: /pricing.html
+Allow: /docs.html
+Allow: /careers.html
+Allow: /press.html
+Allow: /contact.html
+Allow: /privacy.html
+Allow: /tos.html
+Allow: /cookies.html
+Allow: /css/
+
+# Block authenticated / private pages
+Disallow: /user.html
+Disallow: /settings.html
+Disallow: /profile.html
+Disallow: /vc.html
+Disallow: /vc_admin.html
+Disallow: /admin/
+
+# ── AI training crawlers (opt-in) ────────────────────────────
+# We allow AI crawlers to index our public content.
+# Our blog and docs are intended to be findable by AI search.
+
+User-agent: GPTBot
+Allow: /blog.html
+Allow: /post.html
+Allow: /about.html
+Allow: /docs.html
+Disallow: /user.html
+Disallow: /settings.html
+Disallow: /admin/
+
+User-agent: ClaudeBot
+Allow: /blog.html
+Allow: /post.html
+Allow: /about.html
+Allow: /docs.html
+Disallow: /user.html
+Disallow: /settings.html
+Disallow: /admin/
+
+User-agent: anthropic-ai
+Allow: /blog.html
+Allow: /post.html
+Allow: /about.html
+Allow: /docs.html
+Disallow: /user.html
+Disallow: /settings.html
+Disallow: /admin/
+
+User-agent: PerplexityBot
+Allow: /blog.html
+Allow: /post.html
+Allow: /about.html
+Allow: /pricing.html
+Allow: /docs.html
+Disallow: /user.html
+Disallow: /admin/
+
+User-agent: Googlebot
+Allow: /
+Disallow: /user.html
+Disallow: /settings.html
+Disallow: /profile.html
+Disallow: /admin/
+
+User-agent: Bingbot
+Allow: /
+Disallow: /user.html
+Disallow: /settings.html
+Disallow: /profile.html
+Disallow: /admin/
+
+# ── Sitemap ───────────────────────────────────────────────────
+Sitemap: https://omnigenius.co/sitemap.xml

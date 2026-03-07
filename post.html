@@ -1,0 +1,586 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Introducing ORCA: Why We Built a Non-Transformer Architecture — Omnigenius Blog</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="/css/shared.css">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@600;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&family=Lora:ital,wght@0,400;0,600;1,400;1,600&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#04070f;--bg2:#070c18;--bg3:#0b1120;--surface:#0d1624;--surface2:#111e30;
+  --teal:#0ee8d4;--teal-glow:rgba(14,232,212,0.07);--teal-ring:rgba(14,232,212,0.15);
+  --green:#22c55e;--indigo:#818cf8;--amber:#f59e0b;--red:#f43f5e;
+  --text:#e8f0fc;--text2:#8ba0be;--text3:#273347;
+  --border2:rgba(255,255,255,0.055);--border3:rgba(255,255,255,0.025);
+  --prose-max:660px;
+}
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
+html{scroll-behavior:smooth;}
+body{font-family:'DM Sans',sans-serif;background:var(--bg);color:var(--text);min-height:100vh;overflow-x:hidden;
+  background-image:linear-gradient(rgba(255,255,255,.014) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.014) 1px,transparent 1px);
+  background-size:44px 44px;}
+a{text-decoration:none;color:inherit;}
+
+.ambient{position:fixed;inset:0;z-index:0;pointer-events:none;
+  background:radial-gradient(ellipse 55% 30% at 50% 0%,rgba(14,232,212,.035) 0%,transparent 65%);}
+
+/* TOPBAR */
+.topbar{position:sticky;top:0;z-index:200;height:54px;display:flex;align-items:center;justify-content:space-between;padding:0 32px;background:rgba(4,7,15,.92);backdrop-filter:blur(16px);border-bottom:1px solid var(--border2);}
+.tb-left{display:flex;align-items:center;gap:10px;}
+.tb-back{display:flex;align-items:center;gap:5px;padding:5px 10px;border-radius:7px;border:1px solid var(--border2);color:var(--text2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;cursor:pointer;transition:all .2s;}
+.tb-back:hover{border-color:var(--teal-ring);color:var(--teal);}
+.tb-logo{display:flex;align-items:center;gap:8px;}
+.tb-wordmark{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;color:var(--teal);}
+.tb-sep{color:var(--text3);font-size:11px;}
+.tb-blog{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.tb-right{display:flex;align-items:center;gap:8px;}
+.tb-cta{padding:7px 16px;border-radius:8px;background:var(--teal);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:12px;color:#050810;cursor:pointer;transition:all .2s;}
+.tb-cta:hover{background:#12f5e0;}
+
+/* READ PROGRESS BAR */
+.progress-bar{position:fixed;top:54px;left:0;z-index:300;height:2px;background:var(--teal);width:0%;transition:width .1s linear;box-shadow:0 0 8px rgba(14,232,212,.5);}
+
+/* LAYOUT */
+.layout{display:grid;grid-template-columns:1fr var(--prose-max) 220px;gap:0;max-width:1140px;margin:0 auto;padding:0 32px;position:relative;z-index:1;}
+
+/* LEFT SHARE RAIL */
+.share-rail{padding-top:80px;display:flex;flex-direction:column;align-items:flex-end;padding-right:40px;gap:10px;position:sticky;top:80px;align-self:start;}
+.rail-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:4px;}
+.rail-btn{width:36px;height:36px;border-radius:9px;border:1px solid var(--border2);background:transparent;display:flex;align-items:center;justify-content:center;font-size:14px;cursor:pointer;transition:all .2s;color:var(--text3);}
+.rail-btn:hover{border-color:var(--teal-ring);color:var(--teal);background:var(--teal-glow);}
+
+/* ARTICLE */
+article{padding:64px 0 80px;}
+
+/* HERO AREA */
+.post-tag{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:16px;display:inline-flex;align-items:center;gap:8px;}
+.post-tag::before{content:'';display:block;width:16px;height:1px;background:var(--teal);}
+h1.post-title{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(30px,4.5vw,50px);letter-spacing:-2.5px;line-height:1.0;margin-bottom:20px;}
+.post-meta-row{display:flex;align-items:center;gap:16px;flex-wrap:wrap;margin-bottom:36px;padding-bottom:24px;border-bottom:1px solid var(--border2);}
+.author-chip{display:flex;align-items:center;gap:8px;}
+.author-av{width:32px;height:32px;border-radius:9px;background:linear-gradient(135deg,var(--teal),#0a6e65);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:700;font-size:11px;color:#050810;}
+.author-name{font-size:13px;font-weight:500;}
+.meta-sep{color:var(--text3);}
+.meta-item{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+
+/* HERO ILLUSTRATION */
+.post-hero-img{width:100%;height:320px;background:linear-gradient(135deg,#04111e,#071528,#040e1a);border-radius:16px;margin-bottom:44px;position:relative;overflow:hidden;display:flex;align-items:center;justify-content:center;}
+.hero-img-grid{position:absolute;inset:0;background-image:linear-gradient(rgba(14,232,212,.04) 1px,transparent 1px),linear-gradient(90deg,rgba(14,232,212,.04) 1px,transparent 1px);background-size:28px 28px;}
+.hero-img-glow{position:absolute;inset:0;background:radial-gradient(ellipse 60% 60% at 50% 50%,rgba(14,232,212,.06) 0%,transparent 65%);}
+
+/* PROSE */
+.prose{font-family:'Lora',serif;font-size:17px;line-height:1.85;color:var(--text2);font-weight:400;}
+.prose p{margin-bottom:24px;}
+.prose p:last-child{margin-bottom:0;}
+.prose strong{color:var(--text);font-weight:600;font-family:'DM Sans',sans-serif;}
+.prose em{font-style:italic;color:var(--text);}
+.prose a{color:var(--teal);border-bottom:1px solid rgba(14,232,212,.25);transition:border-color .2s;}
+.prose a:hover{border-color:var(--teal);}
+
+/* HEADINGS */
+.prose h2{font-family:'Syne',sans-serif;font-weight:800;font-size:clamp(20px,2.5vw,26px);letter-spacing:-.8px;color:var(--text);margin:48px 0 16px;padding-top:8px;border-top:1px solid var(--border2);}
+.prose h3{font-family:'Syne',sans-serif;font-weight:700;font-size:18px;letter-spacing:-.3px;color:var(--text);margin:32px 0 12px;}
+
+/* PULL QUOTE */
+.prose blockquote{margin:36px 0;padding:20px 24px 20px 28px;border-left:2px solid var(--teal);background:var(--teal-glow);border-radius:0 12px 12px 0;}
+.prose blockquote p{font-family:'Syne',sans-serif;font-size:18px;font-weight:600;letter-spacing:-.3px;color:var(--text);line-height:1.5;font-style:italic;margin:0;}
+
+/* CODE */
+.prose code{font-family:'DM Mono',monospace;font-size:13px;padding:2px 7px;background:var(--bg3);border-radius:4px;color:var(--teal);border:1px solid var(--border3);}
+.prose pre{background:var(--bg2);border:1px solid var(--border2);border-radius:12px;padding:20px 22px;margin:28px 0;overflow-x:auto;position:relative;}
+.prose pre .pre-label{position:absolute;top:10px;right:14px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;color:var(--text3);}
+.prose pre code{background:none;border:none;padding:0;font-size:12.5px;color:var(--text2);line-height:1.7;}
+.prose pre code .kw{color:var(--indigo);}
+.prose pre code .fn{color:var(--teal);}
+.prose pre code .str{color:var(--green);}
+.prose pre code .cm{color:var(--text3);}
+.prose pre code .num{color:var(--amber);}
+
+/* LISTS */
+.prose ul,.prose ol{padding-left:22px;margin:0 0 24px;}
+.prose li{margin-bottom:8px;line-height:1.7;}
+.prose ul li::marker{color:var(--teal);}
+
+/* CALLOUT */
+.callout{margin:32px 0;padding:18px 22px;border-radius:12px;border:1px solid var(--border2);background:var(--surface);display:flex;gap:14px;align-items:flex-start;}
+.callout-icon{font-size:18px;flex-shrink:0;margin-top:1px;}
+.callout-body{font-size:14px;color:var(--text2);line-height:1.65;font-family:'DM Sans',sans-serif;font-weight:300;}
+.callout-body strong{color:var(--text);}
+.callout.teal{border-color:var(--teal-ring);background:var(--teal-glow);}
+.callout.indigo{border-color:rgba(129,140,248,.15);background:rgba(129,140,248,.04);}
+
+/* COMPARISON TABLE */
+.compare-table{width:100%;border-collapse:collapse;margin:28px 0;font-size:13px;}
+.compare-table th{padding:10px 14px;font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);border-bottom:1px solid var(--border2);text-align:left;}
+.compare-table td{padding:11px 14px;border-bottom:1px solid var(--border3);color:var(--text2);font-family:'DM Sans',sans-serif;}
+.compare-table td:first-child{color:var(--text);font-weight:500;}
+.compare-table tr:hover td{background:rgba(255,255,255,.01);}
+.td-good{color:var(--green) !important;font-family:'DM Mono',monospace;font-size:11px;}
+.td-bad{color:var(--red) !important;font-family:'DM Mono',monospace;font-size:11px;}
+.td-neutral{color:var(--text3) !important;font-family:'DM Mono',monospace;font-size:11px;}
+
+/* DIVIDER */
+.prose-divider{border:none;height:1px;background:var(--border2);margin:40px 0;}
+
+/* RIGHT TOC RAIL */
+.toc-rail{padding-top:80px;padding-left:40px;position:sticky;top:80px;align-self:start;}
+.toc-label{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:2px;text-transform:uppercase;color:var(--text3);margin-bottom:14px;}
+.toc-item{display:block;font-size:12px;color:var(--text3);padding:5px 0 5px 10px;border-left:1px solid var(--border2);cursor:pointer;transition:all .2s;line-height:1.4;}
+.toc-item:hover{color:var(--teal);border-left-color:var(--teal);}
+.toc-item.active{color:var(--teal);border-left-color:var(--teal);}
+.toc-item.h3{padding-left:22px;font-size:11px;}
+
+/* POST FOOTER */
+.post-footer{padding:32px 0;border-top:1px solid var(--border2);margin-top:56px;}
+.post-tags{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:24px;}
+.post-tag-pill{padding:4px 10px;border-radius:5px;border:1px solid var(--border2);font-family:'DM Mono',monospace;font-size:9px;letter-spacing:.5px;color:var(--text3);}
+.author-card{display:flex;gap:16px;align-items:flex-start;padding:20px;background:var(--surface);border:1px solid var(--border2);border-radius:14px;}
+.author-av-lg{width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,var(--teal),#0a6e65);display:flex;align-items:center;justify-content:center;font-family:'Syne',sans-serif;font-weight:800;font-size:16px;color:#050810;flex-shrink:0;}
+.author-card-name{font-family:'Syne',sans-serif;font-weight:700;font-size:15px;margin-bottom:2px;}
+.author-card-title{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:1.5px;text-transform:uppercase;color:var(--teal);margin-bottom:8px;}
+.author-card-bio{font-size:12px;color:var(--text2);font-weight:300;line-height:1.65;}
+
+/* RELATED POSTS */
+.related{max-width:1140px;margin:0 auto;padding:0 32px 72px;}
+.related-label{font-family:'DM Mono',monospace;font-size:9px;letter-spacing:2.5px;text-transform:uppercase;color:var(--teal);margin-bottom:20px;display:flex;align-items:center;gap:10px;}
+.related-label::after{content:'';flex:1;height:1px;background:var(--border2);}
+.related-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;}
+.rel-card{background:var(--surface);border:1px solid var(--border2);border-radius:12px;padding:18px;cursor:pointer;transition:all .2s;}
+.rel-card:hover{border-color:rgba(14,232,212,.12);transform:translateY(-2px);}
+.rel-tag{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:1.5px;text-transform:uppercase;margin-bottom:7px;}
+.rel-title{font-family:'Syne',sans-serif;font-weight:700;font-size:13px;letter-spacing:-.2px;line-height:1.3;margin-bottom:8px;}
+.rel-date{font-family:'DM Mono',monospace;font-size:9px;color:var(--text3);}
+
+/* NEWSLETTER */
+.post-nl{max-width:1140px;margin:0 auto;padding:0 32px 72px;}
+.post-nl-card{background:var(--surface);border:1px solid var(--border2);border-radius:16px;padding:28px 32px;display:flex;align-items:center;justify-content:space-between;gap:24px;flex-wrap:wrap;position:relative;overflow:hidden;}
+.post-nl-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--teal),transparent);}
+.pnl-text .pnl-title{font-family:'Syne',sans-serif;font-weight:700;font-size:17px;margin-bottom:4px;}
+.pnl-text p{font-size:13px;color:var(--text2);font-weight:300;}
+.pnl-form{display:flex;gap:8px;flex-shrink:0;}
+.pnl-input{padding:9px 13px;background:var(--bg3);border:1px solid var(--border2);border-radius:8px;color:var(--text);font-size:13px;outline:none;width:220px;transition:border-color .2s;}
+.pnl-input:focus{border-color:var(--teal-ring);}
+.pnl-input::placeholder{color:var(--text3);}
+.pnl-btn{padding:9px 18px;border-radius:8px;background:var(--teal);border:none;font-family:'Syne',sans-serif;font-weight:700;font-size:13px;color:#050810;cursor:pointer;transition:all .2s;white-space:nowrap;}
+.pnl-btn:hover{background:#12f5e0;}
+
+/* FOOTER */
+.page-footer{padding:24px 32px;border-top:1px solid var(--border2);display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;}
+.footer-copy{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);}
+.footer-links{display:flex;gap:20px;}
+.footer-links a{font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);transition:color .2s;}
+.footer-links a:hover{color:var(--teal);}
+
+/* TOAST */
+.toast{position:fixed;bottom:20px;right:20px;z-index:500;padding:10px 16px;border-radius:9px;background:var(--surface);border:1px solid var(--border2);box-shadow:0 16px 48px rgba(0,0,0,.6);font-size:12px;display:flex;align-items:center;gap:8px;transform:translateY(50px);opacity:0;transition:all .3s cubic-bezier(.34,1.56,.64,1);pointer-events:none;}
+.toast.show{transform:none;opacity:1;}
+
+@media(max-width:1000px){
+  .layout{grid-template-columns:0 var(--prose-max) 0;justify-content:center;}
+  .share-rail,.toc-rail{display:none;}
+  .layout{padding:0 24px;}
+  .related,.post-nl{padding-left:24px;padding-right:24px;}
+}
+@media(max-width:720px){
+  .layout{grid-template-columns:1fr;padding:0 16px;}
+  article{padding:40px 0 60px;}
+  .topbar{padding:0 16px;}
+  .related-grid{grid-template-columns:1fr;}
+  .post-nl-card{flex-direction:column;}
+  .pnl-input{width:100%;}
+  .pnl-form{width:100%;}
+  .related,.post-nl,.page-footer{padding-left:16px;padding-right:16px;}
+}
+</style>
+
+<!-- ── SEO: Primary ───────────────────────────────────────── -->
+<meta name="description" content="Three research papers, one lunch break, and a question that wouldn't let go. The full story of how ORCA was designed — what transformers can't do, and what finally worked.">
+<meta name="robots" content="index, follow, max-snippet:-1, max-image-preview:large, max-video-preview:-1">
+<meta name="keywords" content="ORCA architecture, non-transformer AI, AI reasoning, machine learning architecture">
+<link rel="canonical" href="https://omnigenius.co/post.html">
+
+<!-- ── SEO: OpenGraph ────────────────────────────────────── -->
+<meta property="og:type" content="article">
+<meta property="og:title" content="Introducing ORCA: Why We Built a Non-Transformer Architecture">
+<meta property="og:description" content="The full story of how ORCA was designed — what transformers can't do, what we tried, what broke, and what finally worked.">
+<meta property="og:url" content="https://omnigenius.co/post.html">
+<meta property="og:image" content="https://omnigenius.co/css/og-image.png">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Omnigenius — AI That Thinks Differently">
+<meta property="og:site_name" content="Omnigenius">
+<meta property="og:locale" content="en_US">
+
+<!-- ── SEO: Twitter / X Card ─────────────────────────────── -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:site" content="@omnigenius_ai">
+<meta name="twitter:creator" content="@omnigenius_ai">
+<meta name="twitter:title" content="Introducing ORCA: Why We Built a Non-Transformer Architecture">
+<meta name="twitter:description" content="The full story of how ORCA was designed — what transformers can't do, what we tried, what broke, and what finally worked.">
+<meta name="twitter:image" content="https://omnigenius.co/css/og-image.png">
+
+<!-- ── SEO: Schema.org JSON-LD ───────────────────────────── -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "Article",
+  "headline": "Introducing ORCA: Why We Built a Non-Transformer Architecture from Scratch",
+  "description": "Three research papers, one lunch break, and a question that wouldn't let go. The full story of how ORCA was designed.",
+  "author": {
+    "@type": "Person",
+    "name": "Eric Martin"
+  },
+  "publisher": {
+    "@type": "Organization",
+    "name": "Omnigenius",
+    "url": "https://omnigenius.co"
+  },
+  "datePublished": "2026-03-01",
+  "dateModified": "2026-03-01",
+  "url": "https://omnigenius.co/post.html",
+  "image": "https://omnigenius.co/css/og-image.png"
+}
+</script>
+<!-- ── /SEO ───────────────────────────────────────────────── -->
+</head>
+<body>
+<div class="ambient"></div>
+
+<!-- READ PROGRESS -->
+<div class="progress-bar" id="progressBar"></div>
+
+<!-- TOPBAR -->
+<header class="topbar">
+  <div class="tb-left">
+    <a class="tb-back" href="/blog.html">← Blog</a>
+    <div class="tb-logo">
+      <svg width="22" height="22" viewBox="0 0 90 90" fill="none"><rect width="90" height="90" rx="20" fill="rgba(13,26,42,.9)" stroke="rgba(14,232,212,.2)" stroke-width="1"/><path d="M45 14C34.5 14 26 21.6 26 31.2c0 3.8 1.3 7.3 3.6 10.1-.9 1.6-1.4 3.4-1.4 5.3 0 6.1 5 11 11 11 .9 0 1.8-.1 2.6-.3 1.1 1.1 2.6 1.8 4.2 1.8s3.1-.7 4.2-1.8c.8.2 1.7.3 2.6.3 6.1 0 11-4.9 11-11 0-1.9-.5-3.7-1.4-5.3C64.7 38.5 66 35 66 31.2 66 21.6 55.5 14 45 14z" fill="none" stroke="#0ee8d4" stroke-width="1.5"/><circle cx="37" cy="29" r="2.5" fill="#0ee8d4"/><circle cx="53" cy="29" r="2.5" fill="#0ee8d4"/><circle cx="45" cy="43" r="2.5" fill="#0ee8d4"/></svg>
+      <span class="tb-wordmark">Omnigenius</span>
+    </div>
+    <span class="tb-sep">/</span>
+    <span class="tb-blog">Blog</span>
+  </div>
+  <div class="tb-right">
+    <button class="tb-cta" onclick="location.href='/auth.html?mode=signup'">Try Omnigenius free</button>
+  </div>
+</header>
+
+<div class="layout">
+  <!-- LEFT: SHARE RAIL -->
+  <aside class="share-rail">
+    <div class="rail-label">Share</div>
+    <button class="rail-btn" title="Copy link" onclick="copyLink()">🔗</button>
+    <button class="rail-btn" title="Share on X" onclick="shareX()">𝕏</button>
+    <button class="rail-btn" title="Share on LinkedIn" onclick="shareLI()">in</button>
+  </aside>
+
+  <!-- ARTICLE -->
+  <article>
+    <div class="post-tag">Engineering</div>
+    <h1 class="post-title">Introducing ORCA: Why we built a non-transformer architecture from scratch</h1>
+
+    <div class="post-meta-row">
+      <div class="author-chip">
+        <div class="author-av">EM</div>
+        <div>
+          <div class="author-name">Eric Martin</div>
+          <div style="font-family:'DM Mono',monospace;font-size:9px;color:var(--text3)">Founder &amp; CEO</div>
+        </div>
+      </div>
+      <span class="meta-sep">·</span>
+      <span class="meta-item">March 1, 2026</span>
+      <span class="meta-sep">·</span>
+      <span class="meta-item">12 min read</span>
+      <span class="meta-sep">·</span>
+      <span class="meta-item" id="viewCount">2,841 views</span>
+    </div>
+
+    <!-- HERO ILLUSTRATION -->
+    <div class="post-hero-img">
+      <div class="hero-img-grid"></div>
+      <div class="hero-img-glow"></div>
+      <svg width="400" height="220" viewBox="0 0 400 220" fill="none" style="position:relative;z-index:1">
+        <!-- Transformer: all-to-all (left) -->
+        <g opacity=".5">
+          <text x="60" y="18" font-family="DM Mono" font-size="8" fill="#6b80a0" letter-spacing="2" text-anchor="middle">TRANSFORMER</text>
+          <circle cx="30" cy="60" r="5" fill="#6b80a0" opacity=".6"/>
+          <circle cx="60" cy="40" r="5" fill="#6b80a0" opacity=".6"/>
+          <circle cx="90" cy="60" r="5" fill="#6b80a0" opacity=".6"/>
+          <circle cx="30" cy="100" r="5" fill="#6b80a0" opacity=".6"/>
+          <circle cx="60" cy="120" r="5" fill="#6b80a0" opacity=".6"/>
+          <circle cx="90" cy="100" r="5" fill="#6b80a0" opacity=".6"/>
+          <!-- all-to-all connections -->
+          <line x1="30" y1="60" x2="60" y2="40" stroke="#6b80a0" stroke-width=".6"/><line x1="30" y1="60" x2="90" y2="60" stroke="#6b80a0" stroke-width=".6"/><line x1="30" y1="60" x2="30" y2="100" stroke="#6b80a0" stroke-width=".6"/><line x1="30" y1="60" x2="60" y2="120" stroke="#6b80a0" stroke-width=".6"/><line x1="30" y1="60" x2="90" y2="100" stroke="#6b80a0" stroke-width=".6"/>
+          <line x1="60" y1="40" x2="90" y2="60" stroke="#6b80a0" stroke-width=".6"/><line x1="60" y1="40" x2="30" y2="100" stroke="#6b80a0" stroke-width=".6"/><line x1="60" y1="40" x2="60" y2="120" stroke="#6b80a0" stroke-width=".6"/><line x1="60" y1="40" x2="90" y2="100" stroke="#6b80a0" stroke-width=".6"/>
+          <line x1="90" y1="60" x2="30" y2="100" stroke="#6b80a0" stroke-width=".6"/><line x1="90" y1="60" x2="60" y2="120" stroke="#6b80a0" stroke-width=".6"/><line x1="90" y1="60" x2="90" y2="100" stroke="#6b80a0" stroke-width=".6"/>
+          <line x1="30" y1="100" x2="60" y2="120" stroke="#6b80a0" stroke-width=".6"/><line x1="30" y1="100" x2="90" y2="100" stroke="#6b80a0" stroke-width=".6"/><line x1="60" y1="120" x2="90" y2="100" stroke="#6b80a0" stroke-width=".6"/>
+        </g>
+        <!-- VS -->
+        <text x="200" y="90" font-family="Syne" font-size="18" font-weight="800" fill="#273347" text-anchor="middle">VS</text>
+        <!-- ORCA: selective routing (right) -->
+        <g>
+          <text x="310" y="18" font-family="DM Mono" font-size="8" fill="#0ee8d4" letter-spacing="2" text-anchor="middle" opacity=".8">ORCA</text>
+          <circle cx="280" cy="60" r="5" fill="#0ee8d4" opacity=".5"/>
+          <circle cx="310" cy="40" r="5" fill="#0ee8d4" opacity=".7"/>
+          <circle cx="340" cy="60" r="5" fill="#0ee8d4" opacity=".5"/>
+          <circle cx="280" cy="100" r="5" fill="#0ee8d4" opacity=".5"/>
+          <circle cx="310" cy="80" r="8" fill="#0ee8d4" opacity=".9"><animate attributeName="r" values="8;10;8" dur="2.5s" repeatCount="indefinite"/></circle>
+          <circle cx="340" cy="100" r="5" fill="#0ee8d4" opacity=".5"/>
+          <!-- selective: only relevant connections -->
+          <line x1="310" y1="40" x2="310" y2="72" stroke="#0ee8d4" stroke-width="1.5" opacity=".8"/>
+          <line x1="310" y1="88" x2="280" y2="100" stroke="#0ee8d4" stroke-width="1" opacity=".6"/>
+          <line x1="310" y1="88" x2="340" y2="100" stroke="#0ee8d4" stroke-width="1" opacity=".6"/>
+          <line x1="280" y1="60" x2="310" y2="72" stroke="#0ee8d4" stroke-width=".8" opacity=".4" stroke-dasharray="3 3"/>
+          <line x1="340" y1="60" x2="310" y2="72" stroke="#0ee8d4" stroke-width=".8" opacity=".4" stroke-dasharray="3 3"/>
+          <!-- routing arcs -->
+          <path d="M280 100 Q295 130 310 88" stroke="#0ee8d4" stroke-width=".6" fill="none" opacity=".2"/>
+        </g>
+        <!-- labels -->
+        <text x="60" y="148" font-family="DM Mono" font-size="8" fill="#6b80a0" text-anchor="middle" opacity=".6">O(n²) · all-to-all</text>
+        <text x="310" y="148" font-family="DM Mono" font-size="8" fill="#0ee8d4" text-anchor="middle" opacity=".8">O(n log n) · routed</text>
+      </svg>
+    </div>
+
+    <div class="prose" id="proseBody">
+
+      <p>In January 2025, I was working a shift at an Amazon fulfillment center. On my break, I read three research papers that had just been published. Each one was interesting on its own — but as I read them together, a question started forming that I couldn't shake: <strong>what if these weren't three separate ideas? What if they were pieces of the same thing?</strong></p>
+
+      <p>I went home that night and started building. By morning, I had the first blueprint of what would become ORCA — the Omnigenius Reasoning &amp; Cognition Architecture. This post is the full story: what's wrong with transformers, what ORCA does differently, how the training system works, and what we've learned from eight months of building on top of it.</p>
+
+      <h2 id="problem">The transformer is brilliant — and brittle</h2>
+
+      <p>The transformer architecture, introduced in the 2017 "Attention Is All You Need" paper, is genuinely one of the most important inventions in the history of machine learning. The self-attention mechanism solved a real problem: how to let any token in a sequence "see" any other token, regardless of distance. For the time, this was revolutionary.</p>
+
+      <p>But that mechanism comes with a cost that scales badly. For a sequence of <code>n</code> tokens, self-attention computes relationships between every pair — meaning the computation grows as <code>O(n²)</code>. Double the context, quadruple the work. At 128k tokens, this is already a ceiling most providers can't sustainably extend.</p>
+
+      <blockquote><p>"The field has spent billions of dollars making transformers work at scale. We asked whether the architecture itself was the constraint."</p></blockquote>
+
+      <p>There are workarounds — sparse attention, sliding window attention, linear approximations — but they're all patches on the same fundamental design. They reduce the cost of global attention by giving up some of its expressiveness. We weren't interested in patches.</p>
+
+      <div class="callout teal">
+        <div class="callout-icon">💡</div>
+        <div class="callout-body"><strong>The key constraint:</strong> Transformers compute attention across all token pairs. This is powerful but quadratically expensive. At long context lengths, this becomes a fundamental, not incidental, bottleneck.</div>
+      </div>
+
+      <h2 id="orca">What ORCA does instead</h2>
+
+      <p>ORCA replaces global self-attention with a <strong>learned routing mechanism</strong>. Instead of computing every token-to-token relationship, the architecture first determines which parts of the context are relevant — then computes attention only within those selected regions.</p>
+
+      <p>Think of it this way: a transformer is a conference call where everyone listens to everyone simultaneously. ORCA is a well-organized meeting where information is routed to whoever needs it, before anyone starts talking.</p>
+
+      <table class="compare-table">
+        <thead><tr><th>Property</th><th>Transformer</th><th>ORCA</th></tr></thead>
+        <tbody>
+          <tr><td>Attention scope</td><td class="td-bad">All-to-all (global)</td><td class="td-good">Selective (routed)</td></tr>
+          <tr><td>Complexity</td><td class="td-bad">O(n²)</td><td class="td-good">O(n log n)</td></tr>
+          <tr><td>Long-context degradation</td><td class="td-bad">Significant</td><td class="td-good">Minimal</td></tr>
+          <tr><td>Routing learned from</td><td class="td-neutral">—</td><td class="td-good">Task distribution</td></tr>
+          <tr><td>Architecture origin</td><td class="td-neutral">2017 (Vaswani et al.)</td><td class="td-good">2025 (Original)</td></tr>
+        </tbody>
+      </table>
+
+      <p>The routing is not hand-designed — the model learns what to attend to based on the training distribution. This means it can adapt its attention patterns across task types: a reasoning task routes differently than a summarization task, because different parts of the context become relevant.</p>
+
+      <h2 id="training">The training system: earned free play</h2>
+
+      <p>The architecture is one half of the story. The other half — and the part I'm most excited about — is how ORCA is trained.</p>
+
+      <p>Current AI training methods, including RLHF and its variants, are relentlessly <em>exploitative</em>. Every gradient step is supervised by a reward signal. The model is always being pushed toward a target. There's no unstructured time — no room for the model to generalize or explore freely.</p>
+
+      <p>This bothered me. It doesn't match how intelligent systems — biological or otherwise — actually develop capability. Humans don't learn by being shown every possible example with immediate feedback. We learn through play, through failure, through structured challenge — and critically, through <strong>free exploration once we've earned it.</strong></p>
+
+      <div class="callout indigo">
+        <div class="callout-icon">🧠</div>
+        <div class="callout-body"><strong>The neuroscience parallel:</strong> Memory consolidation in humans happens largely during sleep — a period of unstructured neural activity that recombines and generalizes the day's learning. Our training system mirrors this: structured tasks build the capability; earned free play consolidates and extends it.</div>
+      </div>
+
+      <p>The system works like this: the model trains under structured task conditions with explicit performance gates. When it crosses a performance threshold on a given task class, it earns unstructured inference cycles — "free play" time where it runs without reward pressure. This mirrors the kind of offline consolidation that happens in biological learning systems.</p>
+
+<pre><code><span class="cm"># Simplified training loop pseudocode</span>
+<span class="kw">for</span> epoch <span class="kw">in</span> training_schedule:
+    performance = <span class="fn">evaluate</span>(model, task_batch)
+
+    <span class="kw">if</span> performance >= threshold:
+        <span class="cm"># Earned consolidation — no reward signal</span>
+        <span class="fn">free_play</span>(model, cycles=<span class="num">500</span>)
+    <span class="kw">else</span>:
+        <span class="cm"># Structured task training with feedback</span>
+        <span class="fn">supervised_step</span>(model, task_batch)
+<div class="pre-label">Python (pseudocode)</div></code></pre>
+
+      <p>The result is a model that doesn't just accumulate pattern matches. It builds understanding that generalizes across tasks it wasn't explicitly trained on — because the free play cycles allow it to find structure in its own representations without being pushed toward any particular output.</p>
+
+      <h2 id="results">Eight months in: what we've learned</h2>
+
+      <p>ORCA has been running in production since November 2025. Here's what we've found:</p>
+
+      <ul>
+        <li><strong>Long-context tasks are dramatically better.</strong> The routing mechanism doesn't degrade at 128k tokens the way transformer-based models do. Complex document analysis that other models lose track of halfway through stays coherent to the end.</li>
+        <li><strong>Reasoning depth scales differently.</strong> In Reason mode (8 loops), ORCA can catch its own errors mid-chain in ways that correlate with the free play consolidation steps. It's not perfect, but it's consistent.</li>
+        <li><strong>The model keeps improving between releases.</strong> Because the training system is ongoing — not a one-shot pretraining run — the model continues to develop capability between version updates.</li>
+      </ul>
+
+      <hr class="prose-divider">
+
+      <p>None of this is finished. ORCA is a first-generation architecture built by one person starting from a lunch break and three papers. There are failure modes we haven't fully characterized, architectural decisions we'd revisit with more time, and training dynamics we're still learning to understand.</p>
+
+      <p>But the foundation is real. And the thesis — that training methodology matters as much as architecture, and that intelligence develops rather than accumulates — feels more right the longer we build on it.</p>
+
+      <p>The full model card is available in the docs. If you want to dig into the technical details, or you've worked on similar ideas, reach out.</p>
+
+    </div><!-- /prose -->
+
+    <!-- POST FOOTER -->
+    <div class="post-footer">
+      <div class="post-tags">
+        <span class="post-tag-pill">Engineering</span>
+        <span class="post-tag-pill">Architecture</span>
+        <span class="post-tag-pill">ORCA</span>
+        <span class="post-tag-pill">Research</span>
+        <span class="post-tag-pill">Training</span>
+      </div>
+      <div class="author-card">
+        <div class="author-av-lg">EM</div>
+        <div>
+          <div class="author-card-name">Eric Martin</div>
+          <div class="author-card-title">Founder &amp; CEO · Omnigenius LLC</div>
+          <div class="author-card-bio">Built ORCA from scratch starting January 2025. Previously working at Amazon FC. Believes the most important AI breakthroughs will come from people asking questions the field has stopped asking.</div>
+        </div>
+      </div>
+    </div>
+  </article>
+
+  <!-- RIGHT: TOC RAIL -->
+  <aside class="toc-rail">
+    <div class="toc-label">In this post</div>
+    <a class="toc-item" onclick="scrollTo('problem')">The transformer's brittleness</a>
+    <a class="toc-item" onclick="scrollTo('orca')">What ORCA does instead</a>
+    <a class="toc-item h3" onclick="scrollTo('orca')">Routing mechanism</a>
+    <a class="toc-item" onclick="scrollTo('training')">The training system</a>
+    <a class="toc-item h3" onclick="scrollTo('training')">Earned free play</a>
+    <a class="toc-item" onclick="scrollTo('results')">Eight months in</a>
+  </aside>
+</div>
+
+<!-- RELATED POSTS -->
+<div class="related">
+  <div class="related-label">More from the blog</div>
+  <div class="related-grid" id="relatedGrid"></div>
+</div>
+
+<!-- NEWSLETTER -->
+<div class="post-nl">
+  <div class="post-nl-card">
+    <div class="pnl-text">
+      <div class="pnl-title">Get new posts in your inbox.</div>
+      <p>We write when we have something worth saying. Usually once or twice a month.</p>
+    </div>
+    <div class="pnl-form" id="pnlForm">
+      <input class="pnl-input" type="email" placeholder="you@example.com" id="pnlEmail">
+      <button class="pnl-btn" onclick="pnlSubmit()">Subscribe</button>
+    </div>
+  </div>
+</div>
+
+<footer class="page-footer">
+  <span class="footer-copy">© 2026 Omnigenius LLC</span>
+  <div class="footer-links">
+    <a href="/blog.html">Blog</a>
+    <a href="/about.html">About</a>
+    <a href="/pricing.html">Pricing</a>
+    <a href="/contact.html">Contact</a>
+  </div>
+</footer>
+
+<div class="toast" id="toast"><span id="toastIcon"></span><span id="toastText"></span></div>
+
+<script>
+// READ PROGRESS
+window.addEventListener('scroll', () => {
+  const article = document.querySelector('article');
+  const rect = article.getBoundingClientRect();
+  const total = article.offsetHeight - window.innerHeight;
+  const scrolled = -rect.top;
+  const pct = Math.min(100, Math.max(0, (scrolled / total) * 100));
+  document.getElementById('progressBar').style.width = pct + '%';
+  updateTOC();
+});
+
+// TOC active state
+const tocMap = {problem:0,orca:1,training:3,results:5};
+function updateTOC() {
+  const items = document.querySelectorAll('.toc-item');
+  const headings = ['problem','orca','training','results'];
+  let active = 0;
+  headings.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if (el && el.getBoundingClientRect().top < 120) active = i;
+  });
+  items.forEach(i => i.classList.remove('active'));
+  const idx = [0,1,1,2,2,3][active] || 0;
+  items[idx]?.classList.add('active');
+}
+
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({behavior:'smooth',block:'start'});
+}
+
+// RELATED POSTS
+const RELATED = [
+  {title:'How we got inference latency under 2 seconds',tag:'Engineering',tagColor:'var(--green)',date:'Feb 20, 2026'},
+  {title:'The training methodology behind ORCA: free play and earned consolidation',tag:'Research',tagColor:'var(--indigo)',date:'Feb 14, 2026'},
+  {title:'Omnigenius vs GPT-4o: a benchmark breakdown',tag:'Research',tagColor:'var(--indigo)',date:'Feb 5, 2026'},
+];
+const relGrid = document.getElementById('relatedGrid');
+RELATED.forEach(p => {
+  relGrid.innerHTML += `
+    <div class="rel-card" onclick="location.href='/post.html'">
+      <div class="rel-tag" style="color:${p.tagColor}">${p.tag}</div>
+      <div class="rel-title">${p.title}</div>
+      <div class="rel-date">${p.date}</div>
+    </div>`;
+});
+
+// COPY LINK
+function copyLink() {
+  navigator.clipboard.writeText(window.location.href);
+  showToast('Link copied','🔗');
+}
+function shareX() {
+  window.open('https://x.com/intent/tweet?text=Introducing+ORCA+%E2%80%94+why+we+built+a+non-transformer+architecture+from+scratch&url='+encodeURIComponent(location.href));
+}
+function shareLI() {
+  window.open('https://www.linkedin.com/sharing/share-offsite/?url='+encodeURIComponent(location.href));
+}
+
+// NEWSLETTER
+function pnlSubmit() {
+  const v = document.getElementById('pnlEmail').value;
+  if (!v||!v.includes('@')) return;
+  document.getElementById('pnlForm').innerHTML = '<span style="font-family:\'DM Mono\',monospace;font-size:11px;color:var(--green)">✓ Subscribed.</span>';
+}
+
+let _tt;
+function showToast(txt, icon='✓') {
+  const t = document.getElementById('toast');
+  document.getElementById('toastIcon').textContent = icon+' ';
+  document.getElementById('toastText').textContent = txt;
+  t.classList.add('show'); clearTimeout(_tt);
+  _tt = setTimeout(()=>t.classList.remove('show'), 3000);
+}
+
+// Animate view count up
+const vc = document.getElementById('viewCount');
+let v = 0;
+const target = 2841;
+const iv = setInterval(()=>{
+  v = Math.min(target, v + Math.ceil((target - v) / 6));
+  vc.textContent = v.toLocaleString() + ' views';
+  if (v >= target) clearInterval(iv);
+}, 40);
+</script>
+</body>
+</html>
