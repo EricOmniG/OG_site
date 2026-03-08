@@ -784,49 +784,74 @@ footer {
   <button class="admin-save" onclick="saveConfig()">Save & Apply</button>
 </div>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script>
 // ============================================================
-// CONFIG — In production, Flask injects these from the DB.
-// Here they live in localStorage for demo/dev purposes.
+// SUPABASE CONFIG
 // ============================================================
+const SUPABASE_URL  = 'https://gyyrutgbsvefipemsbje.supabase.co';
+const SUPABASE_KEY  = 'sb_publishable_11mK0mTzwWgpYs38E3FI4Q_enJTXbti';
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
 
-const CONFIG_KEY = 'omnigenius_config';
+// ============================================================
+// ADMIN AUTH — change this password to whatever you want
+// ============================================================
+const ADMIN_PASSWORD = 'omnigenius2025';
+let adminUnlocked = false;
 
-function loadConfig() {
-  try {
-    return JSON.parse(localStorage.getItem(CONFIG_KEY)) || {};
-  } catch { return {}; }
+// ============================================================
+// CONFIG — loaded from Supabase `site_config` table
+// Row: id=1, key=value pairs as columns
+// ============================================================
+let currentConfig = {};
+
+async function fetchConfig() {
+  const { data, error } = await sb
+    .from('site_config')
+    .select('*')
+    .eq('id', 1)
+    .single();
+  if (error) {
+    console.warn('Config fetch error:', error.message);
+    return {};
+  }
+  return data || {};
 }
 
-function saveConfigToStorage(cfg) {
-  localStorage.setItem(CONFIG_KEY, JSON.stringify(cfg));
+async function pushConfig(updates) {
+  const { error } = await sb
+    .from('site_config')
+    .upsert({ id: 1, ...updates });
+  if (error) throw new Error(error.message);
 }
 
 // ---- Apply site mode ----
 function applyMode(cfg) {
-  cfg = cfg || loadConfig();
   const isLive = cfg.mode === 'live';
   document.getElementById('waitlistSection').style.display = isLive ? 'none' : 'block';
   document.getElementById('liveSection').style.display    = isLive ? 'block' : 'none';
-  document.getElementById('modeToggle').checked = isLive;
-  document.querySelector('.nav-badge').textContent = isLive ? 'Now Live' : 'Pre-Launch';
-  document.querySelector('.nav-badge').style.color = isLive ? 'var(--teal)' : '';
-  document.querySelector('.nav-badge').style.borderColor = isLive ? 'var(--border)' : '';
+  const toggle = document.getElementById('modeToggle');
+  if (toggle) toggle.checked = isLive;
+  const badge = document.querySelector('.nav-badge');
+  badge.textContent = isLive ? 'Now Live' : 'Pre-Launch';
+  badge.style.color = isLive ? 'var(--teal)' : '';
+  badge.style.borderColor = isLive ? 'var(--border)' : '';
 }
 
 // ---- Countdown ----
 let countdownInterval = null;
 
 function applyCountdown(cfg) {
-  cfg = cfg || loadConfig();
-  const enabled    = cfg.countdownEnabled;
-  const launchDate = cfg.launchDate ? new Date(cfg.launchDate) : null;
+  const enabled    = cfg.countdown_enabled;
+  const launchDate = cfg.launch_date ? new Date(cfg.launch_date) : null;
   const section    = document.getElementById('countdownSection');
-  const input      = document.getElementById('countdownToggle');
+  const toggle     = document.getElementById('countdownToggle');
+  const dateInput  = document.getElementById('launchDateInput');
 
-  if (input) input.checked = !!enabled;
-  if (document.getElementById('launchDateInput') && cfg.launchDate) {
-    document.getElementById('launchDateInput').value = cfg.launchDate;
+  if (toggle) toggle.checked = !!enabled;
+  if (dateInput && cfg.launch_date) {
+    // format for datetime-local input (strip seconds/Z)
+    dateInput.value = cfg.launch_date.slice(0, 16);
   }
 
   if (countdownInterval) { clearInterval(countdownInterval); countdownInterval = null; }
@@ -841,69 +866,87 @@ function applyCountdown(cfg) {
 }
 
 function tickCountdown(target) {
-  const now  = new Date();
-  const diff = target - now;
-
+  const diff = target - new Date();
   if (diff <= 0) {
-    // Launch time hit — auto-switch to live
-    document.getElementById('cdDays').textContent  = '00';
-    document.getElementById('cdHours').textContent = '00';
-    document.getElementById('cdMins').textContent  = '00';
-    document.getElementById('cdSecs').textContent  = '00';
+    ['cdDays','cdHours','cdMins','cdSecs'].forEach(id =>
+      document.getElementById(id).textContent = '00');
     clearInterval(countdownInterval);
     return;
   }
-
-  const d = Math.floor(diff / 86400000);
-  const h = Math.floor((diff % 86400000) / 3600000);
-  const m = Math.floor((diff % 3600000)  / 60000);
-  const s = Math.floor((diff % 60000)    / 1000);
-
-  document.getElementById('cdDays').textContent  = String(d).padStart(2,'0');
-  document.getElementById('cdHours').textContent = String(h).padStart(2,'0');
-  document.getElementById('cdMins').textContent  = String(m).padStart(2,'0');
-  document.getElementById('cdSecs').textContent  = String(s).padStart(2,'0');
+  document.getElementById('cdDays').textContent  = String(Math.floor(diff / 86400000)).padStart(2,'0');
+  document.getElementById('cdHours').textContent = String(Math.floor((diff % 86400000) / 3600000)).padStart(2,'0');
+  document.getElementById('cdMins').textContent  = String(Math.floor((diff % 3600000) / 60000)).padStart(2,'0');
+  document.getElementById('cdSecs').textContent  = String(Math.floor((diff % 60000) / 1000)).padStart(2,'0');
 }
 
 // ---- Subscriber count display ----
 function applySubCount(cfg) {
-  cfg = cfg || loadConfig();
-  const count = parseInt(cfg.subCount) || 0;
+  const count = parseInt(cfg.sub_count) || 0;
   const el    = document.getElementById('subCountText');
   const input = document.getElementById('subCountInput');
   if (input) input.value = count || '';
-  if (count > 0) {
-    el.textContent = `${count.toLocaleString()} people already on the waitlist.`;
-  } else {
-    el.textContent = 'Be among the first to know when we launch.';
-  }
+  el.textContent = count > 0
+    ? `${count.toLocaleString()} people already on the waitlist.`
+    : 'Be among the first to know when we launch.';
 }
 
 // ---- Admin panel ----
 function toggleAdmin() {
-  document.getElementById('adminPanel').classList.toggle('open');
-  // populate inputs from current config
-  const cfg = loadConfig();
-  if (cfg.launchDate) document.getElementById('launchDateInput').value = cfg.launchDate;
-  if (cfg.subCount)   document.getElementById('subCountInput').value   = cfg.subCount;
+  const panel = document.getElementById('adminPanel');
+  const isOpen = panel.classList.contains('open');
+  if (isOpen) { panel.classList.remove('open'); return; }
+
+  if (!adminUnlocked) {
+    const pw = prompt('Admin password:');
+    if (pw !== ADMIN_PASSWORD) {
+      alert('Incorrect password.');
+      return;
+    }
+    adminUnlocked = true;
+  }
+
+  // Populate inputs from currentConfig
+  const cfg = currentConfig;
+  const modeToggle = document.getElementById('modeToggle');
+  const dateInput  = document.getElementById('launchDateInput');
+  const subInput   = document.getElementById('subCountInput');
+  const cdToggle   = document.getElementById('countdownToggle');
+
+  if (modeToggle) modeToggle.checked = cfg.mode === 'live';
+  if (cdToggle)   cdToggle.checked   = !!cfg.countdown_enabled;
+  if (dateInput && cfg.launch_date)  dateInput.value = cfg.launch_date.slice(0,16);
+  if (subInput)   subInput.value     = cfg.sub_count || '';
+
+  panel.classList.add('open');
 }
 
-function saveConfig() {
-  const cfg = {
-    mode:             document.getElementById('modeToggle').checked ? 'live' : 'waitlist',
-    countdownEnabled: document.getElementById('countdownToggle').checked,
-    launchDate:       document.getElementById('launchDateInput').value,
-    subCount:         document.getElementById('subCountInput').value,
-  };
-  saveConfigToStorage(cfg);
-  applyMode(cfg);
-  applyCountdown(cfg);
-  applySubCount(cfg);
-  document.getElementById('adminPanel').classList.remove('open');
-  // flash confirm
+async function saveConfig() {
   const btn = document.querySelector('.admin-save');
-  btn.textContent = '✓ Saved';
-  setTimeout(() => btn.textContent = 'Save & Apply', 1500);
+  btn.textContent = 'Saving…';
+  btn.disabled = true;
+
+  const dateVal = document.getElementById('launchDateInput').value;
+  const updates = {
+    mode:              document.getElementById('modeToggle').checked ? 'live' : 'waitlist',
+    countdown_enabled: document.getElementById('countdownToggle').checked,
+    launch_date:       dateVal ? new Date(dateVal).toISOString() : null,
+    sub_count:         parseInt(document.getElementById('subCountInput').value) || 0,
+  };
+
+  try {
+    await pushConfig(updates);
+    currentConfig = { ...currentConfig, ...updates };
+    applyMode(currentConfig);
+    applyCountdown(currentConfig);
+    applySubCount(currentConfig);
+    document.getElementById('adminPanel').classList.remove('open');
+    btn.textContent = '✓ Saved';
+  } catch (err) {
+    btn.textContent = '✗ Error — retry';
+    console.error(err);
+  } finally {
+    setTimeout(() => { btn.textContent = 'Save & Apply'; btn.disabled = false; }, 2000);
+  }
 }
 
 // ---- Waitlist form ----
@@ -919,37 +962,26 @@ async function handleSignup(e) {
   msgEl.style.display = 'none';
 
   try {
-    // POST to /api/waitlist — wire this up to Supabase in Flask
-    const res = await fetch('/api/waitlist', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email })
-    });
+    // Insert into Supabase waitlist table
+    const { error } = await sb.from('waitlist').insert([{
+      email,
+      signed_up_at: new Date().toISOString(),
+    }]);
 
-    if (res.ok) {
-      msgEl.className = 'form-message success';
-      msgEl.textContent = '✓ You\'re on the list! We\'ll be in touch.';
-      document.getElementById('emailInput').value = '';
-
-      // Bump displayed count
-      const cfg = loadConfig();
-      cfg.subCount = (parseInt(cfg.subCount) || 0) + 1;
-      saveConfigToStorage(cfg);
-      applySubCount(cfg);
-    } else {
-      const data = await res.json().catch(() => ({}));
-      throw new Error(data.error || 'Something went wrong.');
+    if (error) {
+      // Duplicate email check
+      if (error.code === '23505') {
+        throw new Error("You're already on the list!");
+      }
+      throw new Error(error.message);
     }
+
+    msgEl.className = 'form-message success';
+    msgEl.textContent = "✓ You're on the list! We'll be in touch.";
+    document.getElementById('emailInput').value = '';
   } catch (err) {
-    // Offline / dev fallback — still confirm locally
-    if (!navigator.onLine || err.message.includes('fetch')) {
-      msgEl.className = 'form-message success';
-      msgEl.textContent = '✓ You\'re on the list! (Saved locally — server offline)';
-      document.getElementById('emailInput').value = '';
-    } else {
-      msgEl.className = 'form-message error';
-      msgEl.textContent = '✗ ' + err.message;
-    }
+    msgEl.className = 'form-message error';
+    msgEl.textContent = '✗ ' + err.message;
   } finally {
     msgEl.style.display = 'flex';
     btn.disabled = false;
@@ -970,13 +1002,12 @@ function shareLI(e) {
   window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${url}`, '_blank', 'width=550,height=500');
 }
 
-// ---- IN
 // ---- INIT ----
-(function init() {
-  const cfg = loadConfig();
-  applyMode(cfg);
-  applyCountdown(cfg);
-  applySubCount(cfg);
+(async function init() {
+  currentConfig = await fetchConfig();
+  applyMode(currentConfig);
+  applyCountdown(currentConfig);
+  applySubCount(currentConfig);
 })();
 </script>
 
