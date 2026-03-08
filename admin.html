@@ -1,0 +1,1030 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Omnigenius — Admin</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:       #0ee8d4;
+  --teal-dim:   #0d9488;
+  --teal-glow:  rgba(14, 232, 212, 0.12);
+  --teal-glow2: rgba(14, 232, 212, 0.04);
+  --bg:         #050810;
+  --bg2:        #080d18;
+  --bg3:        #0d1525;
+  --bg4:        #111d30;
+  --text:       #e8edf5;
+  --text2:      #8899b4;
+  --text3:      #4a5a72;
+  --border:     rgba(14, 232, 212, 0.15);
+  --border2:    rgba(255,255,255,0.06);
+  --red:        #ff4560;
+  --green:      #0ee8d4;
+  --yellow:     #f5c842;
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  font-family: 'DM Sans', sans-serif;
+  background: var(--bg);
+  color: var(--text);
+  min-height: 100vh;
+}
+
+/* ---- LOGIN SCREEN ---- */
+#loginScreen {
+  position: fixed; inset: 0; z-index: 9999;
+  background: var(--bg);
+  display: flex; align-items: center; justify-content: center;
+  flex-direction: column; gap: 32px;
+}
+.login-card {
+  background: var(--bg3);
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  padding: 40px;
+  width: 100%; max-width: 380px;
+  box-shadow: 0 40px 80px rgba(0,0,0,0.6), 0 0 60px rgba(14,232,212,0.05);
+  animation: fadeUp 0.6s ease forwards;
+}
+.login-logo {
+  display: flex; align-items: center; gap: 12px; margin-bottom: 32px;
+}
+.login-logo-mark {
+  width: 40px; height: 40px; border-radius: 10px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 18px; color: #050810;
+  box-shadow: 0 0 20px rgba(14,232,212,0.3);
+}
+.login-logo-text {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 18px; color: var(--teal);
+}
+.login-title {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 22px; margin-bottom: 6px;
+}
+.login-sub {
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3);
+  letter-spacing: 1px; text-transform: uppercase; margin-bottom: 28px;
+}
+.login-input {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 10px; padding: 14px 16px;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 13px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+  margin-bottom: 12px;
+}
+.login-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(14,232,212,0.08); }
+.login-btn {
+  width: 100%;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+  border: none; border-radius: 10px; padding: 14px;
+  color: #050810; font-family: 'Syne', sans-serif; font-weight: 700; font-size: 14px;
+  cursor: pointer; transition: all 0.2s;
+  box-shadow: 0 0 20px rgba(14,232,212,0.2);
+}
+.login-btn:hover { transform: scale(1.02); box-shadow: 0 0 30px rgba(14,232,212,0.35); }
+.login-error {
+  margin-top: 10px; font-family: 'DM Mono', monospace; font-size: 11px;
+  color: var(--red); text-align: center; display: none;
+}
+
+/* ---- MAIN LAYOUT ---- */
+#appScreen { display: none; min-height: 100vh; }
+
+.sidebar {
+  position: fixed; left: 0; top: 0; bottom: 0; width: 220px;
+  background: var(--bg2); border-right: 1px solid var(--border2);
+  display: flex; flex-direction: column;
+  padding: 24px 0; z-index: 100;
+}
+.sidebar-logo {
+  display: flex; align-items: center; gap: 10px;
+  padding: 0 20px 24px;
+  border-bottom: 1px solid var(--border2);
+}
+.sidebar-logo-mark {
+  width: 32px; height: 32px; border-radius: 8px;
+  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 14px; color: #050810;
+}
+.sidebar-logo-text { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; color: var(--teal); }
+.sidebar-logo-sub { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1.5px; text-transform: uppercase; }
+
+nav.sidebar-nav { padding: 20px 12px; flex: 1; }
+.nav-section-label {
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--text3); padding: 0 8px; margin-bottom: 8px; margin-top: 20px;
+}
+.nav-section-label:first-child { margin-top: 0; }
+.nav-item {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; border-radius: 8px;
+  font-family: 'DM Sans', sans-serif; font-size: 13px; color: var(--text2);
+  cursor: pointer; transition: all 0.15s; margin-bottom: 2px;
+  border: 1px solid transparent;
+}
+.nav-item:hover { background: var(--teal-glow2); color: var(--text); }
+.nav-item.active {
+  background: var(--teal-glow); color: var(--teal);
+  border-color: var(--border);
+}
+.nav-item svg { width: 15px; height: 15px; flex-shrink: 0; opacity: 0.7; }
+.nav-item.active svg { opacity: 1; }
+
+.sidebar-footer {
+  padding: 16px 12px 0;
+  border-top: 1px solid var(--border2);
+}
+.sidebar-user {
+  display: flex; align-items: center; gap: 10px;
+  padding: 10px 12px; border-radius: 8px;
+}
+.sidebar-avatar {
+  width: 28px; height: 28px; border-radius: 50%;
+  background: linear-gradient(135deg, var(--bg3), var(--teal-dim));
+  border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 11px; color: var(--teal);
+}
+.sidebar-user-info { flex: 1; min-width: 0; }
+.sidebar-user-name { font-size: 12px; font-weight: 500; color: var(--text); }
+.sidebar-user-role { font-family: 'DM Mono', monospace; font-size: 9px; color: var(--text3); letter-spacing: 1px; text-transform: uppercase; }
+.logout-btn {
+  background: none; border: none; color: var(--text3); cursor: pointer;
+  font-size: 12px; padding: 4px; transition: color 0.2s;
+}
+.logout-btn:hover { color: var(--red); }
+
+/* ---- MAIN CONTENT ---- */
+.main {
+  margin-left: 220px;
+  min-height: 100vh;
+  display: flex; flex-direction: column;
+}
+.topbar {
+  padding: 20px 32px;
+  border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-between;
+  background: rgba(5,8,16,0.8); backdrop-filter: blur(12px);
+  position: sticky; top: 0; z-index: 50;
+}
+.topbar-title { font-family: 'Syne', sans-serif; font-weight: 800; font-size: 20px; }
+.topbar-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); letter-spacing: 1px; margin-top: 2px; }
+.topbar-actions { display: flex; gap: 8px; align-items: center; }
+
+.btn {
+  padding: 8px 16px; border-radius: 8px; font-family: 'DM Mono', monospace;
+  font-size: 11px; letter-spacing: 0.5px; cursor: pointer; transition: all 0.2s;
+  border: 1px solid var(--border2); background: var(--bg3); color: var(--text2);
+}
+.btn:hover { border-color: var(--border); color: var(--text); }
+.btn-primary {
+  background: linear-gradient(135deg, var(--teal), var(--teal-dim));
+  border-color: transparent; color: #050810; font-weight: 500;
+  box-shadow: 0 0 16px rgba(14,232,212,0.2);
+}
+.btn-primary:hover { transform: scale(1.02); box-shadow: 0 0 24px rgba(14,232,212,0.35); color: #050810; }
+.btn-danger { border-color: rgba(255,69,96,0.2); color: var(--red); background: rgba(255,69,96,0.05); }
+.btn-danger:hover { border-color: var(--red); background: rgba(255,69,96,0.1); }
+
+.content { padding: 32px; flex: 1; }
+
+/* ---- TABS ---- */
+.tab-content { display: none; }
+.tab-content.active { display: block; animation: fadeUp 0.3s ease forwards; }
+
+/* ---- STAT CARDS ---- */
+.stats-grid {
+  display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; margin-bottom: 32px;
+}
+.stat-card {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 14px;
+  padding: 20px 24px; position: relative; overflow: hidden;
+  transition: border-color 0.2s;
+}
+.stat-card:hover { border-color: var(--border); }
+.stat-card::before {
+  content: ''; position: absolute; top: 0; left: 0; right: 0; height: 1px;
+  background: linear-gradient(90deg, transparent, var(--teal), transparent);
+  opacity: 0;  transition: opacity 0.3s;
+}
+.stat-card:hover::before { opacity: 1; }
+.stat-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 12px;
+}
+.stat-value {
+  font-family: 'Syne', sans-serif; font-weight: 800; font-size: 32px;
+  color: var(--text); line-height: 1;
+}
+.stat-value.teal { color: var(--teal); text-shadow: 0 0 20px rgba(14,232,212,0.3); }
+.stat-change {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3);
+  margin-top: 8px;
+}
+.stat-change.up { color: var(--teal); }
+.stat-icon {
+  position: absolute; right: 20px; top: 20px;
+  width: 36px; height: 36px; border-radius: 9px;
+  background: var(--teal-glow); border: 1px solid var(--border);
+  display: flex; align-items: center; justify-content: center; font-size: 16px;
+}
+
+/* ---- CHART ---- */
+.chart-card {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 14px;
+  padding: 24px; margin-bottom: 32px;
+}
+.chart-header {
+  display: flex; align-items: center; justify-content: space-between; margin-bottom: 24px;
+}
+.chart-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+.chart-sub { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px; }
+.chart-wrap { height: 180px; position: relative; }
+canvas#signupsChart { width: 100% !important; }
+
+/* ---- TABLE ---- */
+.table-card {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 14px;
+  overflow: hidden;
+}
+.table-header {
+  padding: 20px 24px; border-bottom: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
+  flex-wrap: wrap;
+}
+.table-header-left { display: flex; align-items: center; gap: 12px; }
+.table-title { font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; }
+.table-count {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--teal);
+  background: var(--teal-glow); border: 1px solid var(--border);
+  padding: 3px 8px; border-radius: 20px;
+}
+.search-box {
+  background: var(--bg2); border: 1px solid var(--border2); border-radius: 8px;
+  padding: 8px 12px; color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px;
+  outline: none; transition: border-color 0.2s; width: 220px;
+}
+.search-box:focus { border-color: var(--teal); }
+.search-box::placeholder { color: var(--text3); }
+
+table { width: 100%; border-collapse: collapse; }
+thead th {
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1.5px;
+  text-transform: uppercase; color: var(--text3); padding: 12px 24px;
+  text-align: left; border-bottom: 1px solid var(--border2); background: var(--bg2);
+}
+tbody tr {
+  border-bottom: 1px solid var(--border2); transition: background 0.15s;
+}
+tbody tr:last-child { border-bottom: none; }
+tbody tr:hover { background: rgba(14,232,212,0.02); }
+tbody td { padding: 14px 24px; font-size: 13px; color: var(--text2); }
+tbody td.email { color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px; }
+tbody td.date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+.badge {
+  display: inline-flex; align-items: center;
+  font-family: 'DM Mono', monospace; font-size: 9px; letter-spacing: 1px;
+  text-transform: uppercase; padding: 3px 8px; border-radius: 20px;
+}
+.badge-new { color: var(--teal); background: var(--teal-glow); border: 1px solid var(--border); }
+
+.table-footer {
+  padding: 14px 24px; border-top: 1px solid var(--border2);
+  display: flex; align-items: center; justify-content: space-between;
+  font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3);
+}
+.pagination { display: flex; gap: 4px; }
+.page-btn {
+  width: 28px; height: 28px; border-radius: 6px; border: 1px solid var(--border2);
+  background: var(--bg2); color: var(--text3); font-size: 11px;
+  cursor: pointer; transition: all 0.15s; display: flex; align-items: center; justify-content: center;
+}
+.page-btn:hover { border-color: var(--border); color: var(--text); }
+.page-btn.active { border-color: var(--teal); color: var(--teal); background: var(--teal-glow); }
+
+/* ---- SETTINGS TAB ---- */
+.settings-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.settings-card {
+  background: var(--bg3); border: 1px solid var(--border2); border-radius: 14px; padding: 24px;
+}
+.settings-card-title {
+  font-family: 'Syne', sans-serif; font-weight: 700; font-size: 15px; margin-bottom: 4px;
+}
+.settings-card-sub {
+  font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3);
+  letter-spacing: 0.5px; margin-bottom: 24px;
+}
+.field { margin-bottom: 18px; }
+.field-label {
+  font-family: 'DM Mono', monospace; font-size: 10px; letter-spacing: 1px;
+  text-transform: uppercase; color: var(--text3); margin-bottom: 8px; display: block;
+}
+.field-input {
+  width: 100%; background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 9px; padding: 10px 14px;
+  color: var(--text); font-family: 'DM Mono', monospace; font-size: 12px;
+  outline: none; transition: border-color 0.2s, box-shadow 0.2s;
+}
+.field-input:focus { border-color: var(--teal); box-shadow: 0 0 0 3px rgba(14,232,212,0.07); }
+.toggle-row {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 12px 0; border-bottom: 1px solid var(--border2);
+}
+.toggle-row:last-of-type { border-bottom: none; }
+.toggle-label { font-size: 13px; color: var(--text2); }
+.toggle-desc { font-family: 'DM Mono', monospace; font-size: 10px; color: var(--text3); margin-top: 2px; }
+.toggle-switch { position: relative; width: 40px; height: 22px; flex-shrink: 0; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider {
+  position: absolute; inset: 0; cursor: pointer;
+  background: var(--bg2); border: 1px solid var(--border2);
+  border-radius: 22px; transition: all 0.3s;
+}
+.toggle-slider::before {
+  content: ''; position: absolute; left: 3px; bottom: 3px;
+  width: 14px; height: 14px; border-radius: 50%;
+  background: var(--text3); transition: all 0.3s;
+}
+.toggle-switch input:checked + .toggle-slider { background: var(--teal-glow); border-color: var(--teal); }
+.toggle-switch input:checked + .toggle-slider::before { background: var(--teal); transform: translateX(18px); }
+
+.save-bar {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 16px 24px; background: var(--bg2);
+  border: 1px solid var(--border2); border-radius: 10px; margin-top: 20px;
+}
+.save-bar-text { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--text3); }
+.save-status { font-family: 'DM Mono', monospace; font-size: 11px; color: var(--teal); display: none; }
+
+/* ---- EMPTY STATE ---- */
+.empty-state {
+  text-align: center; padding: 60px 20px;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--text3);
+}
+.empty-state .icon { font-size: 32px; margin-bottom: 12px; }
+
+/* ---- LOADING ---- */
+.skeleton {
+  background: linear-gradient(90deg, var(--bg3) 25%, var(--bg4) 50%, var(--bg3) 75%);
+  background-size: 200% 100%;
+  animation: shimmerLoad 1.4s infinite;
+  border-radius: 6px;
+}
+@keyframes shimmerLoad { to { background-position: -200% 0; } }
+
+/* ---- TOAST ---- */
+#toast {
+  position: fixed; bottom: 24px; left: 50%; transform: translateX(-50%) translateY(80px);
+  background: var(--bg3); border: 1px solid var(--border);
+  border-radius: 10px; padding: 12px 20px;
+  font-family: 'DM Mono', monospace; font-size: 12px; color: var(--teal);
+  box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+  transition: transform 0.3s ease; z-index: 9999; white-space: nowrap;
+}
+#toast.show { transform: translateX(-50%) translateY(0); }
+#toast.error { color: var(--red); border-color: rgba(255,69,96,0.3); }
+
+/* ---- ANIMATIONS ---- */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(12px); }
+  to   { opacity: 1; transform: translateY(0); }
+}
+
+/* ---- RESPONSIVE ---- */
+@media (max-width: 1100px) { .stats-grid { grid-template-columns: repeat(2, 1fr); } }
+@media (max-width: 768px) {
+  .sidebar { width: 60px; }
+  .sidebar-logo-text, .sidebar-logo-sub, .nav-section-label,
+  .nav-item span, .sidebar-user-info, .logout-btn { display: none; }
+  .main { margin-left: 60px; }
+  .stats-grid { grid-template-columns: 1fr 1fr; }
+  .settings-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- LOGIN SCREEN -->
+<div id="loginScreen">
+  <div class="login-card">
+    <div class="login-logo">
+      <div class="login-logo-mark">O</div>
+      <div>
+        <div class="login-logo-text">Omnigenius</div>
+      </div>
+    </div>
+    <div class="login-title">Admin Dashboard</div>
+    <div class="login-sub">Restricted access</div>
+    <input type="password" class="login-input" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
+    <button class="login-btn" onclick="doLogin()">Sign In →</button>
+    <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+  </div>
+</div>
+
+<!-- APP -->
+<div id="appScreen">
+
+  <!-- SIDEBAR -->
+  <div class="sidebar">
+    <div class="sidebar-logo">
+      <div class="sidebar-logo-mark">O</div>
+      <div>
+        <div class="sidebar-logo-text">Omnigenius</div>
+        <div class="sidebar-logo-sub">Admin</div>
+      </div>
+    </div>
+    <nav class="sidebar-nav">
+      <div class="nav-section-label">Overview</div>
+      <div class="nav-item active" onclick="showTab('overview', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+        <span>Overview</span>
+      </div>
+      <div class="nav-section-label">Data</div>
+      <div class="nav-item" onclick="showTab('subscribers', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>
+        <span>Subscribers</span>
+      </div>
+      <div class="nav-section-label">Site</div>
+      <div class="nav-item" onclick="showTab('settings', this)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        <span>Site Settings</span>
+      </div>
+    </nav>
+    <div class="sidebar-footer">
+      <div class="sidebar-user">
+        <div class="sidebar-avatar">A</div>
+        <div class="sidebar-user-info">
+          <div class="sidebar-user-name">Admin</div>
+          <div class="sidebar-user-role">Owner</div>
+        </div>
+        <button class="logout-btn" onclick="doLogout()" title="Sign out">✕</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- MAIN -->
+  <div class="main">
+
+    <!-- TOPBAR -->
+    <div class="topbar">
+      <div>
+        <div class="topbar-title" id="topbarTitle">Overview</div>
+        <div class="topbar-sub" id="topbarSub">OMNIGENIUS ADMIN · WAITLIST DASHBOARD</div>
+      </div>
+      <div class="topbar-actions">
+        <button class="btn" onclick="refreshAll()">↻ Refresh</button>
+        <a href="index.html" class="btn" target="_blank">↗ View Site</a>
+      </div>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content">
+
+      <!-- ══════════ OVERVIEW TAB ══════════ -->
+      <div class="tab-content active" id="tab-overview">
+
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon">📬</div>
+            <div class="stat-label">Total Subscribers</div>
+            <div class="stat-value teal" id="statTotal">—</div>
+            <div class="stat-change up" id="statTotalChange">Loading…</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">📅</div>
+            <div class="stat-label">Last 7 Days</div>
+            <div class="stat-value" id="statWeek">—</div>
+            <div class="stat-change" id="statWeekChange">Loading…</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">🕐</div>
+            <div class="stat-label">Last 24 Hours</div>
+            <div class="stat-value" id="statDay">—</div>
+            <div class="stat-change" id="statDayChange">Loading…</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-icon">⚙️</div>
+            <div class="stat-label">Site Mode</div>
+            <div class="stat-value" id="statMode" style="font-size:18px;margin-top:4px;">—</div>
+            <div class="stat-change" id="statModeChange">Loading…</div>
+          </div>
+        </div>
+
+        <div class="chart-card">
+          <div class="chart-header">
+            <div>
+              <div class="chart-title">Signups Over Time</div>
+              <div class="chart-sub">Daily new subscribers — last 30 days</div>
+            </div>
+          </div>
+          <div class="chart-wrap">
+            <canvas id="signupsChart"></canvas>
+          </div>
+        </div>
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-header-left">
+              <div class="table-title">Recent Signups</div>
+              <div class="table-count" id="recentCount">0</div>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Signed Up</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="recentTableBody">
+              <tr><td colspan="4"><div class="empty-state"><div class="icon">⏳</div>Loading…</div></td></tr>
+            </tbody>
+          </table>
+        </div>
+
+      </div>
+
+      <!-- ══════════ SUBSCRIBERS TAB ══════════ -->
+      <div class="tab-content" id="tab-subscribers">
+
+        <div class="table-card">
+          <div class="table-header">
+            <div class="table-header-left">
+              <div class="table-title">All Subscribers</div>
+              <div class="table-count" id="allCount">0</div>
+            </div>
+            <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;">
+              <input type="text" class="search-box" id="searchInput" placeholder="Search email…" oninput="filterTable()">
+              <button class="btn btn-primary" onclick="exportCSV()">↓ Export CSV</button>
+            </div>
+          </div>
+          <table>
+            <thead>
+              <tr>
+                <th>#</th>
+                <th>Email</th>
+                <th>Signed Up</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody id="allTableBody">
+              <tr><td colspan="4"><div class="empty-state"><div class="icon">⏳</div>Loading…</div></td></tr>
+            </tbody>
+          </table>
+          <div class="table-footer">
+            <span id="paginationInfo">—</span>
+            <div class="pagination" id="paginationBtns"></div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- ══════════ SETTINGS TAB ══════════ -->
+      <div class="tab-content" id="tab-settings">
+
+        <div class="settings-grid">
+
+          <div class="settings-card">
+            <div class="settings-card-title">Site Mode</div>
+            <div class="settings-card-sub">Control what visitors see on the landing page</div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Waitlist Mode</div>
+                <div class="toggle-desc">Show signup form to collect emails</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="s_waitlist" checked onchange="handleModeToggle('waitlist', this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Live Mode</div>
+                <div class="toggle-desc">Show the "Try it free" CTA instead</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="s_live" onchange="handleModeToggle('live', this)">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-title">Launch Countdown</div>
+            <div class="settings-card-sub">Display a live countdown timer on the page</div>
+            <div class="field">
+              <label class="field-label">Launch Date & Time</label>
+              <input type="datetime-local" class="field-input" id="s_launchDate">
+            </div>
+            <div class="toggle-row">
+              <div>
+                <div class="toggle-label">Enable Countdown</div>
+                <div class="toggle-desc">Shows the timer on the landing page</div>
+              </div>
+              <label class="toggle-switch">
+                <input type="checkbox" id="s_countdown">
+                <span class="toggle-slider"></span>
+              </label>
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-title">Subscriber Display</div>
+            <div class="settings-card-sub">Number shown in the social proof line on the page</div>
+            <div class="field">
+              <label class="field-label">Displayed Subscriber Count</label>
+              <input type="number" class="field-input" id="s_subCount" placeholder="e.g. 1247" min="0">
+            </div>
+            <div style="font-family:'DM Mono',monospace;font-size:10px;color:var(--text3);margin-top:8px;">
+              Set to 0 to show the default "Be among the first…" text
+            </div>
+          </div>
+
+          <div class="settings-card">
+            <div class="settings-card-title">Danger Zone</div>
+            <div class="settings-card-sub">Irreversible actions — be careful</div>
+            <div style="display:flex;flex-direction:column;gap:10px;margin-top:8px;">
+              <button class="btn btn-danger" onclick="confirmExport()">↓ Export all emails as CSV</button>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="save-bar">
+          <div>
+            <div style="font-size:13px;font-weight:500;">Save all settings</div>
+            <div class="save-bar-text">Changes apply to the live site immediately</div>
+          </div>
+          <div style="display:flex;align-items:center;gap:12px;">
+            <div class="save-status" id="saveStatus">✓ Saved</div>
+            <button class="btn btn-primary" id="saveBtn" onclick="saveSettings()">Save & Apply</button>
+          </div>
+        </div>
+
+      </div>
+
+    </div><!-- /content -->
+  </div><!-- /main -->
+</div><!-- /appScreen -->
+
+<div id="toast"></div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+<script src="https://cdn.jsdelivr.net/npm/chart.js@4"></script>
+<script>
+// ============================================================
+// CONFIG
+// ============================================================
+const SUPABASE_URL = 'https://gyyrutgbsvefipemsbje.supabase.co';
+const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5eXJ1dGdic3ZlZmlwZW1zYmplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MzU0MzcsImV4cCI6MjA4ODUxMTQzN30.Y6uctY-_I1BG9u1oyeIfaZKQIh6pIC_H6jRFbGhYF7w';
+const ADMIN_PASSWORD = 'omnigenius2025';
+
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+
+// ============================================================
+// AUTH
+// ============================================================
+function doLogin() {
+  const pw = document.getElementById('loginPassword').value;
+  const err = document.getElementById('loginError');
+  if (pw === ADMIN_PASSWORD) {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    sessionStorage.setItem('og_admin', '1');
+    initApp();
+  } else {
+    err.style.display = 'block';
+    document.getElementById('loginPassword').value = '';
+    document.getElementById('loginPassword').focus();
+  }
+}
+
+function doLogout() {
+  sessionStorage.removeItem('og_admin');
+  document.getElementById('appScreen').style.display = 'none';
+  document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginPassword').value = '';
+  document.getElementById('loginError').style.display = 'none';
+}
+
+// Auto-login if session active
+if (sessionStorage.getItem('og_admin') === '1') {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  document.addEventListener('DOMContentLoaded', initApp);
+}
+
+document.getElementById('loginPassword').addEventListener('keydown', e => {
+  if (e.key === 'Enter') doLogin();
+});
+
+// ============================================================
+// TABS
+// ============================================================
+const tabTitles = {
+  overview:    ['Overview',    'OMNIGENIUS ADMIN · WAITLIST DASHBOARD'],
+  subscribers: ['Subscribers', 'OMNIGENIUS ADMIN · ALL SIGNUPS'],
+  settings:    ['Site Settings','OMNIGENIUS ADMIN · SITE CONFIGURATION'],
+};
+
+function showTab(name, el) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  el.classList.add('active');
+  const [title, sub] = tabTitles[name];
+  document.getElementById('topbarTitle').textContent = title;
+  document.getElementById('topbarSub').textContent = sub;
+}
+
+// ============================================================
+// TOAST
+// ============================================================
+function showToast(msg, isError = false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = isError ? 'error' : '';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+// ============================================================
+// DATA
+// ============================================================
+let allSubscribers = [];
+let currentPage = 1;
+const PAGE_SIZE = 20;
+let chartInstance = null;
+let siteConfig = {};
+
+async function fetchSubscribers() {
+  const { data, error } = await sb
+    .from('waitlist')
+    .select('*')
+    .order('signed_up_at', { ascending: false });
+  if (error) { showToast('Error fetching subscribers: ' + error.message, true); return []; }
+  return data || [];
+}
+
+async function fetchConfig() {
+  const { data, error } = await sb.from('site_config').select('*').eq('id', 1).single();
+  if (error) return {};
+  return data || {};
+}
+
+async function initApp() {
+  allSubscribers = await fetchSubscribers();
+  siteConfig = await fetchConfig();
+  renderOverview();
+  renderAllTable();
+  renderSettings();
+}
+
+async function refreshAll() {
+  showToast('Refreshing…');
+  await initApp();
+  showToast('✓ Data refreshed');
+}
+
+// ============================================================
+// OVERVIEW
+// ============================================================
+function renderOverview() {
+  const total = allSubscribers.length;
+  const now = new Date();
+  const week  = allSubscribers.filter(s => (now - new Date(s.signed_up_at)) < 7 * 86400000).length;
+  const day   = allSubscribers.filter(s => (now - new Date(s.signed_up_at)) < 86400000).length;
+
+  document.getElementById('statTotal').textContent = total.toLocaleString();
+  document.getElementById('statTotalChange').textContent = total > 0 ? `${total} total collected` : 'No signups yet';
+  document.getElementById('statWeek').textContent = week;
+  document.getElementById('statWeekChange').textContent = week > 0 ? `+${week} this week` : 'None this week';
+  document.getElementById('statDay').textContent = day;
+  document.getElementById('statDayChange').textContent = day > 0 ? `+${day} today` : 'None today';
+
+  const mode = siteConfig.mode || 'waitlist';
+  document.getElementById('statMode').textContent = mode === 'live' ? '🟢 Live' : '🟡 Waitlist';
+  document.getElementById('statModeChange').textContent = mode === 'live' ? 'Site is live' : 'Collecting signups';
+
+  // Recent table (top 10)
+  const recent = allSubscribers.slice(0, 10);
+  document.getElementById('recentCount').textContent = recent.length;
+  renderTable('recentTableBody', recent, 1);
+  renderChart();
+}
+
+function renderChart() {
+  // Build daily counts for last 30 days
+  const days = 30;
+  const labels = [];
+  const counts = [];
+  const now = new Date();
+
+  for (let i = days - 1; i >= 0; i--) {
+    const d = new Date(now);
+    d.setDate(d.getDate() - i);
+    const dateStr = d.toISOString().slice(0, 10);
+    labels.push(d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }));
+    counts.push(allSubscribers.filter(s => s.signed_up_at && s.signed_up_at.slice(0, 10) === dateStr).length);
+  }
+
+  const ctx = document.getElementById('signupsChart').getContext('2d');
+  if (chartInstance) chartInstance.destroy();
+
+  chartInstance = new Chart(ctx, {
+    type: 'line',
+    data: {
+      labels,
+      datasets: [{
+        data: counts,
+        borderColor: '#0ee8d4',
+        backgroundColor: 'rgba(14,232,212,0.07)',
+        borderWidth: 2,
+        pointRadius: 3,
+        pointBackgroundColor: '#0ee8d4',
+        pointBorderColor: '#050810',
+        pointBorderWidth: 2,
+        fill: true,
+        tension: 0.4,
+      }]
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: { legend: { display: false }, tooltip: {
+        backgroundColor: '#0d1525',
+        borderColor: 'rgba(14,232,212,0.3)',
+        borderWidth: 1,
+        titleColor: '#8899b4',
+        bodyColor: '#0ee8d4',
+        titleFont: { family: 'DM Mono', size: 10 },
+        bodyFont: { family: 'Syne', size: 16, weight: '700' },
+        padding: 12,
+        callbacks: { title: items => items[0].label, body: items => items[0].raw + ' signups' }
+      }},
+      scales: {
+        x: {
+          ticks: { color: '#4a5a72', font: { family: 'DM Mono', size: 9 }, maxTicksLimit: 8 },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+        },
+        y: {
+          ticks: { color: '#4a5a72', font: { family: 'DM Mono', size: 9 }, stepSize: 1 },
+          grid: { color: 'rgba(255,255,255,0.04)' },
+          beginAtZero: true,
+        }
+      }
+    }
+  });
+}
+
+// ============================================================
+// SUBSCRIBERS TABLE
+// ============================================================
+let filteredSubscribers = [];
+
+function renderAllTable() {
+  const q = (document.getElementById('searchInput')?.value || '').toLowerCase();
+  filteredSubscribers = q
+    ? allSubscribers.filter(s => s.email.toLowerCase().includes(q))
+    : [...allSubscribers];
+
+  document.getElementById('allCount').textContent = filteredSubscribers.length;
+  currentPage = 1;
+  renderPage();
+}
+
+function filterTable() {
+  renderAllTable();
+}
+
+function renderPage() {
+  const total = filteredSubscribers.length;
+  const totalPages = Math.max(1, Math.ceil(total / PAGE_SIZE));
+  const start = (currentPage - 1) * PAGE_SIZE;
+  const slice = filteredSubscribers.slice(start, start + PAGE_SIZE);
+  renderTable('allTableBody', slice, start + 1);
+
+  document.getElementById('paginationInfo').textContent =
+    `Showing ${start + 1}–${Math.min(start + PAGE_SIZE, total)} of ${total}`;
+
+  const btns = document.getElementById('paginationBtns');
+  btns.innerHTML = '';
+  for (let i = 1; i <= totalPages; i++) {
+    if (totalPages > 7 && i > 3 && i < totalPages - 1 && Math.abs(i - currentPage) > 1) {
+      if (i === 4) btns.innerHTML += `<span style="color:var(--text3);padding:0 4px;align-self:center;font-size:12px;">…</span>`;
+      continue;
+    }
+    const btn = document.createElement('button');
+    btn.className = 'page-btn' + (i === currentPage ? ' active' : '');
+    btn.textContent = i;
+    btn.onclick = () => { currentPage = i; renderPage(); };
+    btns.appendChild(btn);
+  }
+}
+
+function renderTable(tbodyId, rows, startIndex) {
+  const tbody = document.getElementById(tbodyId);
+  if (!rows.length) {
+    tbody.innerHTML = `<tr><td colspan="4"><div class="empty-state"><div class="icon">📭</div>No subscribers found</div></td></tr>`;
+    return;
+  }
+  tbody.innerHTML = rows.map((s, i) => `
+    <tr>
+      <td style="color:var(--text3);font-family:'DM Mono',monospace;font-size:11px;">${startIndex + i}</td>
+      <td class="email">${escHtml(s.email)}</td>
+      <td class="date">${formatDate(s.signed_up_at)}</td>
+      <td><span class="badge badge-new">New</span></td>
+    </tr>
+  `).join('');
+}
+
+function escHtml(str) {
+  return str.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function formatDate(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })
+    + ' · ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+}
+
+// ============================================================
+// CSV EXPORT
+// ============================================================
+function exportCSV() {
+  if (!allSubscribers.length) { showToast('No subscribers to export', true); return; }
+  const rows = [['#','Email','Signed Up']];
+  allSubscribers.forEach((s, i) => rows.push([i+1, s.email, s.signed_up_at || '']));
+  const csv = rows.map(r => r.map(c => `"${String(c).replace(/"/g,'""')}"`).join(',')).join('\n');
+  const a = document.createElement('a');
+  a.href = 'data:text/csv;charset=utf-8,' + encodeURIComponent(csv);
+  a.download = `omnigenius-waitlist-${new Date().toISOString().slice(0,10)}.csv`;
+  a.click();
+  showToast('✓ CSV exported');
+}
+
+function confirmExport() { exportCSV(); }
+
+// ============================================================
+// SETTINGS
+// ============================================================
+function renderSettings() {
+  const cfg = siteConfig;
+  document.getElementById('s_waitlist').checked = cfg.mode !== 'live';
+  document.getElementById('s_live').checked = cfg.mode === 'live';
+  document.getElementById('s_countdown').checked = !!cfg.countdown_enabled;
+  if (cfg.launch_date) document.getElementById('s_launchDate').value = cfg.launch_date.slice(0,16);
+  document.getElementById('s_subCount').value = cfg.sub_count || '';
+}
+
+function handleModeToggle(mode, el) {
+  // Keep both toggles in sync as radio-like
+  if (mode === 'live') {
+    document.getElementById('s_waitlist').checked = !el.checked;
+  } else {
+    document.getElementById('s_live').checked = !el.checked;
+  }
+}
+
+async function saveSettings() {
+  const btn = document.getElementById('saveBtn');
+  btn.textContent = 'Saving…'; btn.disabled = true;
+
+  const isLive = document.getElementById('s_live').checked;
+  const dateVal = document.getElementById('s_launchDate').value;
+
+  const updates = {
+    mode:              isLive ? 'live' : 'waitlist',
+    countdown_enabled: document.getElementById('s_countdown').checked,
+    launch_date:       dateVal ? new Date(dateVal).toISOString() : null,
+    sub_count:         parseInt(document.getElementById('s_subCount').value) || 0,
+  };
+
+  const { error } = await sb.from('site_config').upsert({ id: 1, ...updates });
+
+  if (error) {
+    showToast('✗ Save failed: ' + error.message, true);
+  } else {
+    siteConfig = { ...siteConfig, ...updates };
+    renderOverview();
+    const status = document.getElementById('saveStatus');
+    status.style.display = 'block';
+    setTimeout(() => status.style.display = 'none', 3000);
+    showToast('✓ Settings saved & applied');
+  }
+
+  btn.textContent = 'Save & Apply'; btn.disabled = false;
+}
+</script>
+</body>
+</html>
