@@ -716,15 +716,17 @@ function doLogout() {
   document.getElementById('loginError').style.display = 'none';
 }
 
-// Auto-login if session active
-if (sessionStorage.getItem('og_admin') === '1') {
-  document.getElementById('loginScreen').style.display = 'none';
-  document.getElementById('appScreen').style.display = 'block';
-  document.addEventListener('DOMContentLoaded', initApp);
-}
-
-document.getElementById('loginPassword').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
+// Boot — wait for DOM before touching any elements
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('loginPassword').addEventListener('keydown', e => {
+    if (e.key === 'Enter') doLogin();
+  });
+  // Auto-login if session still active
+  if (sessionStorage.getItem('og_admin') === '1') {
+    document.getElementById('loginScreen').style.display = 'none';
+    document.getElementById('appScreen').style.display = 'block';
+    initApp();
+  }
 });
 
 // ============================================================
