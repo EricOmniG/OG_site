@@ -422,9 +422,10 @@ tbody td.date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(-
     </div>
     <div class="login-title">Admin Dashboard</div>
     <div class="login-sub">Restricted access</div>
-    <input type="password" class="login-input" id="loginPassword" placeholder="Enter password" onkeydown="if(event.key==='Enter')doLogin()">
-    <button class="login-btn" onclick="doLogin()">Sign In →</button>
-    <div class="login-error" id="loginError">Incorrect password. Try again.</div>
+    <input type="email" class="login-input" id="loginEmail" placeholder="Email address" autocomplete="email">
+    <input type="password" class="login-input" id="loginPassword" placeholder="Password" autocomplete="current-password">
+    <button class="login-btn" id="loginBtn" onclick="doLogin()">Sign In →</button>
+    <div class="login-error" id="loginError">Invalid email or password.</div>
   </div>
 </div>
 
@@ -461,7 +462,7 @@ tbody td.date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(-
       <div class="sidebar-user">
         <div class="sidebar-avatar">A</div>
         <div class="sidebar-user-info">
-          <div class="sidebar-user-name">Admin</div>
+          <div class="sidebar-user-name" id="sidebarEmail">Admin</div>
           <div class="sidebar-user-role">Owner</div>
         </div>
         <button class="logout-btn" onclick="doLogout()" title="Sign out">✕</button>
@@ -686,46 +687,71 @@ tbody td.date { font-family: 'DM Mono', monospace; font-size: 11px; color: var(-
 // ============================================================
 const SUPABASE_URL = 'https://gyyrutgbsvefipemsbje.supabase.co';
 const SUPABASE_KEY = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6Imd5eXJ1dGdic3ZlZmlwZW1zYmplIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzI5MzU0MzcsImV4cCI6MjA4ODUxMTQzN30.Y6uctY-_I1BG9u1oyeIfaZKQIh6pIC_H6jRFbGhYF7w';
-const ADMIN_PASSWORD = 'omnigenius2025';
 
-const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY);
+const sb = supabase.createClient(SUPABASE_URL, SUPABASE_KEY, {
+  auth: { persistSession: true, storageKey: 'og_admin_session' }
+});
 
 // ============================================================
 // AUTH
 // ============================================================
-function doLogin() {
-  const pw = document.getElementById('loginPassword').value;
-  const err = document.getElementById('loginError');
-  if (pw === ADMIN_PASSWORD) {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'block';
-    sessionStorage.setItem('og_admin', '1');
-    initApp();
-  } else {
+async function doLogin() {
+  const email = document.getElementById('loginEmail').value.trim();
+  const pw    = document.getElementById('loginPassword').value;
+  const err   = document.getElementById('loginError');
+  const btn   = document.getElementById('loginBtn');
+
+  if (!email || !pw) {
+    err.textContent = 'Please enter your email and password.';
+    err.style.display = 'block'; return;
+  }
+
+  btn.textContent = 'Signing in…'; btn.disabled = true;
+  err.style.display = 'none';
+
+  const { error } = await sb.auth.signInWithPassword({ email, password: pw });
+
+  if (error) {
+    err.textContent = 'Invalid email or password.';
     err.style.display = 'block';
     document.getElementById('loginPassword').value = '';
     document.getElementById('loginPassword').focus();
+    btn.textContent = 'Sign In →'; btn.disabled = false;
+  } else {
+    showApp();
   }
 }
 
-function doLogout() {
-  sessionStorage.removeItem('og_admin');
+async function doLogout() {
+  await sb.auth.signOut();
   document.getElementById('appScreen').style.display = 'none';
   document.getElementById('loginScreen').style.display = 'flex';
+  document.getElementById('loginEmail').value = '';
   document.getElementById('loginPassword').value = '';
   document.getElementById('loginError').style.display = 'none';
+  document.getElementById('loginBtn').textContent = 'Sign In →';
+  document.getElementById('loginBtn').disabled = false;
 }
 
-// Boot — wait for DOM before touching any elements
-document.addEventListener('DOMContentLoaded', () => {
-  document.getElementById('loginPassword').addEventListener('keydown', e => {
-    if (e.key === 'Enter') doLogin();
+function showApp() {
+  document.getElementById('loginScreen').style.display = 'none';
+  document.getElementById('appScreen').style.display = 'block';
+  initApp();
+}
+
+// Boot — check for existing session, wire up Enter key
+document.addEventListener('DOMContentLoaded', async () => {
+  // Enter key on either field triggers login
+  ['loginEmail','loginPassword'].forEach(id => {
+    document.getElementById(id).addEventListener('keydown', e => {
+      if (e.key === 'Enter') doLogin();
+    });
   });
-  // Auto-login if session still active
-  if (sessionStorage.getItem('og_admin') === '1') {
-    document.getElementById('loginScreen').style.display = 'none';
-    document.getElementById('appScreen').style.display = 'block';
-    initApp();
+
+  // Restore session if already logged in
+  const { data: { session } } = await sb.auth.getSession();
+  if (session) {
+    showApp();
   }
 });
 
@@ -784,6 +810,10 @@ async function fetchConfig() {
 }
 
 async function initApp() {
+  const { data: { session } } = await sb.auth.getSession();
+  if (session?.user?.email) {
+    document.getElementById('sidebarEmail').textContent = session.user.email;
+  }
   allSubscribers = await fetchSubscribers();
   siteConfig = await fetchConfig();
   renderOverview();
