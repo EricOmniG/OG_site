@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Cookie Policy — Omnigenius</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --teal:      #0ee8d4;
+  --teal-dim:  #0d9488;
+  --teal-glow: rgba(14,232,212,0.10);
+  --bg:        #050810;
+  --bg2:       #080d18;
+  --bg3:       #0d1525;
+  --text:      #e8edf5;
+  --text2:     #8899b4;
+  --text3:     #4a5a72;
+  --border:    rgba(14,232,212,0.15);
+  --border2:   rgba(255,255,255,0.06);
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+html { scroll-behavior:smooth; }
+body { font-family:'DM Sans',sans-serif; background:var(--bg); color:var(--text); min-height:100vh; overflow-x:hidden; }
+nav {
+  display:flex; align-items:center; justify-content:space-between;
+  padding:24px 48px; border-bottom:1px solid var(--border2);
+  backdrop-filter:blur(12px); position:sticky; top:0; z-index:100;
+  background:rgba(5,8,16,0.85);
+}
+.nav-logo { display:flex; align-items:center; gap:12px; text-decoration:none; }
+.nav-logo-text { font-family:'Syne',sans-serif; font-weight:700; font-size:18px; color:var(--teal); letter-spacing:-0.3px; }
+.nav-back { font-family:'DM Mono',monospace; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--text3); text-decoration:none; border:1px solid var(--border2); padding:6px 14px; border-radius:20px; transition:all 0.2s; }
+.nav-back:hover { color:var(--teal); border-color:var(--border); }
+.page { max-width:760px; margin:0 auto; padding:72px 24px 100px; }
+.doc-header { margin-bottom:56px; }
+.doc-eyebrow { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:3px; color:var(--teal); text-transform:uppercase; margin-bottom:16px; display:flex; align-items:center; gap:10px; }
+.doc-eyebrow::before { content:''; display:block; width:32px; height:1px; background:var(--teal); opacity:0.4; }
+.doc-title { font-family:'Syne',sans-serif; font-weight:800; font-size:clamp(36px,6vw,56px); line-height:1; letter-spacing:-2px; margin-bottom:20px; }
+.doc-meta { font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); letter-spacing:0.5px; }
+.doc-meta span { color:var(--text2); }
+.doc-intro { margin-top:24px; font-size:16px; line-height:1.8; color:var(--text2); font-weight:300; padding:20px 24px; background:var(--bg3); border:1px solid var(--border2); border-radius:12px; border-left:3px solid var(--teal); }
+.toc { background:var(--bg3); border:1px solid var(--border2); border-radius:14px; padding:24px 28px; margin-bottom:56px; }
+.toc-title { font-family:'DM Mono',monospace; font-size:10px; letter-spacing:2px; text-transform:uppercase; color:var(--text3); margin-bottom:16px; }
+.toc-list { list-style:none; display:flex; flex-direction:column; gap:8px; }
+.toc-list li { display:flex; align-items:center; gap:10px; }
+.toc-num { font-family:'DM Mono',monospace; font-size:10px; color:var(--text3); min-width:20px; }
+.toc-list a { font-size:13px; color:var(--text2); text-decoration:none; transition:color 0.2s; }
+.toc-list a:hover { color:var(--teal); }
+.doc-section { margin-bottom:52px; }
+.section-anchor { position:relative; top:-80px; visibility:hidden; }
+h2 { font-family:'Syne',sans-serif; font-weight:700; font-size:22px; color:var(--text); margin-bottom:16px; display:flex; align-items:center; gap:12px; }
+h2 .section-num { font-family:'DM Mono',monospace; font-size:11px; color:var(--teal); background:var(--teal-glow); border:1px solid var(--border); padding:3px 8px; border-radius:6px; font-weight:400; }
+p { font-size:15px; line-height:1.85; color:var(--text2); font-weight:300; margin-bottom:14px; }
+p:last-child { margin-bottom:0; }
+ul.doc-list { list-style:none; display:flex; flex-direction:column; gap:10px; margin:14px 0; }
+ul.doc-list li { font-size:15px; line-height:1.7; color:var(--text2); font-weight:300; padding-left:20px; position:relative; }
+ul.doc-list li::before { content:''; position:absolute; left:0; top:10px; width:6px; height:6px; border-radius:50%; background:var(--teal); opacity:0.5; }
+.highlight-box { background:var(--bg3); border:1px solid var(--border2); border-radius:10px; padding:18px 22px; margin:18px 0; font-size:14px; line-height:1.75; color:var(--text2); }
+.highlight-box strong { color:var(--text); }
+
+/* Cookie type table */
+.cookie-table { width:100%; border-collapse:collapse; margin:20px 0; }
+.cookie-table th {
+  font-family:'DM Mono',monospace; font-size:9px; letter-spacing:1.5px; text-transform:uppercase;
+  color:var(--text3); padding:10px 16px; text-align:left;
+  border-bottom:1px solid var(--border2); background:var(--bg2);
+}
+.cookie-table td { padding:12px 16px; font-size:13px; color:var(--text2); border-bottom:1px solid var(--border2); line-height:1.5; }
+.cookie-table tr:last-child td { border-bottom:none; }
+.cookie-table td:first-child { font-family:'DM Mono',monospace; font-size:12px; color:var(--text); }
+.cookie-wrap { border:1px solid var(--border2); border-radius:10px; overflow:hidden; margin:20px 0; }
+.badge-yes { color:var(--teal); font-family:'DM Mono',monospace; font-size:10px; }
+.badge-no { color:var(--text3); font-family:'DM Mono',monospace; font-size:10px; }
+
+a.inline-link { color:var(--teal); text-decoration:none; }
+a.inline-link:hover { text-decoration:underline; }
+footer { padding:28px 48px; border-top:1px solid var(--border2); display:flex; align-items:center; justify-content:space-between; flex-wrap:wrap; gap:12px; }
+.footer-copy { font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); letter-spacing:0.5px; }
+.footer-links { display:flex; gap:24px; }
+.footer-links a { font-family:'DM Mono',monospace; font-size:11px; color:var(--text3); text-decoration:none; letter-spacing:0.5px; transition:color 0.2s; }
+.footer-links a:hover { color:var(--teal); }
+.footer-links a.active { color:var(--teal); }
+@media(max-width:640px){ nav { padding:16px 20px; } .page { padding:48px 20px 80px; } footer { padding:20px; } }
+</style>
+</head>
+<body>
+
+<nav>
+  <a class="nav-logo" href="index.html">
+    <img src="images/logo.png" alt="Omnigenius" width="32" height="32" style="border-radius:8px;filter:drop-shadow(0 0 6px rgba(14,232,212,0.4));object-fit:contain;">
+    <span class="nav-logo-text">Omnigenius</span>
+  </a>
+  <a class="nav-back" href="index.html">← Back to Home</a>
+</nav>
+
+<div class="page">
+
+  <div class="doc-header">
+    <div class="doc-eyebrow">Legal</div>
+    <div class="doc-title">Cookie Policy</div>
+    <div class="doc-meta">Effective date: <span>March 1, 2025</span> &nbsp;·&nbsp; Last updated: <span>March 1, 2025</span></div>
+    <div class="doc-intro">
+      This Cookie Policy explains what cookies are, which ones Omnigenius uses, and what your choices are. The short version: we use very few cookies and none of them track you for advertising purposes.
+    </div>
+  </div>
+
+  <div class="toc">
+    <div class="toc-title">Contents</div>
+    <ul class="toc-list">
+      <li><span class="toc-num">01</span><a href="#s1">What Are Cookies?</a></li>
+      <li><span class="toc-num">02</span><a href="#s2">Cookies We Use</a></li>
+      <li><span class="toc-num">03</span><a href="#s3">Cookies We Do NOT Use</a></li>
+      <li><span class="toc-num">04</span><a href="#s4">Third-Party Cookies</a></li>
+      <li><span class="toc-num">05</span><a href="#s5">Managing Your Cookies</a></li>
+      <li><span class="toc-num">06</span><a href="#s6">Contact</a></li>
+    </ul>
+  </div>
+
+  <div class="doc-section">
+    <span class="section-anchor" id="s1"></span>
+    <h2><span class="section-num">01</span> What Are Cookies?</h2>
+    <p>Cookies are small text files placed on your device by a website. They are widely used to make websites work more efficiently and to provide information to the website owner.</p>
+    <p>There are different types of cookies. <strong>Session cookies</strong> are temporary and deleted when you close your browser. <strong>Persistent cookies</strong> remain on your device for a set period. <strong>First-party cookies</strong> are set by the website you are visiting; <strong>third-party cookies</strong> are set by other domains.</p>
+    <p>Omnigenius uses a minimal set of cookies — only what is strictly necessary to operate the site.</p>
+  </div>
+
+  <div class="doc-section">
+    <span class="section-anchor" id="s2"></span>
+    <h2><span class="section-num">02</span> Cookies We Use</h2>
+    <p>Here is a complete list of the cookies and browser storage mechanisms Omnigenius uses:</p>
+    <div class="cookie-wrap">
+      <table class="cookie-table">
+        <thead>
+          <tr>
+            <th>Name</th>
+            <th>Type</th>
+            <th>Purpose</th>
+            <th>Duration</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr>
+            <td>og_admin_session</td>
+            <td>localStorage</td>
+            <td>Stores admin authentication session so you remain logged in to the admin dashboard across page refreshes</td>
+            <td>Until sign-out</td>
+          </tr>
+          <tr>
+            <td>sb-* (Supabase)</td>
+            <td>localStorage</td>
+            <td>Supabase authentication tokens used to maintain your admin session securely</td>
+            <td>1 hour (refreshed automatically)</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+    <p>These storage items are only set when you actively log in to the admin dashboard. Regular visitors to the public waitlist page are not subjected to any cookies or local storage from Omnigenius directly.</p>
+  </div>
+
+  <div class="doc-section">
+    <span class="section-anchor" id="s3"></span>
+    <h2><span class="section-num">03</span> Cookies We Do NOT Use</h2>
+    <p>We want to be explicit about what we do not do:</p>
+    <ul class="doc-list">
+      <li><strong>No advertising cookies</strong> — we do not run ads and have no ad network integrations</li>
+      <li><strong>No analytics cookies</strong> — we do not use Google Analytics, Mixpanel, Hotjar, or similar tools on this website</li>
+      <li><strong>No social media tracking pixels</strong> — no Facebook Pixel, Twitter/X Pixel, or LinkedIn Insight Tag</li>
+      <li><strong>No cross-site tracking</strong> — we do not track your browsing behavior across other websites</li>
+      <li><strong>No fingerprinting</strong> — we do not use browser fingerprinting techniques</li>
+    </ul>
+    <div class="highlight-box">
+      <strong>Bottom line:</strong> if you're just visiting the waitlist page and signing up with your email, no cookies or local storage items are written to your device by Omnigenius.
+    </div>
+  </div>
+
+  <div class="doc-section">
+    <span class="section-anchor" id="s4"></span>
+    <h2><span class="section-num">04</span> Third-Party Cookies</h2>
+    <p>Some third-party services embedded in this website may set their own cookies. These are outside our direct control:</p>
+    <ul class="doc-list">
+      <li><strong>Google Fonts</strong> — fonts are loaded from Google's servers, which may set cookies or log your IP address. You can review Google's cookie practices at <a class="inline-link" href="https://policies.google.com/technologies/cookies" target="_blank">policies.google.com</a></li>
+      <li><strong>Vanta.js / cdnjs</strong> — our background animation is loaded from the Cloudflare CDN (cdnjs.cloudflare.com), which may log request metadata but does not set tracking cookies</li>
+    </ul>
+    <p>We aim to minimize third-party dependencies and will update this list if new services are added.</p>
+  </div>
+
+  <div class="doc-section">
+    <span class="section-anchor" id="s5"></span>
+    <h2><span class="section-num">05</span> Managing Your Cookies</h2>
+    <p>You can control and delete cookies through your browser settings. Here's how for the most common browsers:</p>
+    <ul class="doc-list">
+      <li><strong>Chrome</strong> — Settings → Privacy and security → Cookies and other site data</li>
+      <li><strong>Firefox</strong> — Settings → Privacy & Security → Cookies and Site Data</li>
+      <li><strong>Safari</strong> — Preferences → Privacy → Manage Website Data</li>
+      <li><strong>Edge</strong> — Settings → Cookies and site permissions → Cookies and site data</li>
+    </ul>
+    <p>Note that disabling cookies may affect the functionality of some websites, though it will have minimal impact on the Omnigenius waitlist page.</p>
+    <p>To clear Omnigenius-specific local storage, open your browser's developer tools (F12), navigate to Application → Local Storage, and delete entries beginning with <code style="font-family:'DM Mono',monospace;font-size:12px;color:var(--teal);background:var(--bg3);padding:2px 6px;border-radius:4px;">og_admin</code> or <code style="font-family:'DM Mono',monospace;font-size:12px;color:var(--teal);background:var(--bg3);padding:2px 6px;border-radius:4px;">sb-</code>.</p>
+  </div>
+
+  <div class="doc-section">
+    <span class="section-anchor" id="s6"></span>
+    <h2><span class="section-num">06</span> Contact</h2>
+    <p>If you have questions about our use of cookies or this policy, please get in touch:</p>
+    <div class="highlight-box">
+      <strong>Omnigenius</strong><br>
+      Email: <a class="inline-link" href="mailto:privacy@omnigenius.net">privacy@omnigenius.net</a><br>
+      Website: <a class="inline-link" href="https://omnigenius.net">omnigenius.net</a>
+    </div>
+  </div>
+
+</div>
+
+<footer>
+  <div class="footer-copy">© 2025 Omnigenius. All rights reserved.</div>
+  <div class="footer-links">
+    <a href="privacy.html">Privacy</a>
+    <a href="terms.html">Terms</a>
+    <a href="cookies.html" class="active">Cookies</a>
+    <a href="mailto:eric@omnigenius.net">Contact</a>
+  </div>
+</footer>
+
+</body>
+</html>
