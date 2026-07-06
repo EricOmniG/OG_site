@@ -1,0 +1,190 @@
+{
+  "model": "sprout-150m",
+  "cards": [
+    {
+      "checkpoint": "ckpt_best.pt",
+      "step": 11000,
+      "tokens": 2883584000,
+      "perplexity": 21.47,
+      "fluency": 44.1,
+      "gpa_letter": "F",
+      "gpa_score": 25.8,
+      "subjects": {
+        "Science": {
+          "grade": "F",
+          "score": 20.8,
+          "on_topic_pct": 20.4,
+          "repetition_pct": 16.3,
+          "samples": [
+            {
+              "prompt": "The water cycle begins when",
+              "output": " a plant or animal eats a plant. The animal that eats the plant dies to death. The plant or animal that eats the plant dies to either have no leaves or the plant dies of starvation.\nThe plant or animal that eats the plant dies to either have no leaves or the plant dies of starvation"
+            },
+            {
+              "prompt": "Photosynthesis is the process by which plants",
+              "output": " convert chemical energy in the form of light into carbohydrates and oxygen. Photosynthesis is the process by which plants convert the chemical energy in the form of light into chemical energy in the form of chemical energy.\nPhotosynthesis is the process by which plants convert chemical energy into chemical energy in the form of light"
+            }
+          ]
+        },
+        "History": {
+          "grade": "F",
+          "score": 22.3,
+          "on_topic_pct": 11.1,
+          "repetition_pct": 7.5,
+          "samples": [
+            {
+              "prompt": "In 1969, the United States",
+              "output": " Congress passed the Civil Rights Act (Act No. 46, Civil Rights Act of 1969) that set the standards for state and local public schools in the U.S. The Act also established the federal government to help schools in the South attain equal education. In 1970, the U.S. Congress"
+            },
+            {
+              "prompt": "The Roman Empire fell because",
+              "output": " of the loss of land and its expansion.\nThe Romans were a peaceful people who built their cities on land that was already theirs. They were interested in the trade and settlement of the land and not just in land.\nThey were also interested in the trade of the sea and in the development of"
+            }
+          ]
+        },
+        "Procedure": {
+          "grade": "F",
+          "score": 25.7,
+          "on_topic_pct": 14.1,
+          "repetition_pct": 4.8,
+          "samples": [
+            {
+              "prompt": "To bake bread, you first need",
+              "output": " to make sure that you are not going to smoke the dough until you are done with it.\nBut if you are using a microwave, you have to make sure that you are not going to microwave the dough.\nThe temperature of the oven depends on the type of food and the amount of heat"
+            },
+            {
+              "prompt": "To change a flat tire, start by",
+              "output": " tightening the middle of the tire. It should be tight enough to hold the tire in place.\n- Start the entire process by tightening the middle and stopping the tire from going flat (which is not possible with a flat tire).\n- If the tire is too tight, tighten the middle again and"
+            }
+          ]
+        },
+        "Definition": {
+          "grade": "F",
+          "score": 32.6,
+          "on_topic_pct": 31.5,
+          "repetition_pct": 7.5,
+          "samples": [
+            {
+              "prompt": "A democracy is a system of government where",
+              "output": " a person is protected by their rights. The constitution is the supreme law of the land, and the constitution is the supreme law of the land.\nWhile it is the only way of preventing the misuse of the land, it is also the only way to guarantee the right of people to their property and"
+            },
+            {
+              "prompt": "Gravity is the force that",
+              "output": " a body is pulling on by its gravitational attraction.\nThe forces that the earth exert on the moon are called the gravitational forces.\nThe moon and Earth are both in perfect alignment (perihelion). When the earth rotates, it is in a perfect orbit.\nWhen the sun is"
+            }
+          ]
+        },
+        "Narrative": {
+          "grade": "F",
+          "score": 27.4,
+          "on_topic_pct": 17.1,
+          "repetition_pct": 4.6,
+          "samples": [
+            {
+              "prompt": "Once upon a time, in a small village,",
+              "output": " a stranger was in his home. It was a very small village, the size of a small town, and the people were very poor. It was a very small village, and they were very poor. The land was very poor, and the people were very very poor. They were very poor because"
+            },
+            {
+              "prompt": "The old house at the end of the street",
+              "output": " where the city's first building was built. A few miles from the main street, a beautiful little village was built and called Leland, which was then called \"New York.\" (The name was eventually shortened to Leland.) The village was called Leland for the name of the village when it"
+            }
+          ]
+        }
+      },
+      "battery_version": "v1"
+    },
+    {
+      "checkpoint": "ckpt_last.pt",
+      "step": 11444,
+      "tokens": 2999975936,
+      "perplexity": 21.38,
+      "fluency": 44.2,
+      "gpa_letter": "F",
+      "gpa_score": 28.3,
+      "subjects": {
+        "Science": {
+          "grade": "F",
+          "score": 33.6,
+          "on_topic_pct": 31.5,
+          "repetition_pct": 6.0,
+          "samples": [
+            {
+              "prompt": "The water cycle begins when",
+              "output": " a plant is exposed to a very high-pressure chemical called a water vapor condensing agent. Plants need to have an upper limit of pressure, and this pressure is the amount of water that can escape from the plant\u2019s roots through a water vapor valve. If the plant\u2019s roots"
+            },
+            {
+              "prompt": "Photosynthesis is the process by which plants",
+              "output": " convert chemical energy in the form of light into carbohydrates and oxygen. Photosynthesis is the process by which plants convert the chemical energy in light into carbohydrates and oxygen.\nThe plant kingdom is comprised of a large number of kingdoms. The term kingdom is applied to all the kingdoms in the kingdom. The kingdom"
+            }
+          ]
+        },
+        "History": {
+          "grade": "F",
+          "score": 29.7,
+          "on_topic_pct": 16.7,
+          "repetition_pct": 1.1,
+          "samples": [
+            {
+              "prompt": "In 1969, the United States",
+              "output": " Congress passed the Civil Rights Act (Act No. 46, 18 Stat. 704, 18 U.S. Code, Section 5, Stat. 18).\nThe Equal Rights Amendment (ERA), passed in 1973, changed the law that protected African Americans from discrimination in the employment, education, and"
+            },
+            {
+              "prompt": "The Roman Empire fell because",
+              "output": " of the loss of land and its expansion.\nThe Romans were a peaceful people who built their cities on land that was already theirs. They were interested in protecting their land and were able to quickly gain access to land and resources. As cities became more powerful, the Romans began to move into new territories"
+            }
+          ]
+        },
+        "Procedure": {
+          "grade": "F",
+          "score": 29.6,
+          "on_topic_pct": 17.2,
+          "repetition_pct": 1.7,
+          "samples": [
+            {
+              "prompt": "To bake bread, you first need",
+              "output": " to make sure that you are not going to smoke the dough. You can also use a cloth to prevent smoke from escaping.\nIt is also important to protect your hands and other equipment from smoke. If you do smoke, you will have a hard time seeing the flames.\nWhen you are baking"
+            },
+            {
+              "prompt": "To change a flat tire, start by",
+              "output": " tightening the middle of the tire.\n- A flat tire can compress the air pressure in your car by as much as 10 to 15 percent.\n- If you drive your car at full speed, you can help the car air pressure through a tire.\n- If the car is moving slowly or"
+            }
+          ]
+        },
+        "Definition": {
+          "grade": "F",
+          "score": 24.4,
+          "on_topic_pct": 24.1,
+          "repetition_pct": 13.9,
+          "samples": [
+            {
+              "prompt": "A democracy is a system of government where",
+              "output": " a person is fully accountable for his actions. A democracy is a system where the government has effective control over the people and the government has effective control over the people.\nThe Constitution of the Philippines is a complex document of government and government function. The Constitution of the Philippines is an important document when it"
+            },
+            {
+              "prompt": "Gravity is the force that",
+              "output": " pushes the planet in front of it. The force that pulls the planet in front of it also exerts pressure on the planet\u2019s surface and the pressure is the pressure that is pushing the planet towards the sun.\nThe pressure of the planet\u2019s surface and the weight of the sun"
+            }
+          ]
+        },
+        "Narrative": {
+          "grade": "F",
+          "score": 24.3,
+          "on_topic_pct": 7.7,
+          "repetition_pct": 2.4,
+          "samples": [
+            {
+              "prompt": "Once upon a time, in a small village,",
+              "output": " a boy was in his early twenties. The community was not a large one: each man walked to the schoolhouse and took a lunch break. He spent the night in the church (which stood on the street), reading the Bible and reading a book. In the morning, he was taken to a"
+            },
+            {
+              "prompt": "The old house at the end of the street",
+              "output": " where the city's largest building was built. A few miles from the main entrance, a beautiful view of San Francisco and the surrounding area takes you back over a paved drive to the city's main bus station. When you reach the entrance, you will be able to stand in the shade and look at"
+            }
+          ]
+        }
+      },
+      "battery_version": "v1"
+    }
+  ],
+  "battery_version": "v1"
+}
