@@ -118,12 +118,12 @@ function readTranscripts(files){
   for(const f of files){
     const r=new FileReader();
     r.onload=()=>{ try{ const t=JSON.parse(r.result); transcripts[t.model]=t; }catch(e){ alert(f.name+": not valid JSON"); }
-      if(--pending===0) renderCards(); };
+      if(--pending===0) renderTranscripts(); };
     r.readAsText(f);
   }
 }
 
-function renderCards(){
+function renderTranscripts(){
   const el=document.getElementById("cards");
   el.innerHTML=Object.values(transcripts).map(t=>{
     const last=t.cards[t.cards.length-1];
@@ -319,6 +319,41 @@ function renderProjection(){
       <td>${f.toExponential(2)}</td><td><b>${fmt$(f*dollarPerFlop)}</b></td></tr>`;
   }).join("");
 }
+
+/* ---------- AUTO-LOAD from the repo (no re-uploading) ----------
+   Commit your files into a data/ folder in the repo and list them here.
+   Anything missing just 404s silently — drag & drop still works on top. */
+const MANIFEST = {
+  csvs: [
+    "data/seed-45m.csv",
+    "data/sprout-150m.csv",
+    "data/sapling-500m.csv",
+    // "data/tree-1.5b.csv",          // uncomment when the 1.5B lands
+  ],
+  transcripts: [
+    "data/seed-45m-transcript.json",
+    "data/sprout-150m-transcript.json",
+    "data/sapling-500m-transcript.json",
+  ],
+};
+(async function autoload(){
+  let gotCSV = false, gotT = false;
+  for (const path of MANIFEST.csvs){
+    try{ const r = await fetch(path); if(!r.ok) continue;
+      const text = await r.text();
+      const fname = path.split("/").pop();
+      const size = SIZES.find(s=>s.match.test(fname));
+      parseCSV(text, size, fname); gotCSV = true;
+    }catch(e){}
+  }
+  for (const path of MANIFEST.transcripts){
+    try{ const r = await fetch(path); if(!r.ok) continue;
+      const t = await r.json(); transcripts[t.model] = t; gotT = true;
+    }catch(e){}
+  }
+  if (gotCSV) renderAll();
+  if (gotT) renderTranscripts();
+})();
 </script>
 </body>
 </html>
