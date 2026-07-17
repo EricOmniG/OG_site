@@ -36,7 +36,7 @@
 <body>
 
 <h1><img src="images/logo.png" alt="" style="height:26px;vertical-align:middle;margin-right:10px">Project <span>Sprout</span> — Scaling Dashboard</h1>
-<div class="sub">Live results from staged pretraining · 2× NVIDIA L40S · developmental scaling 45M → 1.5B → (your capital) → 500B</div>
+<div class="sub">Live results from staged pretraining · portable recipe verified across GPU types (L40S &amp; RTX 5090) · developmental scaling 45M → 1.5B → (your capital) → 500B</div>
 
 <label class="drop" id="drop">
   <b>Drop your <code>log.csv</code> files here</b> (from runs/&lt;name&gt;/log.csv) or click to pick.<br>
@@ -44,14 +44,15 @@
   <input type="file" id="filein" multiple accept=".csv">
 </label>
 
-<div class="panel" style="display:flex;gap:18px;align-items:center;flex-wrap:wrap;padding:14px 20px">
-  <div><span style="color:var(--dim);font-size:12px">GPU RATE ($/hr)&nbsp;</span>
-    <input id="rate" type="number" step="0.001" value="1.252"
-      style="width:90px;background:#1c2129;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px"></div>
-  <div><span style="color:var(--dim);font-size:12px">HARDWARE&nbsp;</span>
-    <input id="hw" type="text" value="2× NVIDIA L40S · Vast.ai"
-      style="width:220px;background:#1c2129;border:1px solid var(--border);border-radius:6px;color:var(--text);padding:6px 8px"></div>
-  <div style="color:var(--dim);font-size:12px">Hours are derived from each run's own throughput log — edit the rate to re-price everything live.</div>
+<div class="panel" style="padding:14px 20px">
+  <div style="color:var(--text);font-size:13px;margin-bottom:4px">
+    <b>Each model is priced on the hardware it actually ran on.</b>
+  </div>
+  <div style="color:var(--dim);font-size:12px">
+    The 45M / 150M / 500M models were trained on 2× NVIDIA L40S; the 1.5B was trained on 4× NVIDIA RTX 5090 —
+    the same training recipe, reproduced across different GPUs. Node hours are derived from each run's own
+    throughput log, and cost uses that run's own node rate. Per-model hardware and rate are shown in the Run summary below.
+  </div>
 </div>
 
 <div class="cards" id="statcards"></div>
@@ -72,7 +73,7 @@
 <div class="panel">
   <h2>Run summary</h2>
   <table id="runtable">
-    <thead><tr><th>Model</th><th>Params</th><th>Tokens trained</th><th>Final val loss</th><th>Perplexity</th><th>Avg throughput</th><th>GPU hours</th><th>Cost</th><th>Status</th></tr></thead>
+    <thead><tr><th>Model</th><th>Params</th><th>Hardware</th><th>Tokens trained</th><th>Final val loss</th><th>Perplexity</th><th>Avg throughput</th><th>Node hours</th><th>Cost</th><th>Status</th></tr></thead>
     <tbody></tbody>
   </table>
   <div class="note" style="margin-top:10px" id="hwnote"></div>
@@ -80,12 +81,36 @@
 
 <div class="panel">
   <h2>Projected cost of the next stages</h2>
-  <div class="note">Derived from your <i>measured</i> cost-per-FLOP on this hardware (compute ≈ 6 × params × tokens).
-  Conservative: larger clusters and newer GPUs typically improve $/FLOP, so treat these as upper bounds at today's efficiency.</div>
+  <div class="note">Derived from <i>measured</i> cost-per-FLOP across completed runs (compute ≈ 6 × params × tokens), each priced on the GPUs it actually ran on.
+  Larger clusters and newer GPUs typically improve $/FLOP, so treat these as upper bounds at today's efficiency.
+  The projection to 500B is a long extrapolation from sub-2B measured points and assumes Chinchilla-style token budgets; it indicates order-of-magnitude cost, not a guaranteed figure.</div>
   <table id="projtable">
     <thead><tr><th>Stage</th><th>Params</th><th>Token budget</th><th>Compute (FLOPs)</th><th>Est. cost at measured efficiency</th></tr></thead>
     <tbody></tbody>
   </table>
+</div>
+
+<div class="panel">
+  <h2>Chinchilla-optimal floor vs. production-standard cost</h2>
+  <div class="note">The theoretical compute floor for a given model size (Chinchilla-optimal, ~20 tokens/param) versus what a production run
+  realistically costs. Production runs cost more than the floor for two documented reasons, shown separately below.
+  This does <b>not</b> claim a lower cost for the same model — a given size costs the same 6·N·D FLOPs for everyone.
+  It shows that a lean operation can run near the floor, while production standards carry a defined premium.</div>
+  <div class="chartbox"><canvas id="chinChart"></canvas></div>
+  <div class="note" style="margin-top:14px">
+    <b>How the bands are built (all assumptions stated, none measured except our own runs):</b><br>
+    <b>1 · Over-training band (token axis).</b> Chinchilla-optimal is ~20 tokens/param. Production models deliberately train far past that
+    to make inference cheaper — Llama 3 8B used ~15T tokens (~1,900 tokens/param). We model production token budgets as
+    <b>5×–100×</b> the Chinchilla-optimal count; more tokens = more compute = higher cost.<br>
+    <b>2 · Operational overhead band (cost multiplier).</b> On top of raw compute: failed runs, redundant checkpointing, restart waste
+    (exactly the kind we hit on the 1.5B run, scaled up), and safety margin. Modeled as <b>1.5×–3×</b> over compute cost. This is an
+    assumption, not a measurement.<br>
+    <b>3 · Our measured runs.</b> Plotted at their <i>actual</i> token ratio and measured cost. Note honestly: our current budgets are
+    <i>below</i> Chinchilla-optimal (e.g. 1.5B on 15B tokens ≈ 10 tokens/param), so these are demonstration runs — cheaper, but
+    intentionally under-trained relative to a production model of the same size.<br>
+    <b>Bottom line for the reader:</b> the gap between our points and the production band is real, but part of it is "we run leaner"
+    and part of it is "we train smaller budgets." Both are stated so the comparison is honest.
+  </div>
 </div>
 
 <div class="panel">
@@ -156,11 +181,18 @@ function renderTranscripts(){
 <script>
 /* ---------- model registry: sizes auto-detected from filename ---------- */
 const SIZES = [
-  {match:/45m|seed/i,   name:"Seed · 45M",     params:42.1e6, color:"#0ee8d4"},
-  {match:/150m|sprout/i,name:"Sprout · 150M",  params:144.9e6,color:"#7fdbff"},
-  {match:/500m|sapling/i,name:"Sapling · 500M",params:500.7e6,color:"#f0883e"},
-  {match:/1[._-]?5b|tree/i,name:"Tree · 1.5B", params:1.52e9, color:"#bc8cff"},
+  {match:/45m|seed/i,   name:"Seed · 45M",     params:42.1e6, color:"#0ee8d4",
+     hw:"2× NVIDIA L40S · Vast.ai",   gpus:2, rate:1.252},
+  {match:/150m|sprout/i,name:"Sprout · 150M",  params:144.9e6,color:"#7fdbff",
+     hw:"2× NVIDIA L40S · Vast.ai",   gpus:2, rate:1.252},
+  {match:/500m|sapling/i,name:"Sapling · 500M",params:500.7e6,color:"#f0883e",
+     hw:"2× NVIDIA L40S · Vast.ai",   gpus:2, rate:1.252},
+  {match:/1[._-]?5b|tree/i,name:"Tree · 1.5B", params:1.52e9, color:"#bc8cff",
+     hw:"4× NVIDIA RTX 5090 · Vast.ai", gpus:4, rate:1.72},
 ];
+/* NOTE: set each model's `rate` ($/hr for the WHOLE node) and `gpus` to what you
+   actually paid on Vast. The 5090 rate below is a placeholder — replace 1.72 with
+   your real 4×5090 node price so the 1.5B cost is truthful. */
 const runs = {};   // name -> {params,color,toks[],vloss[],tput[],lastTokens}
 
 /* ---------- file ingestion ---------- */
@@ -192,6 +224,8 @@ function parseCSV(text, size, fname){
   if(iTok<0){ alert(fname+" doesn't look like a sprout log.csv"); return; }
   const name = size ? size.name : fname.replace(".csv","");
   const r = runs[name] = {params:size?size.params:null, color:size?size.color:"#7d8aa3",
+                          hw:size?size.hw:"(unknown hardware)", gpus:size?size.gpus:1,
+                          rate:size?size.rate:1.252,
                           toks:[], vloss:[], trloss:[], trtoks:[], tput:[], lastTokens:0};
   for(let i=1;i<lines.length;i++){
     const c = lines[i].split(",");
@@ -204,26 +238,26 @@ function parseCSV(text, size, fname){
 }
 
 /* ---------- rendering ---------- */
-let lossChart, lawChart;
+let lossChart, lawChart, chinChart;
 const fmtP = p => p>=1e9 ? (p/1e9).toFixed(1)+"B" : (p/1e6).toFixed(0)+"M";
 const fmtT = t => t>=1e9 ? (t/1e9).toFixed(2)+"B" : (t/1e6).toFixed(0)+"M";
 
-function renderAll(){ renderCards(); renderLoss(); renderLaw(); renderTable(); }
+function renderAll(){ renderCards(); renderLoss(); renderLaw(); renderChinchilla(); renderTable(); }
 
 function hoursOf(r){                       // hours = tokens / avg throughput
   if(!r.tput.length || !r.lastTokens) return null;
   const avg = r.tput.reduce((a,b)=>a+b)/r.tput.length;
   return r.lastTokens / avg / 3600;
 }
-function rate(){ return +document.getElementById("rate").value || 0; }
-document.getElementById("rate").addEventListener("input",renderAll);
-document.getElementById("hw").addEventListener("input",renderAll);
+// cost for a single run = its node-hours × its own node rate
+function costOf(r){ const h = hoursOf(r); return h==null ? null : h * (r.rate||0); }
 const fmt$ = c => c>=1000 ? "$"+(c/1000).toFixed(1)+"k" : c>=100 ? "$"+c.toFixed(0) : "$"+c.toFixed(2);
 
 function renderCards(){
   const names = Object.keys(runs);
   const totTok = names.reduce((a,n)=>a+runs[n].lastTokens,0);
   const totHrs = names.reduce((a,n)=>a+(hoursOf(runs[n])||0),0);
+  const totCost = names.reduce((a,n)=>a+(costOf(runs[n])||0),0);
   const best = names.map(n=>({n, v:Math.min(...(runs[n].vloss.length?runs[n].vloss:[Infinity]))}))
                     .sort((a,b)=>a.v-b.v)[0];
   const avgTput = (()=>{ const all = names.flatMap(n=>runs[n].tput); 
@@ -233,7 +267,7 @@ function renderCards(){
     <div class="card"><div class="k">Total tokens</div><div class="v">${fmtT(totTok)}</div><div class="d">across all runs</div></div>
     <div class="card"><div class="k">Best val loss</div><div class="v">${best&&isFinite(best.v)?best.v.toFixed(3):"—"}</div><div class="d">${best?best.n:""}</div></div>
     <div class="card"><div class="k">Throughput</div><div class="v">${avgTput?Math.round(avgTput/1000)+"k":"—"}</div><div class="d">tokens/sec</div></div>
-    <div class="card"><div class="k">Total spend</div><div class="v">${fmt$(totHrs*rate())}</div><div class="d">${totHrs.toFixed(1)} GPU-node hours</div></div>`;
+    <div class="card"><div class="k">Total spend</div><div class="v">${fmt$(totCost)}</div><div class="d">${totHrs.toFixed(1)} GPU-node hours</div></div>`;
 }
 
 function renderLoss(){
@@ -286,16 +320,63 @@ function renderTable(){
     const best = r.vloss.length? Math.min(...r.vloss) : null;
     const tput = r.tput.length? Math.round(r.tput.reduce((a,b)=>a+b)/r.tput.length/1000)+"k tok/s" : "—";
     const hrs = hoursOf(r);
+    const cost = costOf(r);
     return `<tr><td><span class="tag" style="border-color:${r.color};color:${r.color}">${n}</span></td>
-      <td>${r.params?fmtP(r.params):"?"}</td><td>${fmtT(r.lastTokens)}</td>
+      <td>${r.params?fmtP(r.params):"?"}</td>
+      <td style="font-size:12px;color:var(--dim)">${r.hw}<br><span style="color:var(--text)">$${(r.rate||0).toFixed(3)}/hr node</span></td>
+      <td>${fmtT(r.lastTokens)}</td>
       <td>${best?best.toFixed(4):"—"}</td><td>${best?Math.exp(best).toFixed(1):"—"}</td>
-      <td>${tput}</td><td>${hrs?hrs.toFixed(1)+" h":"—"}</td><td>${hrs?fmt$(hrs*rate()):"—"}</td>
+      <td>${tput}</td><td>${hrs?hrs.toFixed(1)+" h":"—"}</td><td>${cost!=null?fmt$(cost):"—"}</td>
       <td>${best?"✅ complete":"⏳ in progress"}</td></tr>`;
   }).join("");
-  document.getElementById("hwnote").textContent =
-    "Hardware: " + document.getElementById("hw").value +
-    " · rate $" + rate().toFixed(3) + "/hr · costs computed from logged throughput, not estimates.";
+  document.getElementById("hwnote").innerHTML =
+    "Each model priced on the hardware it actually ran on (node rate × node-hours from logged throughput). " +
+    "The 45M/150M/500M ran on 2× L40S; the 1.5B ran on 4× RTX 5090 — same recipe, different silicon.";
   renderProjection();
+}
+
+function renderChinchilla(){
+  const done = Object.values(runs).filter(r=>r.params && r.vloss.length && hoursOf(r));
+  if(!done.length){ if(chinChart) chinChart.destroy(); chinChart=null; return; }
+  // blended measured $/FLOP as our efficiency basis
+  const totCost = done.reduce((a,r)=>a+(costOf(r)||0),0);
+  const totFlop = done.reduce((a,r)=>a+6*r.params*r.lastTokens,0);
+  const dpf = totCost / totFlop;              // $ per FLOP (our lean basis)
+  const CHINCHILLA_TPP = 20;                  // tokens per param (optimal)
+  // cost at Chinchilla-optimal for a given N, at OUR measured $/FLOP:
+  const floorCost = N => 6 * N * (CHINCHILLA_TPP*N) * dpf;
+  // production band: over-train 5x–100x tokens, then 1.5x–3x operational overhead
+  const prodLo = N => floorCost(N) * 5   * 1.5;
+  const prodHi = N => floorCost(N) * 100 * 3.0;
+  // build smooth curves across the param range
+  const floor=[], lo=[], hi=[];
+  for(let e=Math.log10(40e6); e<=Math.log10(500e9); e+=0.1){
+    const N=10**e; floor.push({x:N,y:floorCost(N)}); lo.push({x:N,y:prodLo(N)}); hi.push({x:N,y:prodHi(N)});
+  }
+  // our actual measured points (cost vs params)
+  const pts = done.map(r=>({n:r.hw?r.hw.replace(/ · Vast\.ai/,""):"", x:r.params, y:costOf(r),
+                            label:Object.keys(runs).find(k=>runs[k]===r)}));
+  if(chinChart) chinChart.destroy();
+  chinChart = new Chart(document.getElementById("chinChart"),{
+    type:"scatter",
+    data:{datasets:[
+      // production band drawn as hi (filled down to lo)
+      {label:"production-standard range", data:hi, type:"line", borderColor:"#f0883e88",
+       backgroundColor:"#f0883e22", pointRadius:0, borderWidth:1, fill:"+1", tension:.2},
+      {label:"_prodLo", data:lo, type:"line", borderColor:"#f0883e88", pointRadius:0, borderWidth:1, fill:false, tension:.2},
+      {label:"Chinchilla-optimal floor (our $/FLOP)", data:floor, type:"line", borderColor:"#0ee8d4",
+       borderDash:[6,4], pointRadius:0, borderWidth:2, fill:false, tension:.2},
+      {label:"our measured runs", data:pts, backgroundColor:"#bc8cff", borderColor:"#fff",
+       borderWidth:1, pointRadius:7},
+    ]},
+    options:{maintainAspectRatio:false,
+      scales:{x:{type:"logarithmic",title:{display:true,text:"parameters"},grid:{color:"#2d333b55"},
+                 ticks:{color:"#7d8aa3",callback:v=>fmtP(v)}},
+              y:{type:"logarithmic",title:{display:true,text:"training cost (USD)"},grid:{color:"#2d333b55"},
+                 ticks:{color:"#7d8aa3",callback:v=>fmt$(v)}}},
+      plugins:{legend:{labels:{color:"#e6edf3",filter:i=>!i.text.startsWith("_")}},
+               tooltip:{callbacks:{label:c=>c.raw.label?`${c.raw.label} (${c.raw.n}): ${fmt$(c.raw.y)}`:
+                                            `${fmtP(c.raw.x)}: ${fmt$(c.raw.y)}`}}}}});
 }
 
 function renderProjection(){
@@ -303,9 +384,13 @@ function renderProjection(){
   const done = Object.values(runs).filter(r=>r.params && r.vloss.length && hoursOf(r));
   const tb = document.querySelector("#projtable tbody");
   if(!done.length){ tb.innerHTML = "<tr><td colspan=5 style='color:var(--dim)'>load at least one completed run</td></tr>"; return; }
-  const totCost = done.reduce((a,r)=>a+hoursOf(r)*rate(),0);
+  // $/FLOP measured per run (each on its own hardware & rate), then averaged by compute.
+  const totCost = done.reduce((a,r)=>a+(costOf(r)||0),0);
   const totFlop = done.reduce((a,r)=>a+6*r.params*r.lastTokens,0);
   const dollarPerFlop = totCost / totFlop;
+  // also expose the largest/newest run's own $/FLOP as the more scaling-relevant basis
+  const big = done.slice().sort((a,b)=>b.params-a.params)[0];
+  const bigDPF = (costOf(big)||0) / (6*big.params*big.lastTokens);
   const stages = [
     ["Tree · 1.5B",        1.5e9,  30e9],
     ["7B",                 7e9,   140e9],
@@ -318,6 +403,16 @@ function renderProjection(){
     return `<tr><td>${name}</td><td>${fmtP(N)}</td><td>${fmtT(D)}</td>
       <td>${f.toExponential(2)}</td><td><b>${fmt$(f*dollarPerFlop)}</b></td></tr>`;
   }).join("");
+  // show the measured basis so the extrapolation is transparent
+  let basis = document.getElementById("projbasis");
+  if(!basis){ basis = document.createElement("div"); basis.id="projbasis";
+    basis.className="note"; basis.style.marginTop="10px";
+    document.getElementById("projtable").after(basis); }
+  basis.innerHTML =
+    `Basis: blended measured cost ≈ <b>$${dollarPerFlop.toExponential(2)}/FLOP</b> across all completed runs · ` +
+    `largest run (${big.params>=1e9?(big.params/1e9).toFixed(1)+"B":Math.round(big.params/1e6)+"M"}, ` +
+    `${big.hw.replace(/ · Vast\.ai/,"")}) alone ≈ <b>$${bigDPF.toExponential(2)}/FLOP</b>. ` +
+    `Projections above use the blended figure.`;
 }
 
 /* ---------- AUTO-LOAD from the repo (no re-uploading) ----------
@@ -328,12 +423,13 @@ const MANIFEST = {
     "data/seed-45m.csv",
     "data/sprout-150m.csv",
     "data/sapling-500m.csv",
-    // "data/tree-1.5b.csv",          // uncomment when the 1.5B lands
+    "data/tree-1.5b.csv",          // 1.5B — 4× RTX 5090
   ],
   transcripts: [
     "data/seed-45m-transcript.json",
     "data/sprout-150m-transcript.json",
     "data/sapling-500m-transcript.json",
+    "data/tree-1.5b-transcript.json",
   ],
 };
 (async function autoload(){
