@@ -1,37 +1,28 @@
-# Project Sprout — site kit (VC landing + admin + backend)
+# Security notes — Sprout site kit
 
-One folder, copy-paste setup. Contents:
+## Key model (the part that matters)
+| Key | Lives where | Can do |
+|---|---|---|
+| anon public key | index.html, admin.html (public) | INSERT a signup. Nothing else. |
+| admin login (email+password) | your head | upgrades a session to `authenticated` -> can SELECT the list |
+| service_role key | env var on YOUR machine only | bypasses RLS entirely — never in any web file, never committed |
 
-    index.html        VC-facing landing page (cyberpunk, real numbers, Supabase signup)
-    admin.html        private waitlist dashboard (login, weekly chart, CSV export)
-    supabase.sql      the entire backend — paste once into Supabase SQL editor
-    weekly_report.py  weekly growth digest for your terminal / cron
-    SECURITY.md       what's safe where, and why
+Row-Level Security (in supabase.sql) is what enforces this: `anon` has an
+INSERT-only policy; SELECT requires `authenticated`. Even with the page's
+source fully public on GitHub, the waitlist itself is unreadable.
 
-## Setup — ~10 minutes
+## Hardening applied in these files
+- admin.html: `noindex,nofollow` meta + should be in robots.txt Disallow
+- All rendered emails/sources HTML-escaped in admin (stored-XSS defense —
+  someone could sign up with a script tag as their "email" otherwise)
+- Duplicate emails rejected by a UNIQUE constraint (and handled gracefully
+  in the form: "already on the list")
+- No secrets in any shipped file: the two pasted values are public-safe by design
 
-1. **Supabase project** — supabase.com -> New project (free tier is fine).
-
-2. **Backend** — Dashboard -> SQL Editor -> paste ALL of `supabase.sql` -> Run.
-   That creates the signups table, the security policies, and the weekly view.
-
-3. **Admin login** — Dashboard -> Authentication -> Users -> Add user.
-   Your email + a long random password. This is how admin.html signs in.
-
-4. **Keys** — Dashboard -> Settings -> API. Copy two values:
-      Project URL          -> paste into BOTH index.html and admin.html
-      anon public key      -> paste into BOTH index.html and admin.html
-   (Both files have a clearly marked PASTE_YOUR_... block near the bottom.)
-   Do NOT put the service_role key in any web file — it's only for
-   weekly_report.py via environment variable on your own machine.
-
-5. **Deploy** — push index.html + admin.html to the GitHub Pages repo
-   (alongside your existing images/logo.png — both pages reference it).
-   robots.txt should include:  Disallow: /admin.html
-
-6. **Weekly report (optional)** — see the header of weekly_report.py.
-
-## Why this is safe to ship publicly
-The anon key in the HTML can ONLY insert a signup — Row-Level Security in
-supabase.sql blocks it from reading, updating, or deleting anything.
-Reading the list requires the admin login (step 3). Full notes: SECURITY.md.
+## Do / Don't
+- DO rotate the admin password if you ever share a screen with admin.html open
+- DO keep the service key only in your shell env / a local .env in .gitignore
+- DON'T create a SELECT policy for `anon` — that would publish your list
+- DON'T put the service key in weekly_report.py itself; keep it in the env
+- If you ever suspect the admin password leaked: Supabase -> Auth -> reset it;
+  nothing else needs rotating (the anon key was never a secret)
