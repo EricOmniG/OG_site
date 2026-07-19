@@ -1,52 +1,102 @@
--- ============================================================
--- PROJECT SPROUT — signup backend (copy-paste into Supabase)
--- Supabase Dashboard -> SQL Editor -> New query -> paste -> Run
--- ============================================================
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Investor access — OmniGenius</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root{--bg:#050810;--panel:#0d1424;--line:#1b2740;--teal:#0ee8d4;--amber:#f5b544;
+        --text:#e6edf7;--dim:#7d8aa3;--faint:#4a566e;
+        --disp:"Space Grotesk",sans-serif;--mono:"JetBrains Mono",monospace}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font:15px/1.6 var(--disp);min-height:100vh;
+       display:grid;place-items:center;padding:24px}
+  .card{width:100%;max-width:520px;background:var(--panel);border:1px solid var(--line);
+        border-radius:12px;padding:38px;box-shadow:0 0 70px color-mix(in srgb,var(--teal) 7%,transparent)}
+  .brand{font-family:var(--mono);font-weight:700;font-size:15px;margin-bottom:26px;display:flex;align-items:center;gap:10px}
+  .brand img{height:24px}
+  .brand b{color:var(--teal)}
+  h1{font-size:25px;font-weight:700;letter-spacing:-.01em;margin-bottom:8px}
+  .sub{font-size:14px;color:var(--dim);margin-bottom:26px}
+  .sub b{color:var(--text)}
+  label{font-family:var(--mono);font-size:11px;letter-spacing:.1em;color:var(--dim);
+        text-transform:uppercase;display:block;margin:16px 0 6px}
+  input,textarea{width:100%;background:var(--bg);border:1px solid var(--line);border-radius:6px;
+        color:var(--text);padding:12px 14px;font:14px var(--mono)}
+  input:focus,textarea:focus{outline:none;border-color:var(--teal);
+        box-shadow:0 0 14px color-mix(in srgb,var(--teal) 22%,transparent)}
+  textarea{resize:vertical;min-height:74px}
+  button{width:100%;margin-top:24px;background:var(--teal);color:var(--bg);border:none;border-radius:6px;
+         padding:14px;font:600 15px var(--mono);cursor:pointer;
+         box-shadow:0 0 26px color-mix(in srgb,var(--teal) 38%,transparent)}
+  button:disabled{opacity:.5;cursor:wait}
+  .msg{font-family:var(--mono);font-size:13px;margin-top:14px;min-height:20px;text-align:center}
+  .fine{font-family:var(--mono);font-size:11px;color:var(--faint);margin-top:18px;text-align:center}
+  .done{text-align:center;padding:26px 0 10px;display:none}
+  .done .big{font-size:40px;margin-bottom:14px}
+  .done p{color:var(--dim);font-size:14px}
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="brand"><img src="images/logo.png" alt="">OMNI<b>GENIUS</b> · investor access</div>
+  <h1>Request the data room</h1>
+  <p class="sub">Deck, measured results, logs, invoices, and a live model arena —
+  <b>every number in it is reproducible from the files inside.</b> Tell us who you are
+  and access follows by email.</p>
 
--- 1. The signups table
-create table if not exists public.signups (
-  id         uuid primary key default gen_random_uuid(),
-  email      text not null unique,
-  created_at timestamptz not null default now(),
-  source     text default 'landing'
-);
+  <form id="f">
+    <label>Name</label>
+    <input id="v-name" required maxlength="80" autocomplete="name">
+    <label>Firm <span style="color:var(--faint);text-transform:none">(optional)</span></label>
+    <input id="v-firm" maxlength="120" autocomplete="organization">
+    <label>Email</label>
+    <input id="v-email" type="email" required maxlength="200" autocomplete="email">
+    <label>Anything specific you want to see? <span style="color:var(--faint);text-transform:none">(optional)</span></label>
+    <textarea id="v-note" maxlength="500"></textarea>
+    <button type="submit" id="v-btn">Request access →</button>
+    <div class="msg" id="v-msg"></div>
+  </form>
 
--- 2. Row-Level Security: the whole safety model.
---    * anon (the public key in index.html) may INSERT only.
---    * nobody anonymous can SELECT/UPDATE/DELETE — the list is private.
---    * authenticated users (you, logged into admin.html) may SELECT.
-alter table public.signups enable row level security;
+  <div class="done" id="done">
+    <div class="big">✓</div>
+    <h1 style="font-size:21px">Request received</h1>
+    <p>You'll hear from Eric directly — usually same-day.<br>
+    The data room includes everything a technical review needs.</p>
+  </div>
 
-create policy "public can sign up"
-  on public.signups for insert
-  to anon
-  with check (true);
+  <div class="fine">requests go straight to the founder · no automated mailing list</div>
+</div>
 
-create policy "admins can read the list"
-  on public.signups for select
-  to authenticated
-  using (true);
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+<script>
+// ============ SUPABASE — same two values as index.html ============
+const SUPABASE_URL = "https://dkuiqxxxmyekpdggdoic.supabase.co";
+const SUPABASE_ANON_KEY = "sb_publishable_Y1HBqD-Aqr_DCtcxo5vXFw_d1CIMZv5";
+// ==================================================================
+const supa = window.supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
+const $ = id => document.getElementById(id);
 
--- 3. Weekly stats view (feeds admin.html and weekly_report.py)
-create or replace view public.weekly_signups as
-  select date_trunc('week', created_at)::date as week_start,
-         count(*)::int as signups
-  from public.signups
-  group by 1
-  order by 1 desc;
-
--- Views don't inherit RLS by default; lock it to authenticated too:
-revoke all on public.weekly_signups from anon;
-grant select on public.weekly_signups to authenticated;
-
--- 4. OPTIONAL basic rate-limit hardening: cap dupes & garbage
---    (Supabase also rate-limits at the API layer; unique(email) above
---     already blocks repeat inserts of the same address.)
-
--- ============================================================
--- AFTER RUNNING THIS, create your admin login:
--- Dashboard -> Authentication -> Users -> Add user
---   email:    you@yourdomain
---   password: (long + random)
--- That login is what admin.html uses. No service keys anywhere.
--- ============================================================
+$("f").addEventListener("submit", async (ev) => {
+  ev.preventDefault();
+  const btn = $("v-btn"), msg = $("v-msg");
+  btn.disabled = true; btn.textContent = "Sending…"; msg.textContent = "";
+  const { error } = await supa.from("vc_requests").insert({
+    name:  $("v-name").value.trim(),
+    firm:  $("v-firm").value.trim() || null,
+    email: $("v-email").value.trim(),
+    note:  $("v-note").value.trim() || null,
+  });
+  if (!error) {
+    $("f").style.display = "none";
+    $("done").style.display = "block";
+  } else {
+    msg.textContent = "Couldn't send — try again in a moment.";
+    msg.style.color = "var(--amber)";
+    btn.disabled = false; btn.textContent = "Request access →";
+  }
+});
+</script>
+</body>
+</html>
