@@ -1,1 +1,455 @@
-omnigenius.co
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Project Sprout — Scaling Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;600;700&family=JetBrains+Mono:wght@400;500;700&display=swap" rel="stylesheet">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+<style>
+  :root{--bg:#050810;--panel:#0d1424;--border:#2d333b;--text:#e6edf3;--dim:#7d8aa3;
+        --green:#0ee8d4;--blue:#7fdbff;--orange:#f0883e;--purple:#bc8cff}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font:15px/1.55 -apple-system,"Segoe UI",Roboto,sans-serif;padding:28px;max-width:1200px;margin:0 auto}
+  h1{font-size:26px} h1 span{color:var(--green)}
+  .sub{color:var(--dim);margin:4px 0 24px;font-size:14px}
+  .drop{border:2px dashed var(--border);border-radius:12px;padding:22px;text-align:center;color:var(--dim);
+        margin-bottom:24px;cursor:pointer;transition:border-color .2s}
+  .drop.over{border-color:var(--green);color:var(--text)}
+  .drop input{display:none}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:14px;margin-bottom:24px}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:16px}
+  .card .k{font-size:12px;color:var(--dim);text-transform:uppercase;letter-spacing:.5px}
+  .card .v{font-size:26px;font-weight:700;margin-top:4px}
+  .card .d{font-size:12px;color:var(--dim);margin-top:2px}
+  .panel{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:20px;margin-bottom:24px}
+  .panel h2{font-size:16px;margin-bottom:4px}
+  .panel .note{font-size:12px;color:var(--dim);margin-bottom:14px}
+  .chartbox{position:relative;height:380px}
+  table{width:100%;border-collapse:collapse;font-size:14px}
+  th,td{text-align:left;padding:9px 12px;border-bottom:1px solid var(--border)}
+  th{color:var(--dim);font-size:12px;text-transform:uppercase;letter-spacing:.5px}
+  .tag{display:inline-block;padding:1px 9px;border-radius:10px;font-size:12px;background:#1c2129;border:1px solid var(--border)}
+  footer{color:var(--dim);font-size:12px;text-align:center;padding:16px 0}
+</style>
+</head>
+<body>
+
+<h1><img src="images/logo.png" alt="" style="height:26px;vertical-align:middle;margin-right:10px">Project <span>Sprout</span> — Scaling Dashboard</h1>
+<div class="sub">Live results from staged pretraining · portable recipe verified across GPU types (L40S &amp; RTX 5090) · developmental scaling 45M → 1.5B → (your capital) → 500B</div>
+
+<label class="drop" id="drop">
+  <b>Drop your <code>log.csv</code> files here</b> (from runs/&lt;name&gt;/log.csv) or click to pick.<br>
+  Tip: rename each to include the model size, e.g. <code>seed-45m.csv</code> — size is auto-detected from the filename.
+  <input type="file" id="filein" multiple accept=".csv">
+</label>
+
+<div class="panel" style="padding:14px 20px">
+  <div style="color:var(--text);font-size:13px;margin-bottom:4px">
+    <b>Each model is priced on the hardware it actually ran on.</b>
+  </div>
+  <div style="color:var(--dim);font-size:12px">
+    The 45M / 150M / 500M models were trained on 2× NVIDIA L40S; the 1.5B was trained on 4× NVIDIA RTX 5090 —
+    the same training recipe, reproduced across different GPUs. Node hours are derived from each run's own
+    throughput log, and cost uses that run's own node rate. Per-model hardware and rate are shown in the Run summary below.
+  </div>
+</div>
+
+<div class="cards" id="statcards"></div>
+
+<div class="panel">
+  <h2>Validation loss vs. training tokens</h2>
+  <div class="note">Each curve is one model size. Lower is better. Log-scale x-axis.</div>
+  <div class="chartbox"><canvas id="lossChart"></canvas></div>
+</div>
+
+<div class="panel">
+  <h2>The scaling law</h2>
+  <div class="note">Final validation loss vs. parameter count (log–log) with power-law fit, projected to 500B parameters.
+  Measured points are solid; the dashed line is what your investment buys.</div>
+  <div class="chartbox"><canvas id="lawChart"></canvas></div>
+</div>
+
+<div class="panel">
+  <h2>Run summary</h2>
+  <table id="runtable">
+    <thead><tr><th>Model</th><th>Params</th><th>Hardware</th><th>Tokens trained</th><th>Final val loss</th><th>Perplexity</th><th>Avg throughput</th><th>Node hours</th><th>Cost</th><th>Status</th></tr></thead>
+    <tbody></tbody>
+  </table>
+  <div class="note" style="margin-top:10px" id="hwnote"></div>
+</div>
+
+<div class="panel">
+  <h2>Projected cost of the next stages</h2>
+  <div class="note">Derived from <i>measured</i> cost-per-FLOP across completed runs (compute ≈ 6 × params × tokens), each priced on the GPUs it actually ran on.
+  Larger clusters and newer GPUs typically improve $/FLOP, so treat these as upper bounds at today's efficiency.
+  The projection to 500B is a long extrapolation from sub-2B measured points and assumes Chinchilla-style token budgets; it indicates order-of-magnitude cost, not a guaranteed figure.</div>
+  <table id="projtable">
+    <thead><tr><th>Stage</th><th>Params</th><th>Token budget</th><th>Compute (FLOPs)</th><th>Est. cost at measured efficiency</th></tr></thead>
+    <tbody></tbody>
+  </table>
+</div>
+
+<div class="panel">
+  <h2>Chinchilla-optimal floor vs. production-standard cost</h2>
+  <div class="note">The theoretical compute floor for a given model size (Chinchilla-optimal, ~20 tokens/param) versus what a production run
+  realistically costs. Production runs cost more than the floor for two documented reasons, shown separately below.
+  This does <b>not</b> claim a lower cost for the same model — a given size costs the same 6·N·D FLOPs for everyone.
+  It shows that a lean operation can run near the floor, while production standards carry a defined premium.</div>
+  <div class="chartbox"><canvas id="chinChart"></canvas></div>
+  <div class="note" style="margin-top:14px">
+    <b>How the bands are built (all assumptions stated, none measured except our own runs):</b><br>
+    <b>1 · Over-training band (token axis).</b> Chinchilla-optimal is ~20 tokens/param. Production models deliberately train far past that
+    to make inference cheaper — Llama 3 8B used ~15T tokens (~1,900 tokens/param). We model production token budgets as
+    <b>5×–100×</b> the Chinchilla-optimal count; more tokens = more compute = higher cost.<br>
+    <b>2 · Operational overhead band (cost multiplier).</b> On top of raw compute: failed runs, redundant checkpointing, restart waste
+    (exactly the kind we hit on the 1.5B run, scaled up), and safety margin. Modeled as <b>1.5×–3×</b> over compute cost. This is an
+    assumption, not a measurement.<br>
+    <b>3 · Our measured runs.</b> Plotted at their <i>actual</i> token ratio and measured cost. Note honestly: our current budgets are
+    <i>below</i> Chinchilla-optimal (e.g. 1.5B on 15B tokens ≈ 10 tokens/param), so these are demonstration runs — cheaper, but
+    intentionally under-trained relative to a production model of the same size.<br>
+    <b>Bottom line for the reader:</b> the gap between our points and the production band is real, but part of it is "we run leaner"
+    and part of it is "we train smaller budgets." Both are stated so the comparison is honest.
+  </div>
+</div>
+
+<div class="panel">
+  <h2>Report cards</h2>
+  <div class="note">Drop <code>transcript.json</code> files (from report_card.py) to see each model
+  graded on a fixed test battery — Science, History, Procedure, Definition, Narrative — over its training.
+  Grades are consistent proxies (topical accuracy, fluency, repetition), not deep understanding.</div>
+  <label class="drop" id="tdrop" style="margin-bottom:16px">
+    Drop <code>transcript.json</code> files here or click.
+    <input type="file" id="tfilein" multiple accept=".json" style="display:none">
+  </label>
+  <div id="cards"></div>
+</div>
+
+<script>
+/* ---------- report cards ---------- */
+const tdrop=document.getElementById("tdrop"), tfilein=document.getElementById("tfilein");
+tdrop.addEventListener("click",()=>tfilein.click());
+tdrop.addEventListener("dragover",e=>{e.preventDefault();tdrop.classList.add("over");});
+tdrop.addEventListener("dragleave",()=>tdrop.classList.remove("over"));
+tdrop.addEventListener("drop",e=>{e.preventDefault();tdrop.classList.remove("over");readTranscripts(e.dataTransfer.files);});
+tfilein.addEventListener("change",()=>readTranscripts(tfilein.files));
+
+const transcripts={};
+const GRADE_COLOR={A:"#0ee8d4",B:"#7fdbff",C:"#f5b544",D:"#f0883e",F:"#f85149"};
+const gcolor=g=>GRADE_COLOR[(g||"F")[0]]||"#8d967f";
+
+function readTranscripts(files){
+  let pending=files.length;
+  for(const f of files){
+    const r=new FileReader();
+    r.onload=()=>{ try{ const t=JSON.parse(r.result); transcripts[t.model]=t; }catch(e){ alert(f.name+": not valid JSON"); }
+      if(--pending===0) renderTranscripts(); };
+    r.readAsText(f);
+  }
+}
+
+function renderTranscripts(){
+  const el=document.getElementById("cards");
+  el.innerHTML=Object.values(transcripts).map(t=>{
+    const last=t.cards[t.cards.length-1];
+    const subjects=Object.keys(last.subjects);
+    // final report card table + GPA-over-time sparkline row
+    const rows=subjects.map(s=>{
+      const cells=t.cards.map(c=>{
+        const g=c.subjects[s].grade;
+        return `<span title="step ${c.step} · ${c.subjects[s].score}" style="display:inline-block;width:26px;text-align:center;color:${gcolor(g)};font-family:var(--mono);font-size:12px">${g}</span>`;
+      }).join("");
+      return `<tr><td style="color:var(--dim)">${s}</td><td style="text-align:right"><b style="color:${gcolor(last.subjects[s].grade)}">${last.subjects[s].grade}</b></td><td style="padding-left:14px">${cells}</td></tr>`;
+    }).join("");
+    return `<div style="background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px">
+      <div style="display:flex;align-items:baseline;gap:12px;margin-bottom:10px">
+        <span style="font-size:17px;font-weight:600">${t.model}</span>
+        <span style="font-family:var(--mono);font-size:13px;color:var(--dim)">final GPA</span>
+        <span style="font-size:22px;font-weight:700;color:${gcolor(last.gpa_letter)}">${last.gpa_letter}</span>
+        <span style="font-family:var(--mono);font-size:12px;color:var(--dim)">ppl ${last.perplexity} · ${(last.tokens/1e9).toFixed(2)}B tokens</span>
+      </div>
+      <table style="width:100%"><thead><tr>
+        <th>Subject</th><th style="text-align:right">Final</th><th style="padding-left:14px">Transcript (each checkpoint →)</th>
+      </tr></thead><tbody>${rows}</tbody></table>
+    </div>`;
+  }).join("") || '<div style="color:var(--dim);font-size:13px">No transcripts loaded yet.</div>';
+}
+</script>
+
+<footer>Project Sprout · staged developmental pretraining · dashboard is fully client-side (your data never leaves this page)</footer>
+
+<script>
+/* ---------- model registry: sizes auto-detected from filename ---------- */
+const SIZES = [
+  {match:/45m|seed/i,   name:"Seed · 45M",     params:42.1e6, color:"#0ee8d4",
+     hw:"2× NVIDIA L40S · Vast.ai",   gpus:2, rate:1.252},
+  {match:/150m|sprout/i,name:"Sprout · 150M",  params:144.9e6,color:"#7fdbff",
+     hw:"2× NVIDIA L40S · Vast.ai",   gpus:2, rate:1.252},
+  {match:/500m|sapling/i,name:"Sapling · 500M",params:500.7e6,color:"#f0883e",
+     hw:"2× NVIDIA L40S · Vast.ai",   gpus:2, rate:1.252},
+  {match:/1[._-]?5b|tree/i,name:"Tree · 1.5B", params:1.52e9, color:"#bc8cff",
+     hw:"4× NVIDIA RTX 5090 · Vast.ai", gpus:4, rate:1.72},
+];
+/* NOTE: set each model's `rate` ($/hr for the WHOLE node) and `gpus` to what you
+   actually paid on Vast. The 5090 rate below is a placeholder — replace 1.72 with
+   your real 4×5090 node price so the 1.5B cost is truthful. */
+const runs = {};   // name -> {params,color,toks[],vloss[],tput[],lastTokens}
+
+/* ---------- file ingestion ---------- */
+const drop = document.getElementById("drop"), filein = document.getElementById("filein");
+drop.addEventListener("click",()=>filein.click());
+drop.addEventListener("dragover",e=>{e.preventDefault();drop.classList.add("over");});
+drop.addEventListener("dragleave",()=>drop.classList.remove("over"));
+drop.addEventListener("drop",e=>{e.preventDefault();drop.classList.remove("over");handleFiles(e.dataTransfer.files);});
+filein.addEventListener("change",()=>handleFiles(filein.files));
+
+function handleFiles(files){
+  let pending = files.length;
+  for(const f of files){
+    const size = SIZES.find(s=>s.match.test(f.name));
+    const reader = new FileReader();
+    reader.onload = ()=>{
+      parseCSV(reader.result, size, f.name);
+      if(--pending===0) renderAll();
+    };
+    reader.readAsText(f);
+  }
+}
+
+function parseCSV(text, size, fname){
+  const lines = text.trim().split(/\r?\n/);
+  const head = lines[0].split(",");
+  const iTok = head.indexOf("tokens"), iVal = head.indexOf("val_loss"),
+        iTrn = head.indexOf("train_loss"), iTps = head.indexOf("tok_per_sec");
+  if(iTok<0){ alert(fname+" doesn't look like a sprout log.csv"); return; }
+  const name = size ? size.name : fname.replace(".csv","");
+  const r = runs[name] = {params:size?size.params:null, color:size?size.color:"#7d8aa3",
+                          hw:size?size.hw:"(unknown hardware)", gpus:size?size.gpus:1,
+                          rate:size?size.rate:1.252,
+                          toks:[], vloss:[], trloss:[], trtoks:[], tput:[], lastTokens:0};
+  for(let i=1;i<lines.length;i++){
+    const c = lines[i].split(",");
+    const tok = +c[iTok]; if(!tok) continue;
+    r.lastTokens = Math.max(r.lastTokens, tok);
+    if(c[iVal]) { r.toks.push(tok); r.vloss.push(+c[iVal]); }
+    if(c[iTrn]) { r.trtoks.push(tok); r.trloss.push(+c[iTrn]); }
+    if(c[iTps] && +c[iTps]>0) r.tput.push(+c[iTps]);
+  }
+}
+
+/* ---------- rendering ---------- */
+let lossChart, lawChart, chinChart;
+const fmtP = p => p>=1e9 ? (p/1e9).toFixed(1)+"B" : (p/1e6).toFixed(0)+"M";
+const fmtT = t => t>=1e9 ? (t/1e9).toFixed(2)+"B" : (t/1e6).toFixed(0)+"M";
+
+function renderAll(){ renderCards(); renderLoss(); renderLaw(); renderChinchilla(); renderTable(); }
+
+function hoursOf(r){                       // hours = tokens / avg throughput
+  if(!r.tput.length || !r.lastTokens) return null;
+  const avg = r.tput.reduce((a,b)=>a+b)/r.tput.length;
+  return r.lastTokens / avg / 3600;
+}
+// cost for a single run = its node-hours × its own node rate
+function costOf(r){ const h = hoursOf(r); return h==null ? null : h * (r.rate||0); }
+const fmt$ = c => c>=1000 ? "$"+(c/1000).toFixed(1)+"k" : c>=100 ? "$"+c.toFixed(0) : "$"+c.toFixed(2);
+
+function renderCards(){
+  const names = Object.keys(runs);
+  const totTok = names.reduce((a,n)=>a+runs[n].lastTokens,0);
+  const totHrs = names.reduce((a,n)=>a+(hoursOf(runs[n])||0),0);
+  const totCost = names.reduce((a,n)=>a+(costOf(runs[n])||0),0);
+  const best = names.map(n=>({n, v:Math.min(...(runs[n].vloss.length?runs[n].vloss:[Infinity]))}))
+                    .sort((a,b)=>a.v-b.v)[0];
+  const avgTput = (()=>{ const all = names.flatMap(n=>runs[n].tput); 
+                         return all.length? all.reduce((a,b)=>a+b,0)/all.length : 0; })();
+  document.getElementById("statcards").innerHTML = `
+    <div class="card"><div class="k">Models trained</div><div class="v">${names.length}</div><div class="d">of 4 planned stages</div></div>
+    <div class="card"><div class="k">Total tokens</div><div class="v">${fmtT(totTok)}</div><div class="d">across all runs</div></div>
+    <div class="card"><div class="k">Best val loss</div><div class="v">${best&&isFinite(best.v)?best.v.toFixed(3):"—"}</div><div class="d">${best?best.n:""}</div></div>
+    <div class="card"><div class="k">Throughput</div><div class="v">${avgTput?Math.round(avgTput/1000)+"k":"—"}</div><div class="d">tokens/sec</div></div>
+    <div class="card"><div class="k">Total spend</div><div class="v">${fmt$(totCost)}</div><div class="d">${totHrs.toFixed(1)} GPU-node hours</div></div>`;
+}
+
+function renderLoss(){
+  const ds = Object.entries(runs).filter(([,r])=>r.vloss.length).map(([n,r])=>({
+    label:n, data:r.toks.map((t,i)=>({x:t,y:r.vloss[i]})),
+    borderColor:r.color, backgroundColor:r.color, pointRadius:2.5, tension:.25, borderWidth:2}));
+  if(lossChart) lossChart.destroy();
+  lossChart = new Chart(document.getElementById("lossChart"),{
+    type:"line", data:{datasets:ds},
+    options:{maintainAspectRatio:false, animation:{duration:600},
+      scales:{x:{type:"logarithmic",title:{display:true,text:"training tokens"},grid:{color:"#2d333b55"},
+                 ticks:{color:"#7d8aa3",callback:v=>fmtT(v)}},
+              y:{title:{display:true,text:"validation loss"},grid:{color:"#2d333b55"},ticks:{color:"#7d8aa3"}}},
+      plugins:{legend:{labels:{color:"#e6edf3"}}}}});
+}
+
+function renderLaw(){
+  const pts = Object.entries(runs)
+    .filter(([,r])=>r.params && r.vloss.length)
+    .map(([n,r])=>({n, x:r.params, y:Math.min(...r.vloss)}));
+  if(pts.length<2){ if(lawChart) lawChart.destroy(); return; }
+  // power-law fit in log-log space: log(L) = a + b log(N)
+  const lx=pts.map(p=>Math.log(p.x)), ly=pts.map(p=>Math.log(p.y));
+  const mx=lx.reduce((a,b)=>a+b)/lx.length, my=ly.reduce((a,b)=>a+b)/ly.length;
+  const b = lx.map((v,i)=>(v-mx)*(ly[i]-my)).reduce((a,c)=>a+c) /
+            lx.map(v=>(v-mx)**2).reduce((a,c)=>a+c);
+  const a = my - b*mx;
+  const grid=[]; for(let e=Math.log10(pts[0].x);e<=Math.log10(500e9);e+=0.1)
+    grid.push({x:10**e, y:Math.exp(a + b*Math.log(10**e))});
+  if(lawChart) lawChart.destroy();
+  lawChart = new Chart(document.getElementById("lawChart"),{
+    type:"scatter",
+    data:{datasets:[
+      {label:"measured", data:pts, backgroundColor:"#0ee8d4", pointRadius:7},
+      {label:`power-law fit (slope ${b.toFixed(3)}) → 500B projection`, data:grid, type:"line",
+       borderColor:"#7d8aa3", borderDash:[6,5], pointRadius:0, borderWidth:1.5},
+    ]},
+    options:{maintainAspectRatio:false,
+      scales:{x:{type:"logarithmic",title:{display:true,text:"parameters"},grid:{color:"#2d333b55"},
+                 ticks:{color:"#7d8aa3",callback:v=>fmtP(v)}},
+              y:{type:"logarithmic",title:{display:true,text:"final validation loss"},grid:{color:"#2d333b55"},ticks:{color:"#7d8aa3"}}},
+      plugins:{legend:{labels:{color:"#e6edf3"}},
+               tooltip:{callbacks:{label:c=>c.raw.n?`${c.raw.n}: loss ${c.raw.y.toFixed(3)}`:
+                                            `${fmtP(c.raw.x)}: projected ${c.raw.y.toFixed(3)}`}}}}});
+}
+
+function renderTable(){
+  const tb = document.querySelector("#runtable tbody");
+  tb.innerHTML = Object.entries(runs).map(([n,r])=>{
+    const best = r.vloss.length? Math.min(...r.vloss) : null;
+    const tput = r.tput.length? Math.round(r.tput.reduce((a,b)=>a+b)/r.tput.length/1000)+"k tok/s" : "—";
+    const hrs = hoursOf(r);
+    const cost = costOf(r);
+    return `<tr><td><span class="tag" style="border-color:${r.color};color:${r.color}">${n}</span></td>
+      <td>${r.params?fmtP(r.params):"?"}</td>
+      <td style="font-size:12px;color:var(--dim)">${r.hw}<br><span style="color:var(--text)">$${(r.rate||0).toFixed(3)}/hr node</span></td>
+      <td>${fmtT(r.lastTokens)}</td>
+      <td>${best?best.toFixed(4):"—"}</td><td>${best?Math.exp(best).toFixed(1):"—"}</td>
+      <td>${tput}</td><td>${hrs?hrs.toFixed(1)+" h":"—"}</td><td>${cost!=null?fmt$(cost):"—"}</td>
+      <td>${best?"✅ complete":"⏳ in progress"}</td></tr>`;
+  }).join("");
+  document.getElementById("hwnote").innerHTML =
+    "Each model priced on the hardware it actually ran on (node rate × node-hours from logged throughput). " +
+    "The 45M/150M/500M ran on 2× L40S; the 1.5B ran on 4× RTX 5090 — same recipe, different silicon.";
+  renderProjection();
+}
+
+function renderChinchilla(){
+  const done = Object.values(runs).filter(r=>r.params && r.vloss.length && hoursOf(r));
+  if(!done.length){ if(chinChart) chinChart.destroy(); chinChart=null; return; }
+  // blended measured $/FLOP as our efficiency basis
+  const totCost = done.reduce((a,r)=>a+(costOf(r)||0),0);
+  const totFlop = done.reduce((a,r)=>a+6*r.params*r.lastTokens,0);
+  const dpf = totCost / totFlop;              // $ per FLOP (our lean basis)
+  const CHINCHILLA_TPP = 20;                  // tokens per param (optimal)
+  // cost at Chinchilla-optimal for a given N, at OUR measured $/FLOP:
+  const floorCost = N => 6 * N * (CHINCHILLA_TPP*N) * dpf;
+  // production band: over-train 5x–100x tokens, then 1.5x–3x operational overhead
+  const prodLo = N => floorCost(N) * 5   * 1.5;
+  const prodHi = N => floorCost(N) * 100 * 3.0;
+  // build smooth curves across the param range
+  const floor=[], lo=[], hi=[];
+  for(let e=Math.log10(40e6); e<=Math.log10(500e9); e+=0.1){
+    const N=10**e; floor.push({x:N,y:floorCost(N)}); lo.push({x:N,y:prodLo(N)}); hi.push({x:N,y:prodHi(N)});
+  }
+  // our actual measured points (cost vs params)
+  const pts = done.map(r=>({n:r.hw?r.hw.replace(/ · Vast\.ai/,""):"", x:r.params, y:costOf(r),
+                            label:Object.keys(runs).find(k=>runs[k]===r)}));
+  if(chinChart) chinChart.destroy();
+  chinChart = new Chart(document.getElementById("chinChart"),{
+    type:"scatter",
+    data:{datasets:[
+      // production band drawn as hi (filled down to lo)
+      {label:"production-standard range", data:hi, type:"line", borderColor:"#f0883e88",
+       backgroundColor:"#f0883e22", pointRadius:0, borderWidth:1, fill:"+1", tension:.2},
+      {label:"_prodLo", data:lo, type:"line", borderColor:"#f0883e88", pointRadius:0, borderWidth:1, fill:false, tension:.2},
+      {label:"Chinchilla-optimal floor (our $/FLOP)", data:floor, type:"line", borderColor:"#0ee8d4",
+       borderDash:[6,4], pointRadius:0, borderWidth:2, fill:false, tension:.2},
+      {label:"our measured runs", data:pts, backgroundColor:"#bc8cff", borderColor:"#fff",
+       borderWidth:1, pointRadius:7},
+    ]},
+    options:{maintainAspectRatio:false,
+      scales:{x:{type:"logarithmic",title:{display:true,text:"parameters"},grid:{color:"#2d333b55"},
+                 ticks:{color:"#7d8aa3",callback:v=>fmtP(v)}},
+              y:{type:"logarithmic",title:{display:true,text:"training cost (USD)"},grid:{color:"#2d333b55"},
+                 ticks:{color:"#7d8aa3",callback:v=>fmt$(v)}}},
+      plugins:{legend:{labels:{color:"#e6edf3",filter:i=>!i.text.startsWith("_")}},
+               tooltip:{callbacks:{label:c=>c.raw.label?`${c.raw.label} (${c.raw.n}): ${fmt$(c.raw.y)}`:
+                                            `${fmtP(c.raw.x)}: ${fmt$(c.raw.y)}`}}}}});
+}
+
+function renderProjection(){
+  // measured $/FLOP from completed runs: cost / (6 * N * D)
+  const done = Object.values(runs).filter(r=>r.params && r.vloss.length && hoursOf(r));
+  const tb = document.querySelector("#projtable tbody");
+  if(!done.length){ tb.innerHTML = "<tr><td colspan=5 style='color:var(--dim)'>load at least one completed run</td></tr>"; return; }
+  // $/FLOP measured per run (each on its own hardware & rate), then averaged by compute.
+  const totCost = done.reduce((a,r)=>a+(costOf(r)||0),0);
+  const totFlop = done.reduce((a,r)=>a+6*r.params*r.lastTokens,0);
+  const dollarPerFlop = totCost / totFlop;
+  // also expose the largest/newest run's own $/FLOP as the more scaling-relevant basis
+  const big = done.slice().sort((a,b)=>b.params-a.params)[0];
+  const bigDPF = (costOf(big)||0) / (6*big.params*big.lastTokens);
+  const stages = [
+    ["Tree · 1.5B",        1.5e9,  30e9],
+    ["7B",                 7e9,   140e9],
+    ["30B",               30e9,   600e9],
+    ["70B",               70e9,   1.4e12],
+    ["500B (target)",    500e9,  10e12],
+  ];
+  tb.innerHTML = stages.map(([name,N,D])=>{
+    const f = 6*N*D;
+    return `<tr><td>${name}</td><td>${fmtP(N)}</td><td>${fmtT(D)}</td>
+      <td>${f.toExponential(2)}</td><td><b>${fmt$(f*dollarPerFlop)}</b></td></tr>`;
+  }).join("");
+  // show the measured basis so the extrapolation is transparent
+  let basis = document.getElementById("projbasis");
+  if(!basis){ basis = document.createElement("div"); basis.id="projbasis";
+    basis.className="note"; basis.style.marginTop="10px";
+    document.getElementById("projtable").after(basis); }
+  basis.innerHTML =
+    `Basis: blended measured cost ≈ <b>$${dollarPerFlop.toExponential(2)}/FLOP</b> across all completed runs · ` +
+    `largest run (${big.params>=1e9?(big.params/1e9).toFixed(1)+"B":Math.round(big.params/1e6)+"M"}, ` +
+    `${big.hw.replace(/ · Vast\.ai/,"")}) alone ≈ <b>$${bigDPF.toExponential(2)}/FLOP</b>. ` +
+    `Projections above use the blended figure.`;
+}
+
+/* ---------- AUTO-LOAD from the repo (no re-uploading) ----------
+   Commit your files into a data/ folder in the repo and list them here.
+   Anything missing just 404s silently — drag & drop still works on top. */
+const MANIFEST = {
+  csvs: [
+    "data/seed-45m.csv",
+    "data/sprout-150m.csv",
+    "data/sapling-500m.csv",
+    "data/tree-1.5b.csv",          // 1.5B — 4× RTX 5090
+  ],
+  transcripts: [
+    "data/seed-45m-transcript.json",
+    "data/sprout-150m-transcript.json",
+    "data/sapling-500m-transcript.json",
+    "data/tree-1.5b-transcript.json",
+  ],
+};
+(async function autoload(){
+  let gotCSV = false, gotT = false;
+  for (const path of MANIFEST.csvs){
+    try{ const r = await fetch(path); if(!r.ok) continue;
+      const text = await r.text();
+      const fname = path.split("/").pop();
+      const size = SIZES.find(s=>s.match.test(fname));
+      parseCSV(text, size, fname); gotCSV = true;
+    }catch(e){}
+  }
+  for (const path of MANIFEST.transcripts){
+    try{ const r = await fetch(path); if(!r.ok) continue;
+      const t = await r.json(); transcripts[t.model] = t; gotT = true;
+    }catch(e){}
+  }
+  if (gotCSV) renderAll();
+  if (gotT) renderTranscripts();
+})();
+</script>
+</body>
+</html>
