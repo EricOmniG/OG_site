@@ -1,0 +1,42 @@
+{
+  "model": {
+    "name": "tree-1.5b",
+    "vocab_size": 50304,
+    "block_size": 1024,
+    "n_layer": 28,
+    "n_head": 16,
+    "n_embd": 2048,
+    "dropout": 0.0,
+    "tie_weights": true,
+    "use_recurrence": false,
+    "n_prelude": 2,
+    "n_coda": 2,
+    "mean_recurrence": 4,
+    "backprop_depth": 4,
+    "test_recurrence": 8
+  },
+  "train": {
+    "run_name": "tree-1.5b",
+    "data_dir": "data/fineweb-30b",
+    "out_dir": "runs/tree-1.5b",
+    "token_budget": 15000000000,
+    "micro_batch_size": 8,
+    "grad_accum_steps": 8,
+    "lr": 0.00025,
+    "min_lr_ratio": 0.1,
+    "warmup_steps": 2000,
+    "weight_decay": 0.1,
+    "beta1": 0.9,
+    "beta2": 0.95,
+    "grad_clip": 1.0,
+    "dtype": "bfloat16",
+    "gradient_checkpointing": true,
+    "zero_optimizer": true,
+    "compile": true,
+    "log_interval": 10,
+    "eval_interval": 500,
+    "eval_batches": 32,
+    "ckpt_interval": 1000,
+    "seed": 1337
+  }
+}
