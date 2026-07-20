@@ -105,25 +105,44 @@
     <b>2 · Operational overhead band (cost multiplier).</b> On top of raw compute: failed runs, redundant checkpointing, restart waste
     (exactly the kind we hit on the 1.5B run, scaled up), and safety margin. Modeled as <b>1.5×–3×</b> over compute cost. This is an
     assumption, not a measurement.<br>
-    <b>3 · Our measured runs.</b> Plotted at their <i>actual</i> token ratio and measured cost. Note honestly: our current budgets are
-    <i>below</i> Chinchilla-optimal (e.g. 1.5B on 15B tokens ≈ 10 tokens/param), so these are demonstration runs — cheaper, but
-    intentionally under-trained relative to a production model of the same size.<br>
-    <b>Bottom line for the reader:</b> the gap between our points and the production band is real, but part of it is "we run leaner"
-    and part of it is "we train smaller budgets." Both are stated so the comparison is honest.
+    <b>3 · Our measured runs (purple dots).</b> Actual measured cost, plotted at each model's real size. Hover any point for its
+    true tokens/param ratio.<br>
+    <b>4 · Each run's own Chinchilla-optimal cost (teal triangles).</b> What that <i>same</i> run would have cost at 20 tokens/param,
+    computed with <b>that run's own measured $/FLOP</b> — its own GPUs, its own throughput. This is the honest comparison: a purple dot
+    below its teal triangle means we spent less than Chinchilla-optimal <i>because we trained fewer tokens</i>, not because we found an
+    efficiency that others lack.<br>
+    <b>Why per-run and not one blended line:</b> a single averaged $/FLOP makes small runs look wasteful (fixed startup/compile/checkpoint
+    overhead dominates a 20-minute run) and large runs look efficient (that overhead vanishes across 80+ hours). That is an artifact of
+    averaging, not a result. The dashed line is kept only as the basis for the forward projection band.<br>
+    <b>Honest bottom line:</b> our token budgets are <i>below</i> Chinchilla-optimal (the 1.5B trained 15B tokens ≈ 10 tokens/param,
+    roughly half optimal). These are demonstration runs: cheaper, but deliberately under-trained versus a production model of the same
+    size. The gap to the production band is partly "we run lean" and partly "we train smaller budgets" — and a 6·N·D FLOP costs the same
+    for everyone. Nothing here claims a lower cost for an equivalent model.
   </div>
 </div>
 
-<div class="panel">
-  <h2>Report cards</h2>
-  <div class="note">Drop <code>transcript.json</code> files (from report_card.py) to see each model
-  graded on a fixed test battery — Science, History, Procedure, Definition, Narrative — over its training.
-  Grades are consistent proxies (topical accuracy, fluency, repetition), not deep understanding.</div>
+<!-- REPORT CARDS: internal diagnostic, hidden from the public/investor view.
+     The battery is calibrated against production-scale models, so every model in
+     this family grades in the F band by construction. That is a property of the
+     ruler, not a result about the models, and it reads badly out of context.
+     To re-enable for internal use, add ?cards=1 to the URL. -->
+<div class="panel" id="cardpanel" style="display:none">
+  <h2>Report cards <span style="font-size:12px;color:var(--dim);font-weight:400">· internal diagnostic</span></h2>
+  <div class="note">Each model graded on a fixed battery — Science, History, Procedure, Definition, Narrative.
+  <b>Scale note:</b> the battery is calibrated against production-scale models, so a base model of this size
+  scores in the F band by construction. Read the <i>trend</i> across sizes (and the perplexity), not the letter.</div>
   <label class="drop" id="tdrop" style="margin-bottom:16px">
     Drop <code>transcript.json</code> files here or click.
     <input type="file" id="tfilein" multiple accept=".json" style="display:none">
   </label>
   <div id="cards"></div>
 </div>
+<script>
+  // internal toggle: omnigenius.co/dashboard.html?cards=1
+  if(new URLSearchParams(location.search).has("cards")){
+    document.getElementById("cardpanel").style.display="";
+  }
+</script>
 
 <script>
 /* ---------- report cards ---------- */
@@ -188,7 +207,7 @@ const SIZES = [
   {match:/500m|sapling/i,name:"Sapling · 500M",params:500.7e6,color:"#f0883e",
      hw:"2× NVIDIA L40S · Vast.ai",   gpus:2, rate:1.252},
   {match:/1[._-]?5b|tree/i,name:"Tree · 1.5B", params:1.52e9, color:"#bc8cff",
-     hw:"4× NVIDIA RTX 5090 · Vast.ai", gpus:4, rate:1.72},
+     hw:"4× NVIDIA RTX 5090 · Vast.ai", gpus:4, rate:2.212},
 ];
 /* NOTE: set each model's `rate` ($/hr for the WHOLE node) and `gpus` to what you
    actually paid on Vast. The 5090 rate below is a placeholder — replace 1.72 with
@@ -338,12 +357,22 @@ function renderTable(){
 function renderChinchilla(){
   const done = Object.values(runs).filter(r=>r.params && r.vloss.length && hoursOf(r));
   if(!done.length){ if(chinChart) chinChart.destroy(); chinChart=null; return; }
-  // blended measured $/FLOP as our efficiency basis
-  const totCost = done.reduce((a,r)=>a+(costOf(r)||0),0);
-  const totFlop = done.reduce((a,r)=>a+6*r.params*r.lastTokens,0);
-  const dpf = totCost / totFlop;              // $ per FLOP (our lean basis)
   const CHINCHILLA_TPP = 20;                  // tokens per param (optimal)
-  // cost at Chinchilla-optimal for a given N, at OUR measured $/FLOP:
+  // Per-run measured $/FLOP — each run priced on ITS OWN hardware and throughput.
+  // Using a blended average here would make small runs look inefficient (fixed
+  // overhead dominates) and large runs look efficient, which is an artifact, not
+  // a result. Each run is compared against its own floor instead.
+  done.forEach(r=>{
+    r._flops = 6 * r.params * r.lastTokens;
+    r._dpf   = (costOf(r)||0) / r._flops;                 // this run's own $/FLOP
+    r._tpp   = r.lastTokens / r.params;                    // actual tokens/param
+    r._floor = 6 * r.params * (CHINCHILLA_TPP*r.params) * r._dpf; // what Chinchilla-
+    // optimal WOULD have cost this run, at this run's own measured efficiency
+  });
+  // blended figure retained only for the wide projection band
+  const totCost = done.reduce((a,r)=>a+(costOf(r)||0),0);
+  const totFlop = done.reduce((a,r)=>a+r._flops,0);
+  const dpf = totCost / totFlop;
   const floorCost = N => 6 * N * (CHINCHILLA_TPP*N) * dpf;
   // production band: over-train 5x–100x tokens, then 1.5x–3x operational overhead
   const prodLo = N => floorCost(N) * 5   * 1.5;
@@ -353,9 +382,13 @@ function renderChinchilla(){
   for(let e=Math.log10(40e6); e<=Math.log10(500e9); e+=0.1){
     const N=10**e; floor.push({x:N,y:floorCost(N)}); lo.push({x:N,y:prodLo(N)}); hi.push({x:N,y:prodHi(N)});
   }
-  // our actual measured points (cost vs params)
+  // our actual measured points, annotated with real tokens/param
   const pts = done.map(r=>({n:r.hw?r.hw.replace(/ · Vast\.ai/,""):"", x:r.params, y:costOf(r),
+                            tpp:r._tpp, dpf:r._dpf,
                             label:Object.keys(runs).find(k=>runs[k]===r)}));
+  // each run's OWN Chinchilla-optimal floor (what 20 tok/param would have cost it)
+  const ownFloor = done.map(r=>({x:r.params, y:r._floor, tpp:CHINCHILLA_TPP,
+                                 label:Object.keys(runs).find(k=>runs[k]===r)}));
   if(chinChart) chinChart.destroy();
   chinChart = new Chart(document.getElementById("chinChart"),{
     type:"scatter",
@@ -364,9 +397,12 @@ function renderChinchilla(){
       {label:"production-standard range", data:hi, type:"line", borderColor:"#f0883e88",
        backgroundColor:"#f0883e22", pointRadius:0, borderWidth:1, fill:"+1", tension:.2},
       {label:"_prodLo", data:lo, type:"line", borderColor:"#f0883e88", pointRadius:0, borderWidth:1, fill:false, tension:.2},
-      {label:"Chinchilla-optimal floor (our $/FLOP)", data:floor, type:"line", borderColor:"#0ee8d4",
+      {label:"Chinchilla floor (blended $/FLOP, projection basis)", data:floor, type:"line", borderColor:"#0ee8d4",
        borderDash:[6,4], pointRadius:0, borderWidth:2, fill:false, tension:.2},
-      {label:"our measured runs", data:pts, backgroundColor:"#bc8cff", borderColor:"#fff",
+      {label:"each run's own Chinchilla-optimal cost (20 tok/param)", data:ownFloor,
+       backgroundColor:"#0ee8d4", borderColor:"#0ee8d4", borderWidth:1, pointRadius:6,
+       pointStyle:"triangle"},
+      {label:"our measured runs (actual tokens trained)", data:pts, backgroundColor:"#bc8cff", borderColor:"#fff",
        borderWidth:1, pointRadius:7},
     ]},
     options:{maintainAspectRatio:false,
@@ -375,8 +411,14 @@ function renderChinchilla(){
               y:{type:"logarithmic",title:{display:true,text:"training cost (USD)"},grid:{color:"#2d333b55"},
                  ticks:{color:"#7d8aa3",callback:v=>fmt$(v)}}},
       plugins:{legend:{labels:{color:"#e6edf3",filter:i=>!i.text.startsWith("_")}},
-               tooltip:{callbacks:{label:c=>c.raw.label?`${c.raw.label} (${c.raw.n}): ${fmt$(c.raw.y)}`:
-                                            `${fmtP(c.raw.x)}: ${fmt$(c.raw.y)}`}}}}});
+               tooltip:{callbacks:{label:c=>{
+                 const r=c.raw;
+                 if(!r.label) return `${fmtP(r.x)}: ${fmt$(r.y)}`;
+                 const bits=[`${r.label}: ${fmt$(r.y)}`];
+                 if(r.tpp!=null) bits.push(`${r.tpp.toFixed(0)} tokens/param`);
+                 if(r.n) bits.push(r.n);
+                 return bits.join(" · ");
+               }}}}}});
 }
 
 function renderProjection(){
